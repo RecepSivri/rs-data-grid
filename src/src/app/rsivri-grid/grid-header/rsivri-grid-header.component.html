@@ -1,0 +1,5 @@
+<div class="full-row row-layout-space-between-center border-area-small"  style="border: 1px solid #cccccc;">
+    <div class="full-row content-style row-layout-center-center" [ngClass]="{'border-right': i < columns.length-1}" *ngFor="let column of columns; let i = index">
+      {{column.caption | titlecase}}
+    </div>
+</div>

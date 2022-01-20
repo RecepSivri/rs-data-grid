@@ -1,0 +1,10 @@
+.row-style{
+  border-bottom: 1px solid #cccccc;
+  border-left: 1px solid #cccccc;
+  border-right: 1px solid #cccccc;
+}
+
+.section-style{
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
