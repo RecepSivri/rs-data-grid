@@ -25,7 +25,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/rsivri-data-grid'),
+      dir: require('path').join(__dirname, './coverage/deneme'),
       subdir: '.',
       reporters: [
         { type: 'html' },
