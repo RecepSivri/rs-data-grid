@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import {IColumn} from "../../../core/models/IColumn";
 
 @Component({
@@ -6,7 +6,7 @@ import {IColumn} from "../../../core/models/IColumn";
   templateUrl: './rsivri-grid-body.component.html',
   styleUrls: ['./rsivri-grid-body.component.css']
 })
-export class RsivriGridBodyComponent implements OnInit{
+export class RsivriGridBodyComponent implements OnInit, OnChanges{
 
   @Input() columns: IColumn[];
   @Input() data: any[];
@@ -17,6 +17,12 @@ export class RsivriGridBodyComponent implements OnInit{
   }
 
   ngOnInit(): void {
+
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    this.data = changes.data.currentValue;
+    console.log(this.data)
   }
 
 

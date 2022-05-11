@@ -1,12 +1,12 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {IColumn} from "../../core/models/IColumn";
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { IColumn } from '../../core/models/IColumn';
 
 @Component({
   selector: 'rsivri-grid',
   templateUrl: './rsivri-grid.component.html',
   styleUrls: ['./rsivri-grid.component.css']
 })
-export class RsivriGridComponent implements  OnInit{
+export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() data: any[];
   @Input() columns: IColumn[];
 
@@ -20,14 +20,18 @@ export class RsivriGridComponent implements  OnInit{
     this.initializeColumn();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    this.data = changes.data.currentValue;
+    this.initializeColumn();
+  }
+
 
   initializeColumn = () => {
-    console.log(this.data.length > 0 ? this.data : "aboov");
     const result = Object.keys(Object.assign({}, ...this.data));
      if(this.columns.length === 0){
-       this.columns = result.map((item) =>{
+       this.columns = result.map((item) => {
          return {caption: item, dataField: item}
-       })
+       });
      }
   }
 }
