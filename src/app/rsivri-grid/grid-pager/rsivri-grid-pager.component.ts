@@ -8,13 +8,13 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 })
 export class RsivriGridPagerComponent implements OnInit, OnChanges{
   @Input() pagination: boolean;
-  @Input() pagingSizes: number;
-  @Input() currentPagingSize: number[];
+  @Input() pagingSizes: number[];
+  @Input() currentPagingSize: number;
 
   constructor() {
     this.pagination = false;
-    this.pagingSizes = 10;
-    this.currentPagingSize = [];
+    this.pagingSizes = [];
+    this.currentPagingSize = 10;
   }
 
   ngOnInit(): void {

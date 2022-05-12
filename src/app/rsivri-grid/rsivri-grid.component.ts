@@ -18,8 +18,8 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() borderRadiusBottom: boolean;
   @Input() diagonalRow: boolean;
   @Input() pagination: boolean;
-  @Input() pagingSizes: number;
-  @Input() currentPagingSize: number[];
+  @Input() pagingSizes: number[];
+  @Input() currentPagingSize: number;
 
 
   constructor() {
@@ -34,8 +34,8 @@ export class RsivriGridComponent implements OnInit, OnChanges {
     this.borderRadiusTop = false;
     this.diagonalRow = false;
     this.pagination = false;
-    this.pagingSizes = 10;
-    this.currentPagingSize = [];
+    this.pagingSizes = [];
+    this.currentPagingSize = 10;
   }
 
   ngOnInit(){

@@ -15,6 +15,7 @@ export class RsivriGridBodyComponent implements OnInit, OnChanges{
   @Input() tableBorder: boolean;
   @Input() borderRadiusBottom: boolean;
   @Input() diagonalRow: boolean;
+  @Input() currentPagingSize: number;
 
   constructor() {
     this.columns = [];
@@ -24,6 +25,7 @@ export class RsivriGridBodyComponent implements OnInit, OnChanges{
     this.tableBorder = true;
     this.borderRadiusBottom = false;
     this.diagonalRow = false;
+    this.currentPagingSize = 10;
   }
 
   ngOnInit(): void {
