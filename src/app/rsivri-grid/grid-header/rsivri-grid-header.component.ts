@@ -9,9 +9,17 @@ import {IColumn} from "../../../core/models/IColumn";
 export class RsivriGridHeaderComponent implements OnInit{
 
   @Input() columns: IColumn[];
+  @Input() headerRowLines: boolean;
+  @Input() headerColumnLines: boolean;
+  @Input() tableBorder: boolean;
+  @Input() borderRadiusTop: boolean;
 
   constructor() {
     this.columns = [];
+    this.headerRowLines = true;
+    this.headerColumnLines = true;
+    this.tableBorder = true;
+    this.borderRadiusTop = true;
   }
 
   ngOnInit(): void {

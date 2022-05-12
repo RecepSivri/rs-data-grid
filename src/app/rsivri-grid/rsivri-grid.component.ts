@@ -8,12 +8,34 @@ import { IColumn } from '../../core/models/IColumn';
 })
 export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() data: any[];
+  @Input() headerColumnLines: boolean;
+  @Input() headerRowLines: boolean;
+  @Input() bodyRowLines: boolean;
+  @Input() bodyColumnLines: boolean;
   @Input() columns: IColumn[];
+  @Input() tableBorder: boolean;
+  @Input() borderRadiusTop: boolean;
+  @Input() borderRadiusBottom: boolean;
+  @Input() diagonalRow: boolean;
+  @Input() pagination: boolean;
+  @Input() pagingSizes: number;
+  @Input() currentPagingSize: number[];
 
 
   constructor() {
     this.data = [];
     this.columns = [];
+    this.headerColumnLines = true;
+    this.headerRowLines = true;
+    this.bodyRowLines = true;
+    this.bodyColumnLines = true;
+    this.tableBorder = true;
+    this.borderRadiusBottom = false;
+    this.borderRadiusTop = false;
+    this.diagonalRow = false;
+    this.pagination = false;
+    this.pagingSizes = 10;
+    this.currentPagingSize = [];
   }
 
   ngOnInit(){
@@ -21,7 +43,10 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    this.data = changes.data.currentValue;
+    /*this.data = changes.data.currentValue;*/
+    this.data = changes.data.currentValue.map((item: any) => {
+      return {name: item.name, capital: item.capital, nativeName: item.nativeName, population: item.population, subregion: item.subregion}
+    });
     this.initializeColumn();
   }
 

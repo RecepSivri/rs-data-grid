@@ -6,6 +6,10 @@
   font-family: Arial;
   padding-bottom: 5px;
   padding-top: 5px;
+  white-space: nowrap;
+  min-width: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .border-area-small{
@@ -21,4 +25,8 @@
 .border-area-large{
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
+}
+
+.border-header{
+  border: 1px solid #cccccc;
 }

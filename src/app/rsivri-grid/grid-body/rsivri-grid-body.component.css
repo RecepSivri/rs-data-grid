@@ -1,10 +1,28 @@
 .row-style{
-  border-bottom: 1px solid #cccccc;
   border-left: 1px solid #cccccc;
   border-right: 1px solid #cccccc;
+}
+
+.row-style-bottom{
+  border-bottom: 1px solid #cccccc;
 }
 
 .section-style{
   padding-bottom: 5px;
   padding-top: 5px;
+  min-height: 50px;
+  max-height: 50px;
+  white-space: nowrap;
+  min-width: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.border-area-small{
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.row-background{
+  background-color: #f5f5f5;
 }

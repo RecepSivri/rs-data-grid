@@ -1,7 +1,8 @@
 <div class="column-layout full-row">
-  <div class="row-style full-row" *ngFor="let item of data; let i = index">
+  <div class="full-row" [ngClass]="{'row-style': tableBorder, 'row-style-bottom': (tableBorder && i === data.length-1 ) || (bodyRowLines && i !== data.length-1),
+  'border-area-small': borderRadiusBottom && i === data.length-1, 'row-background' : i%2 == 1 && diagonalRow}"   *ngFor="let item of data; let i = index">
     <div class="full-row row-layout">
-      <div class="full-row section-style row-layout-center-center" [ngClass]="{'border-right': j < columns.length-1}" *ngFor="let column of columns; let j = index">
+      <div class="full-row section-style row-layout-center-center" [ngClass]="{'border-right': bodyColumnLines && j < columns.length-1}" *ngFor="let column of columns; let j = index">
         {{item[column.dataField]}}
       </div>
     </div>

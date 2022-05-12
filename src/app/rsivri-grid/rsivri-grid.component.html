@@ -1,6 +1,17 @@
-<div class="border-area-small">
-  <rsivri-grid-hedaer [columns]="columns">
+<div [ngClass]="{'border-area-small': tableBorder}" >
+  <rsivri-grid-hedaer [columns]="columns"
+                      [headerColumnLines] = "this.headerColumnLines"
+                      [headerRowLines] = "this.headerRowLines"
+                      [borderRadiusTop] = "this.borderRadiusTop"
+                      [tableBorder] = "this.tableBorder">
   </rsivri-grid-hedaer>
-  <rsivri-grid-body [columns]="columns" [data]="data">
+  <rsivri-grid-body [columns]="columns"
+                    [data]="data"
+                    [bodyColumnLines] = "this.bodyColumnLines"
+                    [bodyRowLines] = "this.bodyRowLines"
+                    [tableBorder] = "this.tableBorder"
+                    [borderRadiusBottom] = "this.borderRadiusBottom"
+                    [diagonalRow] = "this.diagonalRow"
+  >
   </rsivri-grid-body>
 </div>

@@ -10,19 +10,27 @@ export class RsivriGridBodyComponent implements OnInit, OnChanges{
 
   @Input() columns: IColumn[];
   @Input() data: any[];
+  @Input() bodyRowLines: boolean;
+  @Input() bodyColumnLines: boolean;
+  @Input() tableBorder: boolean;
+  @Input() borderRadiusBottom: boolean;
+  @Input() diagonalRow: boolean;
 
   constructor() {
     this.columns = [];
     this.data = [];
+    this.bodyRowLines = true;
+    this.bodyColumnLines = true;
+    this.tableBorder = true;
+    this.borderRadiusBottom = false;
+    this.diagonalRow = false;
   }
 
   ngOnInit(): void {
-
   }
 
   ngOnChanges(changes: SimpleChanges) {
     this.data = changes.data.currentValue;
-    console.log(this.data)
   }
 
 
