@@ -1,2 +1,7 @@
-
+<div *ngIf="pagination" class="full-row row-layout-space-between-center">
+  <div>laoo</div>
+  <div class="row-layout">
+    <a class="pager-size" (click)="changeCurrentPaginationSize(item)" [ngClass]="{'page-selected': item === currentPagingSize}"  *ngFor="let item of pagingSizes; let i = index">{{item}}</a>
+  </div>
+</div>
 

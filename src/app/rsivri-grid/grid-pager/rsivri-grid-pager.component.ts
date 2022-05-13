@@ -23,5 +23,9 @@ export class RsivriGridPagerComponent implements OnInit, OnChanges{
   ngOnChanges(changes: SimpleChanges) {
   }
 
+  changeCurrentPaginationSize = (val: number) => {
+    this.currentPagingSize = val;
+  }
+
 
 }
