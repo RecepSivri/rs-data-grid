@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
 import { IColumn } from '../../core/models/IColumn';
 import { createFeatureSelector, Store } from '@ngrx/store';
 import { fetchData } from './store/data-grid.actions';
+import { selectData } from './store/data-grid.selectors';
 @Component({
   selector: 'rsivri-grid',
   templateUrl: './rsivri-grid.component.html',
@@ -55,7 +56,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
   initializeColumn = () => {
 
-   this.store.select(createFeatureSelector('dataGrid')).subscribe(val => {
+   this.store.select(selectData).subscribe(val => {
      console.log(val)
    })
     const result = Object.keys(Object.assign({}, ...this.data));
