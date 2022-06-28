@@ -26,7 +26,7 @@ import { environment } from '../environments/environment.prod';
     BrowserModule,
     HttpClientModule,
     EffectsModule.forRoot([DataEffect]),
-    StoreModule.forRoot({ reducer: dataGridReducer }),
+    StoreModule.forRoot({ dataGrid: dataGridReducer }),
     StoreDevtoolsModule.instrument({
       maxAge: 25, // Retains last 25 states
       logOnly: environment.production, // Restrict extension to log-only mode

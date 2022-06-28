@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { IColumn } from '../../core/models/IColumn';
-import { Store } from '@ngrx/store';
+import { createFeatureSelector, Store } from '@ngrx/store';
 import { fetchData } from './store/data-grid.actions';
 @Component({
   selector: 'rsivri-grid',
@@ -40,7 +40,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(){
-    this.store.dispatch(fetchData());
+    this.store.dispatch(fetchData({url: 'https://restcountries.com/v2/all'}));
     this.initializeColumn();
   }
 
@@ -54,6 +54,10 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
 
   initializeColumn = () => {
+
+   this.store.select(createFeatureSelector('dataGrid')).subscribe(val => {
+     console.log(val)
+   })
     const result = Object.keys(Object.assign({}, ...this.data));
      if(this.columns.length === 0){
        this.columns = result.map((item) => {

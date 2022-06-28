@@ -9,7 +9,7 @@ export class CountryService {
   constructor(private http: HttpClient) { }
 
 
-  getCountries() {
-    return this.http.get('https://restcountries.com/v2/all');
+  getCountries(url: string) {
+    return this.http.get(url);
   }
 }

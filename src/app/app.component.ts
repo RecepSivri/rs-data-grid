@@ -17,13 +17,13 @@ export class AppComponent implements  OnInit, AfterViewInit{
  }
 
  getCountry = () => {
-   this.countryService.getCountries().subscribe( (data: any) => {
+   this.countryService.getCountries('https://restcountries.com/v2/all').subscribe( (data: any) => {
      this.data = data;
 
    });
  }
 
   ngAfterViewInit(){
-    console.log(this.data);
+
   }
 }
