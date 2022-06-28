@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { IColumn } from '../../core/models/IColumn';
-
+import { Store } from '@ngrx/store';
+import { fetchData } from './store/data-grid.actions';
 @Component({
   selector: 'rsivri-grid',
   templateUrl: './rsivri-grid.component.html',
@@ -22,7 +23,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() currentPagingSize: number;
 
 
-  constructor() {
+  constructor(private store: Store) {
     this.data = [];
     this.columns = [];
     this.headerColumnLines = true;
@@ -39,6 +40,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(){
+    this.store.dispatch(fetchData());
     this.initializeColumn();
   }
 
