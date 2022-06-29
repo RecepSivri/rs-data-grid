@@ -1,4 +1,7 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { concatMap } from 'rxjs';
+import { changePageSize } from '../store/data-grid.actions';
 
 
 @Component({
@@ -11,7 +14,7 @@ export class RsivriGridPagerComponent implements OnInit, OnChanges{
   @Input() pagingSizes: number[];
   @Input() currentPagingSize: number;
 
-  constructor() {
+  constructor(private store: Store) {
     this.pagination = false;
     this.pagingSizes = [];
     this.currentPagingSize = 10;
@@ -24,7 +27,8 @@ export class RsivriGridPagerComponent implements OnInit, OnChanges{
   }
 
   changeCurrentPaginationSize = (val: number) => {
-    this.currentPagingSize = val;
+    this.store.dispatch(changePageSize({pageSize: val}))
+    console.log(val)
   }
 
 

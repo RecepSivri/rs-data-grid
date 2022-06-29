@@ -1,16 +1,19 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { IColumn } from '../../core/models/IColumn';
 import { createFeatureSelector, Store } from '@ngrx/store';
-import { fetchData } from './store/data-grid.actions';
-import { selectData } from './store/data-grid.selectors';
+import { fetchData, setData } from './store/data-grid.actions';
+import { selectData, selectPageNum, selectPageSize} from './store/data-grid.selectors';
+import { Observable, of } from 'rxjs';
+import { Observer } from 'rxjs';
 @Component({
   selector: 'rsivri-grid',
   templateUrl: './rsivri-grid.component.html',
   styleUrls: ['./rsivri-grid.component.css']
 })
-export class RsivriGridComponent implements OnInit, OnChanges {
-  @Input() data: any[];
+export class RsivriGridComponent implements OnInit {
+  data$: Observable<any[]> = this.store.select(selectData);
   @Input() headerColumnLines: boolean;
+  @Input() fetchUrl: string;
   @Input() headerRowLines: boolean;
   @Input() bodyRowLines: boolean;
   @Input() bodyColumnLines: boolean;
@@ -22,10 +25,12 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() pagination: boolean;
   @Input() pagingSizes: number[];
   @Input() currentPagingSize: number;
+  @Input() dataSource: any[];
+  pageNumber = this.store.select(selectPageNum)
+  pageSize = this.store.select(selectPageSize)
 
 
   constructor(private store: Store) {
-    this.data = [];
     this.columns = [];
     this.headerColumnLines = true;
     this.headerRowLines = true;
@@ -38,32 +43,33 @@ export class RsivriGridComponent implements OnInit, OnChanges {
     this.pagination = false;
     this.pagingSizes = [];
     this.currentPagingSize = 10;
+    this.fetchUrl = '';
+    this.dataSource = [];
   }
 
   ngOnInit(){
-    this.store.dispatch(fetchData({url: 'https://restcountries.com/v2/all'}));
-    this.initializeColumn();
+    
+    if(this.dataSource.length > 0){
+      this.store.dispatch(setData({data: this.dataSource }));
+    }else {
+      if(this.fetchUrl !== ''){
+        this.store.dispatch(fetchData({url: this.fetchUrl }));
+      }else {
+        this.store.dispatch(setData({data: this.dataSource }));
+      }
+    }
+    this.initializeColumnAsync();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    /*this.data = changes.data.currentValue;*/
-    this.data = changes.data.currentValue.map((item: any) => {
-      return {name: item.name, capital: item.capital, nativeName: item.nativeName, population: item.population, subregion: item.subregion}
-    });
-    this.initializeColumn();
-  }
 
-
-  initializeColumn = () => {
-
-   this.store.select(selectData).subscribe(val => {
-     console.log(val)
-   })
-    const result = Object.keys(Object.assign({}, ...this.data));
-     if(this.columns.length === 0){
-       this.columns = result.map((item) => {
-         return {caption: item, dataField: item}
-       });
-     }
+  initializeColumnAsync = () => {
+    this.store.select(selectData).subscribe(data => {
+      const result = Object.keys(Object.assign({}, ...data));
+      if(this.columns.length === 0){
+        this.columns = result.map((item) => {
+          return {caption: item, dataField: item}
+        });
+      }
+    })
   }
 }

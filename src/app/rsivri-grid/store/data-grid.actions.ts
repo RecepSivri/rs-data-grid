@@ -10,4 +10,9 @@ export const fetchData = createAction(
 export const setData = createAction(
     '[DataGrid/API] Set Data',
     props<{ data: any }>()
-    );
+);
+
+export const changePageSize = createAction(
+    '[DataGrid/API] Change Page Size',
+    props<{ pageSize: any }>()
+);
