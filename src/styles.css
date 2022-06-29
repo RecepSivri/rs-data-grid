@@ -10,6 +10,13 @@
   justify-content: space-between;
 }
 
+.row-layout-start{
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: start;
+}
+
 .border-area-1{
   border: 1px solid #cccccc;
 }

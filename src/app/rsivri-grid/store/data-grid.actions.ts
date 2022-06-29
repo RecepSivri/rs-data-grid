@@ -16,3 +16,9 @@ export const changePageSize = createAction(
     '[DataGrid/API] Change Page Size',
     props<{ pageSize: any }>()
 );
+
+export const changePageNumber = createAction(
+    '[DataGrid/API] Change Page Number',
+    props<{ pageNumber: any }>()
+);
+
