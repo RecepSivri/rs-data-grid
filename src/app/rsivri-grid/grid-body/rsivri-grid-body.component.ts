@@ -33,7 +33,6 @@ export class RsivriGridBodyComponent implements OnInit, OnChanges{
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(this.data)
   }
 
 
