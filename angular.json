@@ -59,7 +59,21 @@
                   "maximumError": "4kb"
                 }
               ]
-            }
+            },
+            "dev": {
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": {
+                  "scripts": true,
+                  "styles": true,
+                  "hidden": false,
+                  "vendor": false
+              },
+              "namedChunks": true,
+              "extractLicenses": false,
+              "vendorChunk": true,
+              "buildOptimizer": true
+          }
           }
         },
         "serve": {
@@ -70,6 +84,9 @@
           "configurations": {
             "production": {
               "browserTarget": "deneme:build:production"
+            },
+            "dev": {
+              "browserTarget": "deneme:build:dev"
             }
           }
         },

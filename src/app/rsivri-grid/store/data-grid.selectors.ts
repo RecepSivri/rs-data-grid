@@ -9,10 +9,25 @@ export const selectData = createSelector(
 
 export const selectPageNum = createSelector(
    selectDataGrid,
-   (state: any) => state.pageNumber
+   (state: any) => state.pager.pageNumber
 );
 
 export const selectPageSize = createSelector(
     selectDataGrid,
-    (state: any) => state.pageSize
+    (state: any) => state.pager.pageSize
  );
+
+export const selectPageList = createSelector(
+   selectDataGrid,
+   (state: any) => state.pager.pageList
+);
+
+export const selectPageLimit = createSelector(
+   selectDataGrid,
+   (state: any) => state.pager.pageLimit
+);
+
+
+
+
+ 

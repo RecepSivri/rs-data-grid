@@ -27,9 +27,13 @@
 }
 
 .page-number-background{
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   border-top: 1px solid #cccccc;
   border-bottom: 1px solid #cccccc;
   border-left: 1px solid #cccccc;
   margin-top:5px;
+}
+
+.page-numbers-selected{
+  background-color: #f5f5f5;
 }
