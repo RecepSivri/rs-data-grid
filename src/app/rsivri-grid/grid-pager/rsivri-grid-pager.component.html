@@ -2,11 +2,11 @@
   <div class="row-layout-start page-number-background">
     <div class = "page-numbers" (click) = "decreasePager()"><</div>
     <div [ngClass]="{'page-numbers-selected': (pageNumber$ | async) === in-1}" class = "page-numbers " (click)="setpage(in-1)" *ngFor='let in of pageList$ | async;'>{{in}}</div>
-    <div class = "page-numbers" (click) = "lastPage((pageLimit$))">{{(pageLimit$| async)}}</div>
+    <div *ngIf="writeAS((pageList$ | async)[0], pageListSize, (pageLimit$ | async))" class = "page-numbers" (click) = "lastPage()"> {{(pageLimit$| async)}}</div>
     <div class = "page-numbers" (click) = "increasePager()">></div>
   </div>
   <div class="row-layout">
-    <a class="pager-size" (click)="changeCurrentPaginationSize(item)" [ngClass]="{'page-selected': item === currentPagingSize}"  *ngFor="let item of pagingSizes; let i = index">{{item}}</a>
+    <a class="pager-size" (click)="changeCurrentPaginationSize(item)" [ngClass]="{'page-selected': item === (pageSize$ | async)}"  *ngFor="let item of pagingSizes; let i = index">{{item}}</a>
   </div>
 </div>
 

@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { concatMap } from 'rxjs';
-import { changePageListSize, changePageNumber, changePageSize, decreasePageNum, increasePageNum } from '../store/data-grid.actions';
+import { changePageListSize, changePageNumber, changePageSize, decreasePageNum, increasePageNum, lastPageNum } from '../store/data-grid.actions';
 import { selectData, selectPageLimit, selectPageList, selectPageNum, selectPageSize } from '../store/data-grid.selectors';
 
 
@@ -31,6 +31,7 @@ export class RsivriGridPagerComponent implements OnInit, OnChanges{
 
   ngOnInit(): void {
     this.store.dispatch(changePageListSize({pageListSize: this.pageListSize}));
+    this.store.dispatch(changePageSize({pageSize: this.currentPagingSize }));
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -53,12 +54,11 @@ export class RsivriGridPagerComponent implements OnInit, OnChanges{
     this.store.dispatch(decreasePageNum())
   }
 
-  lastPage = (pageNum: any) => {
-    this.pageLimit$.subscribe(val => {
-      this.store.dispatch(changePageNumber({pageNumber: val -1}))
-    })
-  
+  lastPage = () => {
+    this.store.dispatch(lastPageNum());
   }
 
-
+  writeAS = (pageFirstItem:any, pageListSize: any, pageLimit: any) => {
+    return pageFirstItem + pageListSize > pageLimit ? false : true;
+  }
 }

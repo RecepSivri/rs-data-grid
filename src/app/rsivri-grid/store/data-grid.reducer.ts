@@ -1,5 +1,5 @@
 import { createReducer, on } from '@ngrx/store';
-import { changePageListSize, changePageNumber, changePageSize, decreasePageNum, increasePageNum, setData } from './data-grid.actions';
+import { changePageListSize, changePageNumber, changePageSize, decreasePageNum, increasePageNum, lastPageNum, setData } from './data-grid.actions';
 import { AppState } from './data-grid.state';
 export const initialState: AppState = {
 
@@ -21,8 +21,8 @@ export const dataGridReducer = createReducer(
   on(changePageNumber, (state, { pageNumber: pageNumber }) => returnPageStateRelatedPageNum(state, pageNumber)),
   on(changePageListSize, (state, { pageListSize: pageListSize }) => ({...state, pager:{ ...state.pager, pageListSize: pageListSize, pageList: returnPageList(pageListSize, state.pager.pageLimit)}})),
   on(increasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === state.pager.pageLimit-1 ? state.pager.pageNumber: state.pager.pageNumber +1)),
-  on(decreasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === 0 ? 0 : state.pager.pageNumber - 1))
-  
+  on(decreasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === 0 ? 0 : state.pager.pageNumber - 1)),
+  on(lastPageNum, (state) => returnLastPageList(state, state.pager.pageLimit-1))
 );
 
 const returnPageList = (pageListSize: number, pageLimit: number) => {
@@ -47,6 +47,11 @@ const returnPageStateRelatedPageNum = (state: AppState, pageNumber: number) => {
     }else
     return {...state, pager:{ ...state.pager, pageNumber: pageNumber}}
 }
+
+const returnLastPageList = (state: AppState, pageNumber: number) => {
+  return {...state, pager:{ ...state.pager, pageNumber: pageNumber, pageList: returnPageListWithPageNumber(pageNumber-state.pager.pageListSize+1, state.pager.pageLimit, state.pager.pageListSize)}}
+}
+
 
 const returnPageListWithPageNumber = (pageNumber: number, pageLimit: number, pageListSize: number) => {
   let arr = new Array();

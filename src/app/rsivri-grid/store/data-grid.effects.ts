@@ -11,7 +11,7 @@ export class DataEffect {
   constructor(public actionParam: Actions, public service: CountryService) {
 
   }
-
+ 
 
   @Effect()
   navigateToDashboard$ = this.actionParam.pipe(

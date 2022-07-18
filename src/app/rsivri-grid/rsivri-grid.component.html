@@ -6,7 +6,7 @@
                       [tableBorder] = "this.tableBorder">
   </rsivri-grid-hedaer>
   <rsivri-grid-body [columns]="columns"
-                    [data]="((data$ | async) ?? []).slice( (pageNumber | async) * (pageSize | async) , ((pageNumber | async) +1) * (pageSize | async) )"
+                    [data]="pagination ? ((data$ | async) ?? []).slice( (pageNumber | async) * (pageSize | async) , ((pageNumber | async) +1) * (pageSize | async)) : ((data$ | async) ?? [])"
                     [bodyColumnLines] = "this.bodyColumnLines"
                     [bodyRowLines] = "this.bodyRowLines"
                     [tableBorder] = "this.tableBorder"

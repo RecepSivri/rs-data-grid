@@ -1,10 +1,9 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { IColumn } from '../../core/models/IColumn';
-import { createFeatureSelector, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { fetchData, setData } from './store/data-grid.actions';
 import { selectData, selectPageNum, selectPageSize} from './store/data-grid.selectors';
 import { Observable, of } from 'rxjs';
-import { Observer } from 'rxjs';
 @Component({
   selector: 'rsivri-grid',
   templateUrl: './rsivri-grid.component.html',
