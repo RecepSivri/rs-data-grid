@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "deneme": {
+    "rsivri-data-grid": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:application": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/deneme",
+            "outputPath": "dist/rsivri-data-grid",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -79,21 +79,21 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "deneme:build"
+            "browserTarget": "rsivri-data-grid:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "deneme:build:production"
+              "browserTarget": "rsivri-data-grid:build:production"
             },
             "dev": {
-              "browserTarget": "deneme:build:dev"
+              "browserTarget": "rsivri-data-grid:build:dev"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "deneme:build"
+            "browserTarget": "rsivri-data-grid:build"
           }
         },
         "test": {
@@ -130,16 +130,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "deneme:serve"
+            "devServerTarget": "rsivri-data-grid:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "deneme:serve:production"
+              "devServerTarget": "rsivri-data-grid:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "deneme"
+  "defaultProject": "rsivri-data-grid"
 }

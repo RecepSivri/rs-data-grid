@@ -17,7 +17,7 @@ export class DataEffect {
   navigateToDashboard$ = this.actionParam.pipe(
       ofType(fetchData),
       switchMap((action: any) => this.service.getCountries(action.url).pipe(
-        map(values => setData({data: values || []}))
+        map((values: any) => setData({data: action.section ? values[action.section] || [] : values || []}))
       )))
 
 }

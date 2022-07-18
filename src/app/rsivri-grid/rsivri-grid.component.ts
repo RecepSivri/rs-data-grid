@@ -26,6 +26,7 @@ export class RsivriGridComponent implements OnInit {
   @Input() currentPagingSize: number;
   @Input() dataSource: any[];
   @Input() pageListSize: number;
+  @Input() entrySection: string | undefined;
   pageNumber = this.store.select(selectPageNum)
   pageSize = this.store.select(selectPageSize)
 
@@ -46,6 +47,7 @@ export class RsivriGridComponent implements OnInit {
     this.fetchUrl = '';
     this.dataSource = [];
     this.pageListSize = 5;
+    this.entrySection = undefined;
   }
 
   ngOnInit(){
@@ -54,7 +56,7 @@ export class RsivriGridComponent implements OnInit {
       this.store.dispatch(setData({data: this.dataSource }));
     }else {
       if(this.fetchUrl !== ''){
-        this.store.dispatch(fetchData({url: this.fetchUrl }));
+        this.store.dispatch(fetchData({url: this.fetchUrl, section: this.entrySection }));
       }else {
         this.store.dispatch(setData({data: this.dataSource }));
       }
