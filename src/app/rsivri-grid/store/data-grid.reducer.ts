@@ -43,7 +43,7 @@ const returnPageStateRelatedPageNum = (state: AppState, pageNumber: number) => {
       return {...state, pager:{ ...state.pager, pageNumber: pageNumber, pageList: returnPageListWithPageNumber(pageNumber, state.pager.pageLimit, state.pager.pageListSize)}}
     }else
     if(state.pager.pageList.findIndex( (val) => {return val === pageNumber+1}) === 0){
-      return {...state, pager:{ ...state.pager, pageNumber: pageNumber, pageList: returnPageListWithPageNumber(pageNumber-state.pager.pageListSize+1, state.pager.pageLimit, state.pager.pageListSize)}}
+      return {...state, pager:{ ...state.pager, pageNumber: pageNumber, pageList: returnPageListWithPageNumber(pageNumber-state.pager.pageListSize+1 >=  0 ? pageNumber-state.pager.pageListSize+1 : 0, state.pager.pageLimit, state.pager.pageListSize)}}
     }else
     return {...state, pager:{ ...state.pager, pageNumber: pageNumber}}
 }
