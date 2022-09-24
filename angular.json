@@ -42,7 +42,7 @@
               ],
               "optimization": true,
               "outputHashing": "all",
-              "sourceMap": false,
+              "sourceMap": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -67,7 +67,7 @@
                   "scripts": true,
                   "styles": true,
                   "hidden": false,
-                  "vendor": false
+                  "vendor": true
               },
               "namedChunks": true,
               "extractLicenses": false,
@@ -88,7 +88,8 @@
             "dev": {
               "browserTarget": "rsivri-data-grid:build:dev"
             }
-          }
+          },
+          "defaultConfiguration": "dev"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",

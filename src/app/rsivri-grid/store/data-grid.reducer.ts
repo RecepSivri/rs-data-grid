@@ -18,10 +18,10 @@ export const dataGridReducer = createReducer(
   initialState,
   on(setData, (state, { data:data }) => ({...state, data: data, pager:{ ...state.pager, pageLimit: Math.ceil(data.length/state.pager.pageSize), pageList: returnPageList(state.pager.pageListSize, Math.ceil(data.length/state.pager.pageSize))}})),
   on(changePageSize, (state, { pageSize: pageSize }) => ({...state, pager:{...state.pager, pageSize: pageSize, pageLimit: Math.ceil(state.data.length/pageSize), pageList: returnPageList(state.pager.pageListSize, Math.ceil(state.data.length/pageSize))}})),
-  on(changePageNumber, (state, { pageNumber: pageNumber }) => returnPageStateRelatedPageNum(state, pageNumber)),
+  on(changePageNumber, (state, { pageNumber: pageNumber }) => returnPageStateRelatedPageNum(state, pageNumber, 'none')),
   on(changePageListSize, (state, { pageListSize: pageListSize }) => ({...state, pager:{ ...state.pager, pageListSize: pageListSize, pageList: returnPageList(pageListSize, state.pager.pageLimit)}})),
-  on(increasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === state.pager.pageLimit-1 ? state.pager.pageNumber: state.pager.pageNumber +1)),
-  on(decreasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === 0 ? 0 : state.pager.pageNumber - 1)),
+  on(increasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === state.pager.pageLimit-1 ? state.pager.pageNumber: state.pager.pageNumber +1, 'increase')),
+  on(decreasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === 0 ? 0 : state.pager.pageNumber - 1,'decrease')),
   on(lastPageNum, (state) => returnLastPageList(state, state.pager.pageLimit-1))
 );
 
@@ -34,18 +34,36 @@ const returnPageList = (pageListSize: number, pageLimit: number) => {
 }
 
 
-const returnPageStateRelatedPageNum = (state: AppState, pageNumber: number) => {
+const returnPageStateRelatedPageNum = (state: AppState, pageNumber: number,flag:string) => {
 
-    if(pageNumber === 0 || pageNumber === state.pager.pageLimit -1){
-      return {...state, pager:{ ...state.pager, pageNumber: pageNumber}}
+    let pageVal = pageNumber;
+    if(pageVal === 0 || pageVal === state.pager.pageLimit -1){
+      return {...state, pager:{ ...state.pager, pageNumber: pageVal}}
     }else
-    if(state.pager.pageList.findIndex( (val) => {return val === pageNumber+1}) === state.pager.pageListSize-1){
-      return {...state, pager:{ ...state.pager, pageNumber: pageNumber, pageList: returnPageListWithPageNumber(pageNumber, state.pager.pageLimit, state.pager.pageListSize)}}
+    if(state.pager.pageList.findIndex( (val) => {return val === returnConditionIncrease(flag, pageVal+1)}) === state.pager.pageListSize-1){
+      return {...state, pager:{ ...state.pager, pageNumber: pageVal, pageList: returnPageListWithPageNumber(pageVal, state.pager.pageLimit, state.pager.pageListSize)}}
     }else
-    if(state.pager.pageList.findIndex( (val) => {return val === pageNumber+1}) === 0){
-      return {...state, pager:{ ...state.pager, pageNumber: pageNumber, pageList: returnPageListWithPageNumber(pageNumber-state.pager.pageListSize+1 >=  0 ? pageNumber-state.pager.pageListSize+1 : 0, state.pager.pageLimit, state.pager.pageListSize)}}
+    if(state.pager.pageList.findIndex( (val) => {return val === returnConditionDecrese(flag, pageVal+1)}) === 0){
+      return {...state, pager:{ ...state.pager, pageNumber: pageVal, pageList: returnPageListWithPageNumber(pageVal-state.pager.pageListSize+1 >  0 ? pageVal-state.pager.pageListSize+1 : 0, state.pager.pageLimit, state.pager.pageListSize)}}
     }else
-    return {...state, pager:{ ...state.pager, pageNumber: pageNumber}}
+    return {...state, pager:{ ...state.pager, pageNumber: pageVal}}
+}
+
+
+const returnConditionDecrese = (flag: string, pageVal: number)=> {
+  if(flag=== 'decrease'){
+    return pageVal+1;
+  }else{
+    return pageVal
+  }
+}
+
+const returnConditionIncrease = (flag: string, pageVal: number)=> {
+  if(flag=== 'increase'){
+    return pageVal-1;
+  }else{
+    return pageVal
+  }
 }
 
 const returnLastPageList = (state: AppState, pageNumber: number) => {
