@@ -3,7 +3,7 @@ import { IColumn } from '../../core/models/IColumn';
 import { Store } from '@ngrx/store';
 import { fetchData, setData } from './store/data-grid.actions';
 import { selectData, selectPageNum, selectPageSize} from './store/data-grid.selectors';
-import { Observable, of } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 @Component({
   selector: 'rsivri-grid',
   templateUrl: './rsivri-grid.component.html',
@@ -27,8 +27,11 @@ export class RsivriGridComponent implements OnInit {
   @Input() dataSource: any[];
   @Input() pageListSize: number;
   @Input() entrySection: string | undefined;
-  pageNumber = this.store.select(selectPageNum)
-  pageSize = this.store.select(selectPageSize)
+  @Input() remoteMode: boolean = false;
+  @Input() remoteModeParams?: any;
+  
+  pageNumber: Observable<any> = this.store.select(selectPageNum)
+  pageSize: Observable<any> = this.store.select(selectPageSize)
 
 
   constructor(private store: Store) {
@@ -52,13 +55,27 @@ export class RsivriGridComponent implements OnInit {
 
   ngOnInit(){
     
-    if(this.dataSource.length > 0){
-      this.store.dispatch(setData({data: this.dataSource }));
-    }else {
-      if(this.fetchUrl !== ''){
-        this.store.dispatch(fetchData({url: this.fetchUrl, section: this.entrySection }));
+    if(this.remoteMode){
+      const endpoint = new URL(this.remoteModeParams.endpoint);
+      if(this.dataSource.length > 0){
+        this.store.dispatch(setData({data: this.dataSource, remote:true }));
+      }else{
+        this.store.dispatch(fetchData({url: endpoint.href, section: this.remoteModeParams.aliases.data, remote: true, totalSection: 'size' }));
+      }
+      combineLatest(this.pageNumber, this.pageSize).subscribe(val => {
+        endpoint.searchParams.set('page', val[0])
+        endpoint.searchParams.set('size', val[1])
+        this.store.dispatch(fetchData({url: endpoint.href, section: this.remoteModeParams.aliases.data, remote: true ,  totalSection: 'size'}));
+      })
+    }else{
+      if(this.dataSource.length > 0){
+        this.store.dispatch(setData({data: this.dataSource, remote: false }));
       }else {
-        this.store.dispatch(setData({data: this.dataSource }));
+        if(this.fetchUrl !== ''){
+          this.store.dispatch(fetchData({url: this.fetchUrl, section: this.entrySection, remote: false }));
+        }else {
+          this.store.dispatch(setData({data: this.dataSource, remote: false }));
+        }
       }
     }
     this.initializeColumnAsync();

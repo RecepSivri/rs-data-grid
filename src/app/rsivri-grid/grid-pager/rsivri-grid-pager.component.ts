@@ -1,6 +1,5 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { concatMap } from 'rxjs';
 import { changePageListSize, changePageNumber, changePageSize, decreasePageNum, increasePageNum, lastPageNum } from '../store/data-grid.actions';
 import { selectData, selectPageLimit, selectPageList, selectPageNum, selectPageSize } from '../store/data-grid.selectors';
 

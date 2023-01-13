@@ -8,7 +8,8 @@ export const initialState: AppState = {
     pageNumber: 0,
     pageList: [1,2,3,4,5],
     pageListSize: 5,  
-    pageLimit: 10
+    pageLimit: 10,
+    remotePage: false
   },
   data: []
 
@@ -16,7 +17,7 @@ export const initialState: AppState = {
 
 export const dataGridReducer = createReducer(
   initialState,
-  on(setData, (state, { data:data }) => ({...state, data: data, pager:{ ...state.pager, pageLimit: Math.ceil(data.length/state.pager.pageSize), pageList: returnPageList(state.pager.pageListSize, Math.ceil(data.length/state.pager.pageSize))}})),
+  on(setData, (state, { data:data, remote: remote,remoteDatasize: remoteDatasize }) => setDataWrapper(state, data, remote, remoteDatasize)),
   on(changePageSize, (state, { pageSize: pageSize }) => ({...state, pager:{...state.pager, pageSize: pageSize, pageLimit: Math.ceil(state.data.length/pageSize), pageList: returnPageList(state.pager.pageListSize, Math.ceil(state.data.length/pageSize))}})),
   on(changePageNumber, (state, { pageNumber: pageNumber }) => returnPageStateRelatedPageNum(state, pageNumber, 'none')),
   on(changePageListSize, (state, { pageListSize: pageListSize }) => ({...state, pager:{ ...state.pager, pageListSize: pageListSize, pageList: returnPageList(pageListSize, state.pager.pageLimit)}})),
@@ -24,6 +25,26 @@ export const dataGridReducer = createReducer(
   on(decreasePageNum, (state) => returnPageStateRelatedPageNum(state, state.pager.pageNumber === 0 ? 0 : state.pager.pageNumber - 1,'decrease')),
   on(lastPageNum, (state) => returnLastPageList(state, state.pager.pageLimit-1))
 );
+
+const setDataWrapper = (state: AppState, data: any, remote: boolean, remoteDatasize:number | undefined) => {
+  console.log('laooo ' + remoteDatasize)
+  return ({...state,
+      data: data,
+      pager: remote ?  {
+        ...state.pager, 
+        remoteDataSize: remoteDatasize,
+        remotePage: remote,
+        pageLimit: remoteDatasize? Math.ceil(remoteDatasize/state.pager.pageSize) : 0,
+        pageList: returnPageList(state.pager.pageListSize,Math.ceil((remoteDatasize ? Math.ceil(remoteDatasize/state.pager.pageSize) : 0 )/state.pager.pageSize))
+      }:
+      
+      { 
+        ...state.pager, 
+        pageLimit: Math.ceil(data.length/state.pager.pageSize),
+        pageList: returnPageList(state.pager.pageListSize,Math.ceil(data.length/state.pager.pageSize)),
+        remotePage: remote,
+      }})
+}
 
 const returnPageList = (pageListSize: number, pageLimit: number) => {
   let arr = new Array();

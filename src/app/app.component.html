@@ -1,4 +1,32 @@
 <rsivri-grid
+[fetchUrl] = "'http://universities.hipolabs.com/search?country=United+States'"
+[remoteMode] = "true"
+[remoteModeParams] = "{
+  endpoint: 'http://localhost:3000/api/universities?page=0&size=10',
+  aliases: {
+    pageNumber: 'page',
+    pageSize: 'size',
+    totalSize: 'size',
+    data: 'data'
+  }
+}"
+[headerRowLines] = "true"
+[headerColumnLines] = "false"
+[bodyRowLines] = "true"
+[bodyColumnLines] = "true"
+[tableBorder] = "true"
+[borderRadiusTop] = "true"
+[borderRadiusBottom] = "false"
+[diagonalRow] = "true"
+[pagination] = "true"
+[pagingSizes] = "[10,20,50,70,100]"
+[currentPagingSize] = "10"
+[pageListSize] = "5"
+>
+</rsivri-grid>
+
+<!--
+<rsivri-grid
   [fetchUrl] = "'http://universities.hipolabs.com/search?country=United+States'"
   [headerRowLines] = "true"
   [headerColumnLines] = "false"
@@ -13,4 +41,4 @@
   [currentPagingSize] = "10"
   [pageListSize] = "5"
 >
-</rsivri-grid>
+</rsivri-grid>-->

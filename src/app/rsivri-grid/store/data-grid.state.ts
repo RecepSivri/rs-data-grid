@@ -10,4 +10,6 @@ export interface Pager {
     pageList: number[];
     pageListSize: number;
     pageLimit: number;  
+    remotePage: boolean;
+    remoteDataSize?: number;
 }
