@@ -13,7 +13,7 @@ export const RsDataGrid = (param: IRsDataGridProps)  => {
   return (
     <div className="rs-data-grid">
       
-      <RsDataGridHeader data = {data} column = {column}/>
+      <RsDataGridHeader data = {data}/>
       <RsDataGridTable data = {data}/>
      </div>
     
