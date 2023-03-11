@@ -25,7 +25,8 @@ export const RsDataGridHeader = (param: IRsDataGridHeaderProps)  => {
             column.map((item: any, index: number) => {
               return <div className='rs-data-grid-header-item row-layout-center' key={'rs-data-grid-header-item-'+index}
               style={{
-                borderRight: index !== column.length -1 ?  "1px solid #ccc" : ""
+                borderRight: index !== column.length -1 ?  "1px solid #ccc" : "",
+                width: item.customize ? (item.customize.width ? item.customize.width : 'inherit') : '100%'
               }}>{item.name}</div>
             })
           }
