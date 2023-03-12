@@ -1,8 +1,9 @@
-import { IColumn } from '../models/rsDataGrid.models';
+import { IColumn, ICustomization } from '../models/rsDataGrid.models';
 import './rsDataGridTable.scss'
 export interface IRsDataGridTableProps {
   data: any[];
   column?: IColumn[];
+  customization?: ICustomization;
 }
 
 const getHeight = (column: IColumn[]) => {
@@ -14,7 +15,9 @@ const getHeight = (column: IColumn[]) => {
 }
 
 export const RsDataGridTable = (param: IRsDataGridTableProps)  => {
-  const {data, column} = param;
+  const {data, column, customization} = param;
+  const border:any = customization?.border;
+  const crossRow:any = customization?.crossRow;
   return (
     <div className="column-start-layout rs-data-grid-table">
       {
@@ -22,15 +25,16 @@ export const RsDataGridTable = (param: IRsDataGridTableProps)  => {
         data.map((item: any, index: number) => {
           return <div className="row-start-layout rs-data-grid-table-row"
           style={{
-            borderBottom: index !== data.length -1 ?  "1px solid #ccc" : "",
-            height: getHeight(column) > 0 ? getHeight(column) + 'px' : 'unset'
+            borderBottom: border ? border.borderInnerHorizontal ? (index !== data.length -1 ?  ( border ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc'):   '1px solid #ccc') : "") : "" : "",
+            height: getHeight(column) > 0 ? getHeight(column) + 'px' : 'unset',
+            backgroundColor: crossRow ? (crossRow.crossRowEnable ? (index %2 === 0 ? crossRow.crossRowColors1 : crossRow.crossRowColors2) : ''): ''
           }} 
            key={'row-table-' + index}>
           {
               column.map((value: any, index2: number) => {
                 return (<div className="rs-data-grid-table-cell row-layout-center "
                 style={{
-                  borderRight: index2 !== column.length -1 ?  "1px solid #ccc" : "",
+                  borderRight: border ? border.borderInnerVertical ? (index2 !== column.length -1 ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc') : "") : "" : "",
                   width: value.customize ? (value.customize.width ? value.customize.width : 'inherit') : '100%'
                 }} 
                 key={'column-table-' + index + '-' + index2}>{
