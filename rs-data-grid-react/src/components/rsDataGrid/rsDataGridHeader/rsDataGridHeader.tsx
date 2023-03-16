@@ -1,15 +1,19 @@
 
+import { useContext } from 'react';
 import { IColumn, ICustomization } from '../models/rsDataGrid.models';
+import { TableStateContext } from '../rsDataGrid';
 import './rsDataGridHeader.scss'
 export interface IRsDataGridHeaderProps {
-  data: any[];
+  data?: any[];
   column?: IColumn[]; 
   customization?: ICustomization;
 }
 
 export const RsDataGridHeader = (param: IRsDataGridHeaderProps)  => {
-  const {data, column, customization} = param;
+  const {column, customization} = param;
   const border:any = customization?.border;
+  const tableState: any = useContext(TableStateContext);
+  const {data, page} = tableState.dataTableState;
   let heightOfAllHeader: string = '20px'
   const setHeight = column?.some((item: IColumn) => {
     return item.customizeHeader?.height !== undefined
@@ -28,7 +32,7 @@ export const RsDataGridHeader = (param: IRsDataGridHeaderProps)  => {
           borderBottom: border ? border.borderInnerHorizontal ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc') : '' : '',
         }}>
           {
-            data.length > 0 && !column &&
+            data && data.length > 0 && !column &&
             Object.keys(data[0]).map((item: any, index: number) => {
               return <div className='rs-data-grid-header-item row-layout-center' key={'rs-data-grid-header-item-'+index}
               style={{
@@ -37,7 +41,7 @@ export const RsDataGridHeader = (param: IRsDataGridHeaderProps)  => {
             })
           }
           {
-            data.length > 0 && column &&
+            data && data.length > 0 && column &&
             column.map((item: IColumn, index: number) => {
               return <div className='rs-data-grid-header-item row-layout-center' key={'rs-data-grid-header-item-'+index}
               style={{

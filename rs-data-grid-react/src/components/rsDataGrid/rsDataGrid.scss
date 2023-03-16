@@ -1,4 +1,7 @@
-.rs-data-grid {
-    border: 1px solid #ccc;
+.rs-data-grid-container {
     width: 100%;
+    .rs-data-grid {
+        border: 1px solid #ccc;
+        width: 100%;
+    }
 }

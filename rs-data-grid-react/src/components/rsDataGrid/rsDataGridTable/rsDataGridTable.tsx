@@ -1,7 +1,9 @@
+import { useContext } from 'react';
 import { IColumn, ICustomization } from '../models/rsDataGrid.models';
 import './rsDataGridTable.scss'
+import {TableStateContext} from '../rsDataGrid'
 export interface IRsDataGridTableProps {
-  data: any[];
+  data?: any[];
   column?: IColumn[];
   customization?: ICustomization;
 }
@@ -15,17 +17,21 @@ const getHeight = (column: IColumn[]) => {
 }
 
 export const RsDataGridTable = (param: IRsDataGridTableProps)  => {
-  const {data, column, customization} = param;
+  const {column, customization} = param;
   const border:any = customization?.border;
   const crossRow:any = customization?.crossRow;
+
+  const tableState: any = useContext(TableStateContext);
+  const {data, page} = tableState.dataTableState;
+  console.log('rs-data-grid-table', tableState.dataTableState);
   return (
     <div className="column-start-layout rs-data-grid-table">
       {
-        column && 
-        data.map((item: any, index: number) => {
+        column && data &&
+        data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).map((item: any, index: number) => {
           return <div className="row-start-layout rs-data-grid-table-row"
           style={{
-            borderBottom: border ? border.borderInnerHorizontal ? (index !== data.length -1 ?  ( border ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc'):   '1px solid #ccc') : "") : "" : "",
+            borderBottom: border ? border.borderInnerHorizontal ? (index !== data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).length -1 ?  ( border ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc'):   '1px solid #ccc') : "") : "" : "",
             height: getHeight(column) > 0 ? getHeight(column) + 'px' : 'unset',
             backgroundColor: crossRow ? (crossRow.crossRowEnable ? (index %2 === 0 ? crossRow.crossRowColors1 : crossRow.crossRowColors2) : ''): ''
           }} 
@@ -45,11 +51,11 @@ export const RsDataGridTable = (param: IRsDataGridTableProps)  => {
         })
       }
       {
-        !column && 
-        data.map((item: any, index: number) => {
+        !column && data &&
+        data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).map((item: any, index: number) => {
           return <div className="row-start-layout rs-data-grid-table-row"
           style={{
-            borderBottom: index !== data.length -1 ?  "1px solid #ccc" : ""
+            borderBottom: border ? border.borderInnerHorizontal ? (index !== data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).length -1 ?  ( border ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc'):   '1px solid #ccc') : "") : "" : "",
           }} 
            key={'row-table-' + index}>
           {
@@ -66,4 +72,8 @@ export const RsDataGridTable = (param: IRsDataGridTableProps)  => {
       }
     </div>
   )
+}
+
+const returnLastSize = (data: any[], lastSize: number, pageSize: number) => {
+  return data.length > (lastSize * pageSize) ? lastSize * pageSize : data.length;
 }

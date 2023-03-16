@@ -15,6 +15,7 @@ export interface ICustomization {
     border?: IBorder;
     showHeader?: boolean;
     crossRow?: ICrossRow;
+    page?: IPage;
 }
 
 export interface IBorder {
@@ -42,3 +43,16 @@ export interface ICustomizeHeader {
     height: string;
     template?: React.ReactNode;
 }
+
+export interface IPage {
+    length?: number,
+    page: number,
+    pageCurrSize: number,
+    pageSizeList: number[],
+    pageSize: number
+}
+
+export interface IRsDataGridData {
+    data: any[];
+    page: IPage;
+  }
