@@ -34,7 +34,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps)  => {
         border: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc'
       }}>
         <div 
-              onClick = {() => {setPageNumber(page.length-1)}}
+              onClick = {() => {setPageNumber(page.page-1 > 0 ? page.page-1  : 0)}}
               style={{
                 borderRight: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc' 
               }}
@@ -58,7 +58,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps)  => {
               }}
               key={'page-number-item-last' } className='rs-datagrid-pager-number-item'>{page.length}</div>  
         <div 
-              onClick = {() => {setPageNumber(page.length-1)}}
+              onClick = {() => {setPageNumber(page.page + 1 > page.length ? page.length  : page.page + 1 )}}
               key={'page-number-item-last' } className='rs-datagrid-pager-number-item'>{'>'}</div> 
         
       </div>

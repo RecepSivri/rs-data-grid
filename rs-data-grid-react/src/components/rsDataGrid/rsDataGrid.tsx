@@ -74,7 +74,9 @@ export const RsDataGrid = (param: IRsDataGridProps)  => {
         return response.json()
       }
       ).then( (data: any) => {
-        setDataTable({...dataTableState, data: data, page:{...page, length: Math.ceil(data.length / dataTableState.page.pageSize)} });
+        if(page){
+          setDataTable({...dataTableState, data: data, page:{...page, length: Math.ceil(data.length / dataTableState.page.pageSize)} });
+        }
       },(error: any) => {
         console.log(error);
       }
