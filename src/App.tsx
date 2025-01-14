@@ -1,17 +1,17 @@
 import "./App.scss";
-import { IColumn } from "./components/rsDataGrid/models/rsDataGrid.models";
+//import { IColumn } from "./components/rsDataGrid/models/rsDataGrid.models";
 import { RsDataGrid } from "./components/rsDataGrid/rsDataGrid";
 
-const returnTemplate = () => {
+/*const returnTemplate = () => {
   return <div className="deneme"></div>;
 };
 
 const returnHeaderTemplate = () => {
   return <div style={{ color: "blue" }}>Name</div>;
-};
+};*/
 
 function App() {
-  const data: any[] = [
+  /*const data: any[] = [
     {
       "state-province": null,
       domains: ["marywood.edu"],
@@ -155,7 +155,7 @@ function App() {
       dataField: "country",
       customize: { height: "100px", width: "1200px" },
     },
-  ];
+  ];*/
 
   return (
     <div className="App">
