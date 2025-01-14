@@ -14,11 +14,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
   const { border } = customization ? customization : { border: null };
   const { dataTableState, setDataTable } = tableState;
   const { page } = dataTableState;
-  const pageNumbers: number[] = [];
-  for (let i = 0; i < page.length; ++i) {
-    pageNumbers.push(i);
-  }
-
+  
   const setPageSize = (val: number) => {
     setDataTable({
       ...dataTableState,
@@ -31,10 +27,34 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
   };
 
   const setPageNumber = (val: number) => {
-    setDataTable({
-      ...dataTableState,
-      page: { ...dataTableState.page, page: val },
-    });
+    console.log(val)
+    const index: number =  page.pageNumList.findIndex((item: number) => {return item === val})
+    if(index === 0){
+      if(val > 0){
+        setDataTable({
+          ...dataTableState,
+          page: {
+            ...dataTableState.page,
+            pageNumList: page.pageNumList.map((item: number) => item - page.pageCurrSize)
+          },
+        });   
+      }
+    } else
+    if(index === page.pageCurrSize -1 ){
+      setDataTable({
+        ...dataTableState,
+        page: {
+          ...dataTableState.page,
+          page: val,
+          pageNumList: page.pageNumList.map((item: number) => item  + page.pageCurrSize),
+        },
+      });
+    } else {
+      setDataTable({
+        ...dataTableState,
+        page: { ...dataTableState.page, page: val },
+      });
+    } 
   };
 
   return (
@@ -66,7 +86,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
           {"<"}
         </div>
 
-        {pageNumbers.map((item: number, index: number) => {
+        {page.pageNumList.map((item: number, index: number) => {
           return (
             page.pageCurrSize > index && (
               <div
@@ -109,7 +129,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
         <div
           onClick={() => {
             setPageNumber(
-              page.page + 1 > page.length ? page.length : page.page + 1,
+              page.page + 2 > page.length ? page.length : page.page + 1,
             );
           }}
           key={"page-number-item-last"}

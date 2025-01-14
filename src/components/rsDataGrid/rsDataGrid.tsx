@@ -146,6 +146,13 @@ export const RsDataGrid = (param: IRsDataGridProps) => {
             : [10, 20, 40, 50, 100]
           : [10, 20, 40, 50, 100]
         : [10, 20, 40, 50, 100],
+        pageNumList: customization
+        ? customization.page
+          ? customization.page.pageNumList
+            ? customization.page.pageNumList
+            : [0,1,2,3,4]
+          : [0,1,2,3,4]
+        : [0,1,2,3,4],
       pageSize: customization
         ? customization.page
           ? customization.page.pageSize
@@ -174,6 +181,11 @@ export const RsDataGrid = (param: IRsDataGridProps) => {
           ? customizationInit.page.pageSizeList
           : [10, 20, 40, 50, 100]
         : [10, 20, 40, 50, 100],
+        pageNumList: customizationInit
+        ? customizationInit.page
+          ? customizationInit.page.pageNumList
+          : [0,1,2,3,4]
+        : [0,1,2,3,4],
       pageSize: customizationInit
         ? customizationInit.page
           ? customizationInit.page.pageSize

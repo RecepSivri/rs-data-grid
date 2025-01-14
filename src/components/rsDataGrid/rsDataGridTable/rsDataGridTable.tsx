@@ -25,7 +25,6 @@ export const RsDataGridTable = (param: IRsDataGridTableProps) => {
 
   const tableState: any = useContext(TableStateContext);
   const { data, page } = tableState.dataTableState;
-  console.log("rs-data-grid-table", tableState.dataTableState);
   return (
     <div className="column-start-layout rs-data-grid-table">
       {column &&
