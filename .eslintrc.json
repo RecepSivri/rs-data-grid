@@ -1,4 +1,4 @@
- {
+{
   "root": true,
   "parser": "@typescript-eslint/parser", // Use TypeScript parser
   "parserOptions": {
@@ -18,17 +18,17 @@
   ],
   "rules": {
     "@typescript-eslint/no-unused-vars": "error",
-            "eqeqeq": ["error", "always"],
-            "react/react-in-jsx-scope": "off",
-            "@typescript-eslint/no-empty-function": ["error"],
-            "@typescript-eslint/no-non-null-assertion": "error",
-            "@typescript-eslint/explicit-module-boundary-types": "off",
-            "@typescript-eslint/explicit-function-return-type": "off",
-            "@typescript-eslint/no-explicit-any": "off",
-            "@typescript-eslint/no-this-alias": "off",
-            "@typescript-eslint/ban-types": "off",
-            "no-case-declarations": "off",
-            "no-prototype-builtins": "off"
+    "eqeqeq": ["error", "always"],
+    "react/react-in-jsx-scope": "off",
+    "@typescript-eslint/no-empty-function": ["error"],
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-this-alias": "off",
+    "@typescript-eslint/ban-types": "off",
+    "no-case-declarations": "off",
+    "no-prototype-builtins": "off"
   },
   "settings": {
     "react": {
