@@ -15,28 +15,26 @@ export class DataEffect {
   navigateToDashboard$ = this.actionParam.pipe(
     ofType(fetchData),
     switchMap((action: any) =>
-      this.service
-        .getCountries(action.url)
-        .pipe(
-          map((values: any) =>
-            setData(
-              action.remote
-                ? {
-                    data: action.section
-                      ? values[action.section] || []
-                      : values || [],
-                    remote: action.remote,
-                    remoteDatasize: values[action.totalSection],
-                  }
-                : {
-                    data: action.section
-                      ? values[action.section] || []
-                      : values || [],
-                    remote: action.remote,
-                  },
-            ),
+      this.service.getCountries(action.url).pipe(
+        map((values: any) =>
+          setData(
+            action.remote
+              ? {
+                  data: action.section
+                    ? values[action.section] || []
+                    : values || [],
+                  remote: action.remote,
+                  remoteDatasize: values[action.totalSection],
+                }
+              : {
+                  data: action.section
+                    ? values[action.section] || []
+                    : values || [],
+                  remote: action.remote,
+                },
           ),
         ),
+      ),
     ),
   );
 }
