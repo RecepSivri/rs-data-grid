@@ -1,12 +1,11 @@
-
-.column-start-layout{
+.column-start-layout {
   display: flex;
   flex-direction: column;
   align-items: start;
   justify-content: start;
 }
 
-.row-start-layout{
+.row-start-layout {
   display: flex;
   flex-direction: row;
   align-items: start;
@@ -20,7 +19,7 @@
   justify-content: center;
 }
 
-.deneme{
+.deneme {
   width: 40px;
   height: 40px;
   background-color: red;

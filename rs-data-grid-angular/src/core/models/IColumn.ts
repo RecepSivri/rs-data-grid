@@ -1,4 +1,4 @@
-export interface IColumn{
+export interface IColumn {
   caption: string;
   dataField: string;
 }

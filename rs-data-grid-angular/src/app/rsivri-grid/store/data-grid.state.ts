@@ -1,15 +1,14 @@
 export interface AppState {
-    data: [];
-    pager: Pager;
+  data: [];
+  pager: Pager;
 }
 
-
 export interface Pager {
-    pageNumber: number;
-    pageSize: number;
-    pageList: number[];
-    pageListSize: number;
-    pageLimit: number;  
-    remotePage: boolean;
-    remoteDataSize?: number;
+  pageNumber: number;
+  pageSize: number;
+  pageList: number[];
+  pageListSize: number;
+  pageLimit: number;
+  remotePage: boolean;
+  remoteDataSize?: number;
 }

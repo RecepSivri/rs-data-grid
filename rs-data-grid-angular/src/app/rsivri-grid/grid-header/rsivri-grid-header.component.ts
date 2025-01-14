@@ -1,13 +1,12 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {IColumn} from "../../../core/models/IColumn";
+import { Component, Input, OnInit } from '@angular/core';
+import { IColumn } from '../../../core/models/IColumn';
 
 @Component({
   selector: 'rsivri-grid-hedaer',
   templateUrl: './rsivri-grid-header.component.html',
-  styleUrls: ['./rsivri-grid-header.component.css']
+  styleUrls: ['./rsivri-grid-header.component.css'],
 })
-export class RsivriGridHeaderComponent implements OnInit{
-
+export class RsivriGridHeaderComponent implements OnInit {
   @Input() columns: IColumn[];
   @Input() headerRowLines: boolean;
   @Input() headerColumnLines: boolean;
@@ -22,8 +21,5 @@ export class RsivriGridHeaderComponent implements OnInit{
     this.borderRadiusTop = true;
   }
 
-  ngOnInit(): void {
-  }
-
-
+  ngOnInit(): void {}
 }

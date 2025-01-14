@@ -1,62 +1,61 @@
-
-.full-row{
+.full-row {
   width: 100%;
 }
 
-.row-layout{
+.row-layout {
   display: flex;
   flex-direction: row;
   align-items: start;
   justify-content: space-between;
 }
 
-.row-layout-start{
+.row-layout-start {
   display: flex;
   flex-direction: row;
   align-items: start;
   justify-content: start;
 }
 
-.border-area-1{
+.border-area-1 {
   border: 1px solid #cccccc;
 }
 
-.border-area-2{
+.border-area-2 {
   border: 2px solid #cccccc;
 }
 
-.border-area-3{
+.border-area-3 {
   border: 3px solid #cccccc;
 }
 
-.row-layout-space-between{
+.row-layout-space-between {
   display: flex;
   flex-direction: row;
   align-items: start;
   justify-content: space-between;
 }
 
-.row-layout-space-between-center{
+.row-layout-space-between-center {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
 }
 
-.row-layout-center-center{
+.row-layout-center-center {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 }
 
-.column-layout{
+.column-layout {
   display: flex;
   flex-direction: column;
   align-items: start;
   justify-content: start;
 }
 
-.border-right{
+.border-right {
   border-right: 1px solid #cccccc;
 }

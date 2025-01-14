@@ -4,16 +4,12 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { CountryService } from './country.service';
 
-
 describe('CountryService', () => {
   let service: CountryService | any;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        RouterTestingModule
-      ]
+      imports: [HttpClientTestingModule, RouterTestingModule],
     });
     service = TestBed.inject(CountryService);
   });
@@ -23,8 +19,7 @@ describe('CountryService', () => {
   });
 
   it('should call service getCountries', () => {
-    spyOn(service, "getCountries").and.returnValue(of({}));
+    spyOn(service, 'getCountries').and.returnValue(of({}));
     expect(service.getCountries).toHaveBeenCalled();
   });
-
 });

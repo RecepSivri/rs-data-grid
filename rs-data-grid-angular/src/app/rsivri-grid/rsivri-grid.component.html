@@ -1,25 +1,38 @@
-<div [ngClass]="{'border-area-small': tableBorder}" >
-  <rsivri-grid-hedaer [columns]="columns"
-                      [headerColumnLines] = "this.headerColumnLines"
-                      [headerRowLines] = "this.headerRowLines"
-                      [borderRadiusTop] = "this.borderRadiusTop"
-                      [tableBorder] = "this.tableBorder">
+<div [ngClass]="{ 'border-area-small': tableBorder }">
+  <rsivri-grid-hedaer
+    [columns]="columns"
+    [headerColumnLines]="this.headerColumnLines"
+    [headerRowLines]="this.headerRowLines"
+    [borderRadiusTop]="this.borderRadiusTop"
+    [tableBorder]="this.tableBorder"
+  >
   </rsivri-grid-hedaer>
-  <rsivri-grid-body [columns]="columns"
-                    [data]="remoteModeParams ? ((data$ | async) ?? []) :pagination ? ((data$ | async) ?? []).slice( (pageNumber | async) * (pageSize | async) , ((pageNumber | async) +1) * (pageSize | async)) : ((data$ | async) ?? [])"
-                    [bodyColumnLines] = "this.bodyColumnLines"
-                    [bodyRowLines] = "this.bodyRowLines"
-                    [tableBorder] = "this.tableBorder"
-                    [borderRadiusBottom] = "this.borderRadiusBottom"
-                    [diagonalRow] = "this.diagonalRow"
-                    [currentPagingSize] = "currentPagingSize"
+  <rsivri-grid-body
+    [columns]="columns"
+    [data]="
+      remoteModeParams
+        ? ((data$ | async) ?? [])
+        : pagination
+          ? ((data$ | async) ?? []).slice(
+              (pageNumber | async) * (pageSize | async),
+              ((pageNumber | async) + 1) * (pageSize | async)
+            )
+          : ((data$ | async) ?? [])
+    "
+    [bodyColumnLines]="this.bodyColumnLines"
+    [bodyRowLines]="this.bodyRowLines"
+    [tableBorder]="this.tableBorder"
+    [borderRadiusBottom]="this.borderRadiusBottom"
+    [diagonalRow]="this.diagonalRow"
+    [currentPagingSize]="currentPagingSize"
   >
   </rsivri-grid-body>
 
-  <rsivri-grid-pager [pagination] = "pagination"
-                     [pagingSizes] = "pagingSizes"
-                     [pageListSize] = "pageListSize"
-                     [currentPagingSize] = "currentPagingSize">
-
+  <rsivri-grid-pager
+    [pagination]="pagination"
+    [pagingSizes]="pagingSizes"
+    [pageListSize]="pageListSize"
+    [currentPagingSize]="currentPagingSize"
+  >
   </rsivri-grid-pager>
 </div>

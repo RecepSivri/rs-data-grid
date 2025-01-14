@@ -1,4 +1,4 @@
-.content-style{
+.content-style {
   padding-left: 5px;
   font-size: 15px;
   color: #777;
@@ -12,21 +12,21 @@
   text-overflow: ellipsis;
 }
 
-.border-area-small{
+.border-area-small {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
 }
 
-.border-area-medium{
+.border-area-medium {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
 
-.border-area-large{
+.border-area-large {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 }
 
-.border-header{
+.border-header {
   border: 1px solid #cccccc;
 }

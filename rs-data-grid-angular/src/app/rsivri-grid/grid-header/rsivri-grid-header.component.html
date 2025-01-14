@@ -1,5 +1,15 @@
-<div class="full-row row-layout-space-between-center border-area-small'" [ngClass]="{'border-header': tableBorder, 'border-area-small': borderRadiusTop}">
-    <div class="full-row content-style row-layout-center-center" [ngClass]="{'border-right': headerColumnLines && i < columns.length-1}" *ngFor="let column of columns; let i = index">
-      {{column.caption | titlecase}}
-    </div>
+<div
+  class="full-row row-layout-space-between-center border-area-small'"
+  [ngClass]="{
+    'border-header': tableBorder,
+    'border-area-small': borderRadiusTop,
+  }"
+>
+  <div
+    class="full-row content-style row-layout-center-center"
+    [ngClass]="{ 'border-right': headerColumnLines && i < columns.length - 1 }"
+    *ngFor="let column of columns; let i = index"
+  >
+    {{ column.caption | titlecase }}
+  </div>
 </div>
