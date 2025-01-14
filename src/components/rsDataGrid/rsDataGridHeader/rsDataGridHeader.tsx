@@ -12,7 +12,7 @@ export const RsDataGridHeader = (param: IRsDataGridHeaderProps) => {
   const { column, customization } = param;
   const border: any = customization?.border;
   const tableState: any = useContext(TableStateContext);
-  const { data, page } = tableState.dataTableState;
+  const { data } = tableState.dataTableState;
   let heightOfAllHeader: string = "20px";
   const setHeight = column?.some((item: IColumn) => {
     return item.customizeHeader?.height !== undefined;

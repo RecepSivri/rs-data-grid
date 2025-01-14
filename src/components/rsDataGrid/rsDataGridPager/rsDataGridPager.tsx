@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import { useContext } from "react";
 import { ICustomization } from "../models/rsDataGrid.models";
 import { TableStateContext } from "../rsDataGrid";
@@ -12,7 +14,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
   const { border } = customization ? customization : { border: null };
   const { dataTableState, setDataTable } = tableState;
   const { page } = dataTableState;
-  let pageNumbers: number[] = [];
+  const pageNumbers: number[] = [];
   for (let i = 0; i < page.length; ++i) {
     pageNumbers.push(i);
   }
