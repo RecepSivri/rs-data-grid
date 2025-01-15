@@ -12,6 +12,16 @@
       justify-content: center;
       align-items: center;
     }
+    .rs-datagrid-pager-size-item-selected {
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      background-color: #ccc;
+    }
   }
   .rs-datagrid-pager-number-list {
     margin-top: 5px;
@@ -24,6 +34,17 @@
       flex-direction: row;
       justify-content: center;
       align-items: center;
+    }
+
+    .rs-datagrid-pager-number-item-selected {
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      background-color: #ccc;
     }
   }
 }

@@ -26,16 +26,17 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
     });
   };
 
-  const  createNumberArray = (start: number, end: number): number[] =>  {
+  const createNumberArray = (start: number, end: number): number[] => {
     if (start > end) {
-      throw new Error("Start value must be less than or equal to the end value.");
+      throw new Error(
+        "Start value must be less than or equal to the end value.",
+      );
     }
-  
     return Array.from({ length: end - start + 1 }, (_, index) => start + index);
-  }
+  };
 
   const setPageNumber = (val: number) => {
-    console.log( page.length -1, page.page + page.pageCurrSize)
+    console.log(page.length - 1, page.page + page.pageCurrSize);
     if (val < page.pageNumList[0]) {
       if (val > 0) {
         setDataTable({
@@ -48,15 +49,19 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
           },
         });
       }
-    } else if (val < page.length - 1 && val > page.pageNumList[page.pageNumList.length - 1]) {
+    } else if (
+      val < page.length - 1 &&
+      val > page.pageNumList[page.pageNumList.length - 1]
+    ) {
       setDataTable({
         ...dataTableState,
         page: {
           ...dataTableState.page,
           page: val,
-          pageNumList: val +  page.pageCurrSize < page.length ? page.pageNumList.map(
-            (item: number) => item + page.pageCurrSize,
-          ): createNumberArray(val-1,  page.length-2)
+          pageNumList:
+            val + page.pageCurrSize < page.length
+              ? page.pageNumList.map((item: number) => item + page.pageCurrSize)
+              : createNumberArray(val - 1, page.length - 2),
         },
       });
     } else {
@@ -111,33 +116,34 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
                   setPageNumber(item);
                 }}
                 key={"page-number-item-" + index}
-                className="rs-datagrid-pager-number-item"
+                className={item === page.page ? "rs-datagrid-pager-number-item-selected" : "rs-datagrid-pager-number-item"}
               >
+                <div>
                 {item + 1}
+                  </div>
               </div>
             )
           );
         })}
-        {
-          page.length  > page.page + page.pageCurrSize &&
-        <div
-          onClick={() => {
-            setPageNumber(page.length - 1);
-          }}
-          style={{
-            borderRight: border
-              ? border.borderOuter
-                ? "1px solid " + border.borderColor
-                : ""
-              : "1px solid #ccc",
-            minWidth: "40px",
-          }}
-          key={"page-number-item-last"}
-          className="rs-datagrid-pager-number-item"
-        >
-          {page.length}
-        </div>
-        }
+        {page.length > page.page + page.pageCurrSize && (
+          <div
+            onClick={() => {
+              setPageNumber(page.length - 1);
+            }}
+            style={{
+              borderRight: border
+                ? border.borderOuter
+                  ? "1px solid " + border.borderColor
+                  : ""
+                : "1px solid #ccc",
+              minWidth: "40px",
+            }}
+            key={"page-number-item-last"}
+            className="rs-datagrid-pager-number-item"
+          >
+            {page.length}
+          </div>
+        )}
         <div
           onClick={() => {
             setPageNumber(
@@ -177,7 +183,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
                 setPageSize(item);
               }}
               key={"page-size-item-" + index}
-              className="rs-datagrid-pager-size-item"
+              className={item === page.pageSize ? "rs-datagrid-pager-size-item-selected" : "rs-datagrid-pager-size-item"}
             >
               {item}
             </div>
