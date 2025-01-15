@@ -48,11 +48,11 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
           page: {
             ...dataTableState.page,
             pageNumList:
-              val + page.pageCurrSize >= page.length? 
-              createNumberArray(val - page.pageCurrSize + 2, val + 2)
+              val + page.pageCurrSize >= page.length
+                ? createNumberArray(val - page.pageCurrSize + 2, val + 2)
                 : page.pageNumList.map(
                     (item: number) => item - page.pageCurrSize,
-                  )
+                  ),
           },
         });
       }
