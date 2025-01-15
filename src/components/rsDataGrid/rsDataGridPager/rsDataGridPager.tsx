@@ -26,9 +26,16 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
     });
   };
 
-  const setPageNumber = (val: number) => {
+  const  createNumberArray = (start: number, end: number): number[] =>  {
+    if (start > end) {
+      throw new Error("Start value must be less than or equal to the end value.");
+    }
+  
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }
 
-    
+  const setPageNumber = (val: number) => {
+    console.log( page.length -1, page.page + page.pageCurrSize)
     if (val < page.pageNumList[0]) {
       if (val > 0) {
         setDataTable({
@@ -41,15 +48,15 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
           },
         });
       }
-    } else if (val > page.pageNumList[page.pageNumList.length -1]) {
+    } else if (val < page.length - 1 && val > page.pageNumList[page.pageNumList.length - 1]) {
       setDataTable({
         ...dataTableState,
         page: {
           ...dataTableState.page,
           page: val,
-          pageNumList: page.pageNumList.map(
+          pageNumList: val +  page.pageCurrSize < page.length ? page.pageNumList.map(
             (item: number) => item + page.pageCurrSize,
-          ),
+          ): createNumberArray(val-1,  page.length-2)
         },
       });
     } else {
@@ -111,7 +118,8 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
             )
           );
         })}
-
+        {
+          page.length  > page.page + page.pageCurrSize &&
         <div
           onClick={() => {
             setPageNumber(page.length - 1);
@@ -129,6 +137,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
         >
           {page.length}
         </div>
+        }
         <div
           onClick={() => {
             setPageNumber(
