@@ -165,7 +165,7 @@ function App() {
         }
         customization={{
           page: {
-            pageCurrSize: 5,
+            pageCurrSize: 10,
             page: 0,
             pageSize: 10,
             pageSizeList: [10, 20, 40, 50, 100, 200],

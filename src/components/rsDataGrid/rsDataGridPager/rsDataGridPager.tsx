@@ -47,9 +47,9 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
           ...dataTableState,
           page: {
             ...dataTableState.page,
-            pageNumList: page.pageNumList.map(
+            pageNumList: val + page.pageCurrSize <= page.length ? page.pageNumList.map(
               (item: number) => item - page.pageCurrSize,
-            ),
+            ) : createNumberArray(val-page.pageCurrSize +2 ,val+2),
           },
         });
       }
@@ -65,7 +65,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
           pageNumList:
             val + page.pageCurrSize < page.length
               ? page.pageNumList.map((item: number) => item + page.pageCurrSize)
-              : createNumberArray(val - 1, page.length - 2),
+              : createNumberArray(val-1, page.length - 2),
         },
       });
     } else {
@@ -106,6 +106,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
         </div>
 
         {page.pageNumList.map((item: number, index: number) => {
+            console.log(page.pageNumList);
           return (
             page.pageCurrSize > index && (
               <div
@@ -131,25 +132,6 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
             )
           );
         })}
-        {page.length > page.page + page.pageCurrSize && (
-          <div
-            onClick={() => {
-              setPageNumber(page.length - 1);
-            }}
-            style={{
-              borderRight: border
-                ? border.borderOuter
-                  ? "1px solid " + border.borderColor
-                  : ""
-                : "1px solid #ccc",
-              minWidth: "40px",
-            }}
-            key={"page-number-item-last"}
-            className="rs-datagrid-pager-number-item"
-          >
-            {page.length}
-          </div>
-        )}
         <div
           onClick={() => {
             setPageNumber(
@@ -161,6 +143,29 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
         >
           {">"}
         </div>
+
+          <div
+            onClick={() => {
+              setPageNumber(page.length - 1);
+            }}
+            style={{
+              borderLeft: border
+                ? border.borderOuter
+                  ? "1px solid " + border.borderColor
+                  : ""
+                : "1px solid #ccc",
+              minWidth: "40px",
+            }}
+            key={"page-number-item-last"}
+            className={
+              page.length -1  === page.page
+                ? "rs-datagrid-pager-number-item-selected"
+                : "rs-datagrid-pager-number-item"
+            }
+          >
+            {page.length}
+          </div>
+    
       </div>
       <div
         className="row-start-layout rs-datagrid-pager-size-list"
