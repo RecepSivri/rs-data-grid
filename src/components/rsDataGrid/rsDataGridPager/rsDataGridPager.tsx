@@ -21,6 +21,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
       page: {
         ...dataTableState.page,
         pageSize: val,
+        page: 0,
         length: Math.ceil(dataTableState.data.length / val),
       },
     });
@@ -36,7 +37,6 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
   };
 
   const setPageNumber = (val: number) => {
-    console.log(page.length - 1, page.page + page.pageCurrSize);
     if (val < page.pageNumList[0]) {
       if (val > 0) {
         setDataTable({
@@ -116,11 +116,13 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
                   setPageNumber(item);
                 }}
                 key={"page-number-item-" + index}
-                className={item === page.page ? "rs-datagrid-pager-number-item-selected" : "rs-datagrid-pager-number-item"}
+                className={
+                  item === page.page
+                    ? "rs-datagrid-pager-number-item-selected"
+                    : "rs-datagrid-pager-number-item"
+                }
               >
-                <div>
-                {item + 1}
-                  </div>
+                <div>{item + 1}</div>
               </div>
             )
           );
@@ -183,7 +185,11 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
                 setPageSize(item);
               }}
               key={"page-size-item-" + index}
-              className={item === page.pageSize ? "rs-datagrid-pager-size-item-selected" : "rs-datagrid-pager-size-item"}
+              className={
+                item === page.pageSize
+                  ? "rs-datagrid-pager-size-item-selected"
+                  : "rs-datagrid-pager-size-item"
+              }
             >
               {item}
             </div>

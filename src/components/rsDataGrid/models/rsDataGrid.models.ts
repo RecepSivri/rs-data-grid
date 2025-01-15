@@ -49,7 +49,7 @@ export interface IPage {
   page: number;
   pageCurrSize: number;
   pageSizeList: number[];
-  pageNumList: number[];
+  pageNumList?: number[];
   pageSize: number;
 }
 
