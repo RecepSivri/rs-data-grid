@@ -14,7 +14,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
   const { border } = customization ? customization : { border: null };
   const { dataTableState, setDataTable } = tableState;
   const { page } = dataTableState;
-  
+
   const setPageSize = (val: number) => {
     setDataTable({
       ...dataTableState,
@@ -27,26 +27,29 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
   };
 
   const setPageNumber = (val: number) => {
-    console.log(val)
-    const index: number =  page.pageNumList.findIndex((item: number) => {return item === val})
-    if(index === 0){
-      if(val > 0){
+
+    
+    if (val < page.pageNumList[0]) {
+      if (val > 0) {
         setDataTable({
           ...dataTableState,
           page: {
             ...dataTableState.page,
-            pageNumList: page.pageNumList.map((item: number) => item - page.pageCurrSize)
+            pageNumList: page.pageNumList.map(
+              (item: number) => item - page.pageCurrSize,
+            ),
           },
-        });   
+        });
       }
-    } else
-    if(index === page.pageCurrSize -1 ){
+    } else if (val > page.pageNumList[page.pageNumList.length -1]) {
       setDataTable({
         ...dataTableState,
         page: {
           ...dataTableState.page,
           page: val,
-          pageNumList: page.pageNumList.map((item: number) => item  + page.pageCurrSize),
+          pageNumList: page.pageNumList.map(
+            (item: number) => item + page.pageCurrSize,
+          ),
         },
       });
     } else {
@@ -54,7 +57,7 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
         ...dataTableState,
         page: { ...dataTableState.page, page: val },
       });
-    } 
+    }
   };
 
   return (
