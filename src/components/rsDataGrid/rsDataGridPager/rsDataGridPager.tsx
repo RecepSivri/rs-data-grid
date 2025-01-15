@@ -22,6 +22,10 @@ export const RsDataGridPager = (param: IRsDataGridPagerProps) => {
         ...dataTableState.page,
         pageSize: val,
         page: 0,
+        pageNumList: Array.from(
+          { length: page.pageCurrSize },
+          (_, index) => index,
+        ),
         length: Math.ceil(dataTableState.data.length / val),
       },
     });

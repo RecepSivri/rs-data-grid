@@ -148,8 +148,14 @@ export const RsDataGrid = (param: IRsDataGridProps) => {
         : [10, 20, 40, 50, 100],
       pageNumList: customization
         ? customization.page
-          ? Array.from({ length: customization.page.pageCurrSize }, (_, index) => index)
-            ? Array.from({ length: customization.page.pageCurrSize }, (_, index) => index)
+          ? Array.from(
+              { length: customization.page.pageCurrSize },
+              (_, index) => index,
+            )
+            ? Array.from(
+                { length: customization.page.pageCurrSize },
+                (_, index) => index,
+              )
             : [0, 1, 2, 3, 4]
           : [0, 1, 2, 3, 4]
         : [0, 1, 2, 3, 4],
