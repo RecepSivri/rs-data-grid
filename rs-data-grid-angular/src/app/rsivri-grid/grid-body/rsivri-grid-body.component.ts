@@ -1,39 +1,21 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import {IColumn} from "../../../core/models/IColumn";
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IColumn } from '../../../core/models/IColumn';
 
 @Component({
   selector: 'rsivri-grid-body',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './rsivri-grid-body.component.html',
   styleUrls: ['./rsivri-grid-body.component.css']
 })
-export class RsivriGridBodyComponent implements OnInit, OnChanges{
-
-  @Input() columns: IColumn[];
-  @Input() data: any[];
-  @Input() bodyRowLines: boolean;
-  @Input() bodyColumnLines: boolean;
-  @Input() tableBorder: boolean;
-  @Input() borderRadiusBottom: boolean;
-  @Input() diagonalRow: boolean;
-  @Input() currentPagingSize: number;
-
-  constructor() {
-    this.columns = [];
-    this.data = [];
-    this.bodyRowLines = true;
-    this.bodyColumnLines = true;
-    this.tableBorder = true;
-    this.borderRadiusBottom = false;
-    this.diagonalRow = false;
-    this.currentPagingSize = 10;
-  }
-
-  ngOnInit(): void {
-   
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-  }
-
-
+export class RsivriGridBodyComponent {
+  @Input() columns: IColumn[] = [];
+  @Input() data: any[] = [];
+  @Input() bodyRowLines: boolean = true;
+  @Input() bodyColumnLines: boolean = true;
+  @Input() tableBorder: boolean = true;
+  @Input() borderRadiusBottom: boolean = false;
+  @Input() diagonalRow: boolean = false;
+  @Input() currentPagingSize: number = 10;
 }
