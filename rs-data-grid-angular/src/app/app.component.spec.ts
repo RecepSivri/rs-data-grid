@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 import { AppComponent } from './app.component';
+import { initialState } from './rsivri-grid/store/data-grid.reducer';
 
 
 describe('AppComponent', () => {
@@ -9,8 +11,8 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule], 
-      declarations: [ AppComponent ],
+      imports: [HttpClientTestingModule, AppComponent],
+      providers: [provideMockStore({ initialState: { dataGrid: initialState } })],
     })
     .compileComponents();
 
