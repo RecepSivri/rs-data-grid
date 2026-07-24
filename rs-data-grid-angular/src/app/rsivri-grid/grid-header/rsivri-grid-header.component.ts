@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { TitleCasePipe } from '@angular/common';
 import { IColumn } from '../../../core/models/IColumn';
 
 @Component({
   selector: 'rsivri-grid-hedaer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [TitleCasePipe],
   templateUrl: './rsivri-grid-header.component.html',
   styleUrls: ['./rsivri-grid-header.component.css']
 })

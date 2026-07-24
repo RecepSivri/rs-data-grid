@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { IColumn } from '../../core/models/IColumn';
 import { Store } from '@ngrx/store';
 import { fetchData, setData } from './store/data-grid.actions';
@@ -12,7 +12,7 @@ import { RsivriGridPagerComponent } from './grid-pager/rsivri-grid-pager.compone
 @Component({
   selector: 'rsivri-grid',
   standalone: true,
-  imports: [CommonModule, RsivriGridHeaderComponent, RsivriGridBodyComponent, RsivriGridPagerComponent],
+  imports: [AsyncPipe, RsivriGridHeaderComponent, RsivriGridBodyComponent, RsivriGridPagerComponent],
   templateUrl: './rsivri-grid.component.html',
   styleUrls: ['./rsivri-grid.component.css']
 })

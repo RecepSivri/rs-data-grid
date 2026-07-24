@@ -1,11 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { IColumn } from '../../../core/models/IColumn';
 
 @Component({
   selector: 'rsivri-grid-body',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './rsivri-grid-body.component.html',
   styleUrls: ['./rsivri-grid-body.component.css']
 })

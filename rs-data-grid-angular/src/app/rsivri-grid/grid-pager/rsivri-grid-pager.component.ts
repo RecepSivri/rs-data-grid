@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import {
   changePageListSize, changePageNumber, changePageSize,
@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'rsivri-grid-pager',
   standalone: true,
-  imports: [CommonModule],
+  imports: [AsyncPipe],
   templateUrl: './rsivri-grid-pager.component.html',
   styleUrls: ['./rsivri-grid-pager.component.css']
 })
