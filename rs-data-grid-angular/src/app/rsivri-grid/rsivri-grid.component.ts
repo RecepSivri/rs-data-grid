@@ -18,6 +18,7 @@ export class RsivriGridComponent implements OnInit {
 
   data = this.store.data;
   allData = this.store.rawData;
+  sort = this.store.sort;
   pageNumber = this.store.pageNumber;
   pageSize = this.store.pageSize;
 
@@ -32,7 +33,8 @@ export class RsivriGridComponent implements OnInit {
   @Input() borderRadiusBottom: boolean = false;
   @Input() diagonalRow: boolean = false;
   @Input() pagination: boolean = false;
-  @Input() filtering: boolean = true;
+  @Input() showFilter: boolean = false;
+  @Input() showSort: boolean = false;
   @Input() pagingSizes: number[] = [];
   @Input() currentPagingSize: number = 10;
   @Input() dataSource: any[] = [];
@@ -53,6 +55,10 @@ export class RsivriGridComponent implements OnInit {
 
   onFilterChange(event: FilterChangeEvent): void {
     this.store.setFilter(event.dataField, event.values);
+  }
+
+  onSortToggle(dataField: string): void {
+    this.store.toggleSort(dataField);
   }
 
   ngOnInit() {

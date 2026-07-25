@@ -4,11 +4,23 @@
   @for (column of columns; track column.dataField; let i = $index) {
     <div class="full-row content-style row-layout-center-center"
       [class.border-right]="headerColumnLines && i < columns.length - 1">
-      {{ column.caption | titlecase }}
+      <span class="header-caption">{{ column.caption | titlecase }}</span>
+      @if (showSort) {
+        <button type="button" class="sort-toggle"
+          [class.sort-toggle-active]="sortDirection(column.dataField) !== null"
+          [attr.aria-label]="'Sort ' + column.caption"
+          (click)="onSortClick(column.dataField, $event)">
+          @switch (sortDirection(column.dataField)) {
+            @case ('desc') { <span class="sort-icon sort-icon-active">&#9660;</span> }
+            @case ('asc') { <span class="sort-icon sort-icon-active">&#9650;</span> }
+            @default { <span class="sort-icon">&#8645;</span> }
+          }
+        </button>
+      }
     </div>
   }
 </div>
-@if (filtering && columns.length > 0) {
+@if (showFilter && columns.length > 0) {
   <div class="full-row filter-row row-layout-space-between-center"
     [class.filter-row-border]="tableBorder">
     @for (column of columns; track column.dataField; let i = $index) {

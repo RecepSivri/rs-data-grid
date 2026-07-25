@@ -49,6 +49,10 @@ describe('RsivriGridHeaderComponent', () => {
     return Array.from(fixture.nativeElement.querySelectorAll('.filter-panel input[type="checkbox"]'));
   }
 
+  function getSortToggles(): HTMLButtonElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('.sort-toggle'));
+  }
+
   it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
@@ -60,7 +64,9 @@ describe('RsivriGridHeaderComponent', () => {
     expect(component.headerColumnLines).toBeTrue();
     expect(component.tableBorder).toBeTrue();
     expect(component.borderRadiusTop).toBeTrue();
-    expect(component.filtering).toBeTrue();
+    expect(component.showFilter).toBeFalse();
+    expect(component.showSort).toBeFalse();
+    expect(component.sort).toEqual({ field: null, direction: null });
   });
 
   it('should render no column cells when columns is empty', () => {
@@ -126,7 +132,13 @@ describe('RsivriGridHeaderComponent', () => {
   });
 
   describe('filtering', () => {
-    it('renders one filter dropdown toggle per column, titlecased, when filtering is enabled', () => {
+    it('renders no filter row when showFilter is not set (defaults to false)', () => {
+      setColumns(twoColumns);
+      expect(getFilterToggles().length).toBe(0);
+    });
+
+    it('renders one filter dropdown toggle per column, titlecased, when showFilter is true', () => {
+      component.showFilter = true;
       setColumns(twoColumns);
       const toggles = getFilterToggles();
       expect(toggles.length).toBe(2);
@@ -134,23 +146,26 @@ describe('RsivriGridHeaderComponent', () => {
       expect(toggles[1].textContent).toContain('Last Name');
     });
 
-    it('renders no filter row when filtering is disabled', () => {
-      component.filtering = false;
+    it('renders no filter row when showFilter is explicitly false', () => {
+      component.showFilter = false;
       setColumns(twoColumns);
       expect(getFilterToggles().length).toBe(0);
     });
 
     it('renders no filter row when there are no columns', () => {
+      component.showFilter = true;
       fixture.detectChanges();
       expect(getFilterToggles().length).toBe(0);
     });
 
     it('does not render a dropdown panel until the toggle is clicked', () => {
+      component.showFilter = true;
       setColumns(twoColumns);
       expect(fixture.nativeElement.querySelector('.filter-panel')).toBeNull();
     });
 
     it('opens the dropdown with one checkbox per distinct value in that column', () => {
+      component.showFilter = true;
       component.data = [
         { firstName: 'Jane', lastName: 'Doe' },
         { firstName: 'John', lastName: 'Smith' },
@@ -165,6 +180,7 @@ describe('RsivriGridHeaderComponent', () => {
     });
 
     it('emits filterChange with the dataField and the accumulated selected values when options are checked', () => {
+      component.showFilter = true;
       component.data = [
         { firstName: 'Jane', lastName: 'Doe' },
         { firstName: 'John', lastName: 'Smith' },
@@ -187,6 +203,7 @@ describe('RsivriGridHeaderComponent', () => {
     });
 
     it('unchecking a selected value removes it from the emitted values', () => {
+      component.showFilter = true;
       component.data = [{ firstName: 'Jane', lastName: 'Doe' }];
       setColumns(twoColumns);
       const emitted: { dataField: string; values: string[] }[] = [];
@@ -200,6 +217,40 @@ describe('RsivriGridHeaderComponent', () => {
       checkbox.dispatchEvent(new Event('change'));
 
       expect(emitted).toEqual([{ dataField: 'firstName', values: [] }]);
+    });
+  });
+
+  describe('sorting', () => {
+    it('renders no sort toggle when showSort is not set (defaults to false)', () => {
+      setColumns(twoColumns);
+      expect(getSortToggles().length).toBe(0);
+    });
+
+    it('renders one sort toggle per column when showSort is true', () => {
+      component.showSort = true;
+      setColumns(twoColumns);
+      expect(getSortToggles().length).toBe(2);
+    });
+
+    it('emits sortToggle with the clicked column dataField', () => {
+      component.showSort = true;
+      setColumns(twoColumns);
+      const emitted: string[] = [];
+      component.sortToggle.subscribe(dataField => emitted.push(dataField));
+
+      getSortToggles()[1].dispatchEvent(new Event('click'));
+
+      expect(emitted).toEqual(['lastName']);
+    });
+
+    it('marks the active column\'s toggle and reflects its direction', () => {
+      component.showSort = true;
+      component.sort = { field: 'lastName', direction: 'asc' };
+      setColumns(twoColumns);
+      const toggles = getSortToggles();
+
+      expect(toggles[0].classList).not.toContain('sort-toggle-active');
+      expect(toggles[1].classList).toContain('sort-toggle-active');
     });
   });
 });

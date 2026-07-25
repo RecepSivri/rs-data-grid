@@ -6,10 +6,39 @@
   font-family: Arial;
   padding-bottom: 5px;
   padding-top: 5px;
-  white-space: nowrap;
   min-width: 5px;
+  gap: 4px;
+}
+
+.header-caption{
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sort-toggle{
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sort-icon{
+  color: #aaaaaa;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.sort-toggle:hover .sort-icon{
+  color: #777777;
+}
+
+.sort-icon-active{
+  color: #333333;
 }
 
 .border-area-small{

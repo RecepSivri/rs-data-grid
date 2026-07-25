@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import {
-  applyFilters, DataGridStore, returnLastPageList, returnPageList,
+  applyFilters, applySort, DataGridStore, returnLastPageList, returnPageList,
   returnPageStateRelatedPageNum, setDataWrapper
 } from './data-grid.store';
 import { AppState } from './data-grid.state';
@@ -163,6 +163,50 @@ describe('data-grid pager math (pure helpers)', () => {
       expect(applyFilters([{ lastName: 'Doe' }], { firstName: ['x'] })).toEqual([]);
     });
   });
+
+  describe('applySort', () => {
+    const rows = [
+      { name: 'Charlie', age: '30' },
+      { name: 'Alice', age: '5' },
+      { name: 'Bob', age: '100' },
+    ];
+
+    it('returns the original array unchanged when no field/direction is set', () => {
+      expect(applySort(rows, { field: null, direction: null })).toBe(rows);
+      expect(applySort(rows, { field: 'name', direction: null })).toBe(rows);
+    });
+
+    it('sorts strings alphabetically ascending', () => {
+      expect(applySort(rows, { field: 'name', direction: 'asc' })).toEqual([
+        { name: 'Alice', age: '5' },
+        { name: 'Bob', age: '100' },
+        { name: 'Charlie', age: '30' },
+      ]);
+    });
+
+    it('sorts strings alphabetically descending', () => {
+      expect(applySort(rows, { field: 'name', direction: 'desc' })).toEqual([
+        { name: 'Charlie', age: '30' },
+        { name: 'Bob', age: '100' },
+        { name: 'Alice', age: '5' },
+      ]);
+    });
+
+    it('sorts numeric-looking values numerically rather than lexicographically', () => {
+      // lexicographic order would be '100' < '30' < '5'; numeric order is 5 < 30 < 100
+      expect(applySort(rows, { field: 'age', direction: 'asc' })).toEqual([
+        { name: 'Alice', age: '5' },
+        { name: 'Charlie', age: '30' },
+        { name: 'Bob', age: '100' },
+      ]);
+    });
+
+    it('does not mutate the input array', () => {
+      const original = [...rows];
+      applySort(rows, { field: 'name', direction: 'asc' });
+      expect(rows).toEqual(original);
+    });
+  });
 });
 
 describe('DataGridStore', () => {
@@ -267,6 +311,69 @@ describe('DataGridStore', () => {
     });
   });
 
+  describe('toggleSort', () => {
+    beforeEach(() => {
+      store.setData([
+        { firstName: 'Jane', age: '30' },
+        { firstName: 'Adam', age: '5' },
+        { firstName: 'Beth', age: '100' },
+      ], false);
+    });
+
+    it('starts with no active sort', () => {
+      expect(store.sort()).toEqual({ field: null, direction: null });
+    });
+
+    it('sorts descending on the first toggle of a column', () => {
+      store.toggleSort('firstName');
+      expect(store.sort()).toEqual({ field: 'firstName', direction: 'desc' });
+      expect(store.data()).toEqual([
+        { firstName: 'Jane', age: '30' },
+        { firstName: 'Beth', age: '100' },
+        { firstName: 'Adam', age: '5' },
+      ]);
+    });
+
+    it('flips to ascending on a second toggle of the same column', () => {
+      store.toggleSort('firstName');
+      store.toggleSort('firstName');
+      expect(store.sort()).toEqual({ field: 'firstName', direction: 'asc' });
+      expect(store.data()).toEqual([
+        { firstName: 'Adam', age: '5' },
+        { firstName: 'Beth', age: '100' },
+        { firstName: 'Jane', age: '30' },
+      ]);
+    });
+
+    it('flips back to descending on a third toggle', () => {
+      store.toggleSort('firstName');
+      store.toggleSort('firstName');
+      store.toggleSort('firstName');
+      expect(store.sort()).toEqual({ field: 'firstName', direction: 'desc' });
+    });
+
+    it('switching to a different column resets that column to descending', () => {
+      store.toggleSort('firstName');
+      store.toggleSort('firstName');
+      store.toggleSort('age');
+      expect(store.sort()).toEqual({ field: 'age', direction: 'desc' });
+      expect(store.data()).toEqual([
+        { firstName: 'Beth', age: '100' },
+        { firstName: 'Jane', age: '30' },
+        { firstName: 'Adam', age: '5' },
+      ]);
+    });
+
+    it('resets pageNumber back to 0 when the sort changes', () => {
+      store.changePageSize(1);
+      store.increasePageNum();
+      expect(store.pageNumber()).toBe(1);
+
+      store.toggleSort('firstName');
+      expect(store.pageNumber()).toBe(0);
+    });
+  });
+
   describe('fetchData (local, non-paginated)', () => {
     it('extracts the given section from the response', async () => {
       store.fetchData('http://api.test/x', 'items', false);
@@ -324,6 +431,74 @@ describe('DataGridStore', () => {
       await appRef.whenStable();
       TestBed.flushEffects();
       expect(store.data()).toEqual([{ b: 2 }]);
+    });
+
+    it('adds a JSON-encoded filter query param and refetches from page 0 when a filter is set', async () => {
+      store.fetchData('http://api.test/search', 'items', true, 'size');
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=0&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.changePageNumber(3);
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=3&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.setFilter('firstName', ['Jane', 'Janet']);
+      TestBed.flushEffects();
+      const expectedFilter = encodeURIComponent(JSON.stringify({ firstName: ['Jane', 'Janet'] }));
+      const req = httpMock.expectOne(`http://api.test/search?page=0&size=10&filter=${expectedFilter}`);
+      req.flush({ items: [{ firstName: 'Jane' }], size: 2 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+      expect(store.data()).toEqual([{ firstName: 'Jane' }]);
+    });
+
+    it('omits the filter query param once all filters are cleared', async () => {
+      store.fetchData('http://api.test/search', 'items', true, 'size');
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=0&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.setFilter('firstName', ['Jane']);
+      TestBed.flushEffects();
+      const withFilter = encodeURIComponent(JSON.stringify({ firstName: ['Jane'] }));
+      httpMock.expectOne(`http://api.test/search?page=0&size=10&filter=${withFilter}`).flush({ items: [], size: 1 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.setFilter('firstName', []);
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=0&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+      expect(store.pageLimit()).toBe(10);
+    });
+
+    it('adds a JSON-encoded sort query param and refetches from page 0 when the sort changes', async () => {
+      store.fetchData('http://api.test/search', 'items', true, 'size');
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=0&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.changePageNumber(3);
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=3&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.toggleSort('firstName');
+      TestBed.flushEffects();
+      const expectedSort = encodeURIComponent(JSON.stringify({ field: 'firstName', direction: 'desc' }));
+      const req = httpMock.expectOne(`http://api.test/search?page=0&size=10&sort=${expectedSort}`);
+      req.flush({ items: [{ firstName: 'Jane' }], size: 1 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+      expect(store.data()).toEqual([{ firstName: 'Jane' }]);
     });
   });
 });

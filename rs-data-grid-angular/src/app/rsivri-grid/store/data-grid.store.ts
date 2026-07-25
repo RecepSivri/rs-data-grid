@@ -43,6 +43,31 @@ export const applyFilters = (data: any[], filters: Record<string, string[]>): an
   ));
 }
 
+export interface SortState {
+  field: string | null;
+  direction: 'asc' | 'desc' | null;
+}
+
+export const compareValues = (a: any, b: any): number => {
+  const numA = Number(a);
+  const numB = Number(b);
+  const bothNumeric = a !== '' && b !== '' && a !== null && a !== undefined
+    && b !== null && b !== undefined && !Number.isNaN(numA) && !Number.isNaN(numB);
+  if (bothNumeric) {
+    return numA - numB;
+  }
+  return String(a ?? '').localeCompare(String(b ?? ''));
+}
+
+export const applySort = (data: any[], sort: SortState): any[] => {
+  if (!sort.field || !sort.direction) {
+    return data;
+  }
+  const field = sort.field;
+  const factor = sort.direction === 'asc' ? 1 : -1;
+  return [...data].sort((a, b) => compareValues(a?.[field], b?.[field]) * factor);
+}
+
 export const returnPageList = (pageListSize: number, pageLimit: number) => {
   let arr = new Array();
     for (let i = 0; i < (pageListSize > pageLimit ? pageLimit : pageListSize); i++) {
@@ -105,10 +130,13 @@ interface FetchConfig {
 export class DataGridStore {
   private readonly _state = signal<AppState>(initialState);
   private readonly _filters = signal<Record<string, string[]>>({});
+  private readonly _sort = signal<SortState>({ field: null, direction: null });
 
   readonly filters = this._filters.asReadonly();
+  readonly sort = this._sort.asReadonly();
   readonly filteredData = computed(() => applyFilters(this._state().data, this._filters()));
-  readonly data = computed(() => this.filteredData());
+  readonly sortedData = computed(() => applySort(this.filteredData(), this._sort()));
+  readonly data = computed(() => this.sortedData());
   readonly rawData = computed(() => this._state().data);
   readonly pageNumber = computed(() => this._state().pager.pageNumber);
   readonly pageSize = computed(() => this._state().pager.pageSize);
@@ -128,6 +156,16 @@ export class DataGridStore {
     const url = new URL(cfg.baseUrl);
     url.searchParams.set('page', String(this.pageNumber()));
     url.searchParams.set('size', String(this.pageSize()));
+    const activeFilters = Object.fromEntries(
+      Object.entries(this._filters()).filter(([, values]) => values.length > 0)
+    );
+    if (Object.keys(activeFilters).length > 0) {
+      url.searchParams.set('filter', JSON.stringify(activeFilters));
+    }
+    const sort = this._sort();
+    if (sort.field && sort.direction) {
+      url.searchParams.set('sort', JSON.stringify(sort));
+    }
     return url.href;
   });
 
@@ -166,11 +204,18 @@ export class DataGridStore {
     this._filters.update(f => ({...f, [dataField]: values}));
     this._state.update(s => {
       if (s.pager.remotePage) {
-        return s;
+        return {...s, pager:{...s.pager, pageNumber: 0}};
       }
       const pageLimit = Math.ceil(applyFilters(s.data, this._filters()).length/s.pager.pageSize);
       return {...s, pager:{...s.pager, pageNumber: 0, pageLimit, pageList: returnPageList(s.pager.pageListSize, pageLimit)}};
     });
+  }
+
+  toggleSort(dataField: string) {
+    this._sort.update(s => s.field !== dataField
+      ? { field: dataField, direction: 'desc' }
+      : { field: dataField, direction: s.direction === 'desc' ? 'asc' : 'desc' });
+    this._state.update(s => ({...s, pager: {...s.pager, pageNumber: 0}}));
   }
 
   changePageNumber(pageNumber: number) {

@@ -1,6 +1,7 @@
 import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { IColumn } from '../../../core/models/IColumn';
+import { applyFilters, SortState } from '../store/data-grid.store';
 
 export interface FilterChangeEvent {
   dataField: string;
@@ -22,22 +23,38 @@ export class RsivriGridHeaderComponent {
   @Input() bodyColumnLines: boolean = true;
   @Input() tableBorder: boolean = true;
   @Input() borderRadiusTop: boolean = true;
-  @Input() filtering: boolean = true;
+  @Input() showFilter: boolean = false;
+  @Input() showSort: boolean = false;
+  @Input() sort: SortState = { field: null, direction: null };
 
   @Output() filterChange = new EventEmitter<FilterChangeEvent>();
+  @Output() sortToggle = new EventEmitter<string>();
 
   openDataField: string | null = null;
   selectedValues: Record<string, string[]> = {};
 
   getOptions(dataField: string): string[] {
+    const otherFilters = { ...this.selectedValues };
+    delete otherFilters[dataField];
+    const rows = applyFilters(this.data, otherFilters);
+
     const values = new Set<string>();
-    for (const row of this.data) {
+    for (const row of rows) {
       const value = row?.[dataField];
       if (value !== undefined && value !== null && value !== '') {
         values.add(String(value));
       }
     }
     return Array.from(values).sort();
+  }
+
+  sortDirection(dataField: string): 'asc' | 'desc' | null {
+    return this.sort.field === dataField ? this.sort.direction : null;
+  }
+
+  onSortClick(dataField: string, event: Event): void {
+    event.stopPropagation();
+    this.sortToggle.emit(dataField);
   }
 
   isOpen(dataField: string): boolean {

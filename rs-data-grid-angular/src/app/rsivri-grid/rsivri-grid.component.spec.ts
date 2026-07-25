@@ -108,11 +108,11 @@ describe('RsivriGridComponent', () => {
       expect(setFilterSpy).toHaveBeenCalledWith('name', ['Jane']);
     });
 
-    it('passes the filtering input through to the header child', () => {
-      component.filtering = false;
+    it('passes the showFilter input through to the header child', () => {
+      component.showFilter = true;
       fixture.detectChanges();
       const header = fixture.debugElement.query(By.directive(RsivriGridHeaderComponent));
-      expect((header.componentInstance as RsivriGridHeaderComponent).filtering).toBeFalse();
+      expect((header.componentInstance as RsivriGridHeaderComponent).showFilter).toBeTrue();
     });
   });
 });

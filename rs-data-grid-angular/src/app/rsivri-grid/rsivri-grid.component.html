@@ -6,8 +6,11 @@
                       [headerRowLines] = "this.headerRowLines"
                       [borderRadiusTop] = "this.borderRadiusTop"
                       [tableBorder] = "this.tableBorder"
-                      [filtering] = "this.filtering"
-                      (filterChange) = "onFilterChange($event)">
+                      [showFilter] = "this.showFilter"
+                      [showSort] = "this.showSort"
+                      [sort] = "sort()"
+                      (filterChange) = "onFilterChange($event)"
+                      (sortToggle) = "onSortToggle($event)">
   </rsivri-grid-hedaer>
   <rsivri-grid-body [columns]="columns"
                     [data]="remoteModeParams ? (data() ?? []) : pagination ? (data() ?? []).slice(pageNumber() * pageSize(), (pageNumber() + 1) * pageSize()) : (data() ?? [])"
