@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import {
-  applyFilters, applySort, DataGridStore, returnLastPageList, returnPageList,
+  applyFilters, applyGlobalSearch, applySort, DataGridStore, returnLastPageList, returnPageList,
   returnPageStateRelatedPageNum, setDataWrapper
 } from './data-grid.store';
 import { AppState } from './data-grid.state';
@@ -207,6 +207,36 @@ describe('data-grid pager math (pure helpers)', () => {
       expect(rows).toEqual(original);
     });
   });
+
+  describe('applyGlobalSearch', () => {
+    const rows = [
+      { firstName: 'Jane', lastName: 'Doe', city: 'Boston' },
+      { firstName: 'John', lastName: 'Smith', city: 'Denver' },
+      { firstName: 'Janet', lastName: 'Jones', city: 'Boston' },
+    ];
+
+    it('returns the original array when the search term is empty or whitespace', () => {
+      expect(applyGlobalSearch(rows, '')).toBe(rows);
+      expect(applyGlobalSearch(rows, '   ')).toBe(rows);
+    });
+
+    it('matches rows where any field contains the term, case-insensitively', () => {
+      expect(applyGlobalSearch(rows, 'boston')).toEqual([rows[0], rows[2]]);
+    });
+
+    it('matches across different fields, not just one', () => {
+      expect(applyGlobalSearch(rows, 'smith')).toEqual([rows[1]]);
+      expect(applyGlobalSearch(rows, 'denver')).toEqual([rows[1]]);
+    });
+
+    it('trims surrounding whitespace from the search term', () => {
+      expect(applyGlobalSearch(rows, '  jane  ')).toEqual([rows[0]]);
+    });
+
+    it('returns an empty array when nothing matches', () => {
+      expect(applyGlobalSearch(rows, 'nonexistent')).toEqual([]);
+    });
+  });
 });
 
 describe('DataGridStore', () => {
@@ -371,6 +401,50 @@ describe('DataGridStore', () => {
 
       store.toggleSort('firstName');
       expect(store.pageNumber()).toBe(0);
+    });
+  });
+
+  describe('setGlobalSearch', () => {
+    beforeEach(() => {
+      store.setData([
+        { firstName: 'Jane', city: 'Boston' },
+        { firstName: 'John', city: 'Denver' },
+        { firstName: 'Janet', city: 'Boston' },
+      ], false);
+    });
+
+    it('starts with an empty search term', () => {
+      expect(store.globalSearch()).toBe('');
+    });
+
+    it('narrows data() to rows matching the term across any field', () => {
+      store.setGlobalSearch('boston');
+      expect(store.data()).toEqual([
+        { firstName: 'Jane', city: 'Boston' },
+        { firstName: 'Janet', city: 'Boston' },
+      ]);
+      expect(store.pageLimit()).toBe(1);
+    });
+
+    it('resets pageNumber back to 0 when the search term changes', () => {
+      store.changePageSize(1);
+      store.increasePageNum();
+      expect(store.pageNumber()).toBe(1);
+
+      store.setGlobalSearch('boston');
+      expect(store.pageNumber()).toBe(0);
+    });
+
+    it('restores the unfiltered data once the search term is cleared', () => {
+      store.setGlobalSearch('boston');
+      store.setGlobalSearch('');
+      expect(store.data().length).toBe(3);
+    });
+
+    it('combines with column filters using AND semantics', () => {
+      store.setFilter('firstName', ['Jane', 'Janet']);
+      store.setGlobalSearch('denver');
+      expect(store.data()).toEqual([]);
     });
   });
 

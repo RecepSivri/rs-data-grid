@@ -1,1 +1,20 @@
+.demo-loading{
+  padding: 24px 16px;
+  text-align: center;
+  font-family: Arial;
+  font-size: 14px;
+  color: #555555;
+  border: 1px dashed #cccccc;
+  border-radius: 4px;
+}
 
+.demo-error{
+  padding: 24px 16px;
+  text-align: center;
+  font-family: Arial;
+  font-size: 14px;
+  color: #b3261e;
+  background: #fdf3f2;
+  border: 1px solid #e3b6b3;
+  border-radius: 4px;
+}

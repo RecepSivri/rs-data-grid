@@ -5,6 +5,9 @@
   [headerColumnLines]="true"
   [showFilter]="true"
   [showSort]="true"
+  [showSearch]="true"
+  [exportExcel]="true"
+  [exportPDF]="true"
   [bodyRowLines]="true"
   [bodyColumnLines]="true"
   [tableBorder]="true"
@@ -16,4 +19,10 @@
   [currentPagingSize]="10"
   [pageListSize]="5"
 >
+  <ng-template #loadingTpl>
+    <div class="demo-loading">⏳ Universities are loading…</div>
+  </ng-template>
+  <ng-template #errorTpl let-err>
+    <div class="demo-error">Failed to load universities: {{ err?.message }}</div>
+  </ng-template>
 </rsivri-grid>

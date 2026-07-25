@@ -1,32 +1,79 @@
 <div [class.border-area-small]="tableBorder">
-  <rsivri-grid-hedaer [columns]="columns"
-                      [data] = "allData()"
-                      [headerColumnLines] = "this.headerColumnLines"
+  @if (isLoading()) {
+    @if (loadingTemplate) {
+      <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
+    } @else {
+      <div class="grid-state grid-state-loading">Loading...</div>
+    }
+  } @else if (loadError()) {
+    @if (errorTemplate) {
+      <ng-container *ngTemplateOutlet="errorTemplate; context: { $implicit: loadError() }"></ng-container>
+    } @else {
+      <div class="grid-state grid-state-error">
+        <span class="grid-state-icon">&#9888;</span>
+        <span>{{ loadError()?.message || 'Something went wrong while loading data.' }}</span>
+      </div>
+    }
+  } @else {
+    @if (showSearch || exportExcel || exportPDF) {
+      <div class="grid-toolbar">
+        @if (exportExcel) {
+          <button type="button" class="export-button" title="Export to Excel" aria-label="Export to Excel" (click)="onExportExcelClick()">
+            <svg viewBox="0 0 36 36" width="20" height="20" aria-hidden="true">
+              <rect x="2" y="2" width="32" height="32" rx="5" fill="#1D6F42"/>
+              <path d="M10.5 11h3.6l3.4 5.3 3.4-5.3h3.6l-5.1 7 5.1 7h-3.6l-3.4-5.3-3.4 5.3h-3.6l5.1-7z" fill="#ffffff"/>
+            </svg>
+          </button>
+        }
+        @if (exportPDF) {
+          <button type="button" class="export-button" title="Export to PDF" aria-label="Export to PDF" (click)="onExportPdfClick()">
+            <svg viewBox="0 0 36 36" width="20" height="20" aria-hidden="true">
+              <rect x="2" y="2" width="32" height="32" rx="5" fill="#e2483d"/>
+              <text x="18" y="23" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">PDF</text>
+            </svg>
+          </button>
+        }
+        @if (showSearch) {
+          <div class="global-search-wrapper">
+            <span class="global-search-icon">&#128269;</span>
+            <input type="text" class="global-search-input"
+              placeholder="Search..."
+              aria-label="Search all columns"
+              [value]="globalSearch()"
+              (input)="onGlobalSearchInput($event)" />
+          </div>
+        }
+      </div>
+    }
+    <rsivri-grid-hedaer [columns]="columns"
+                        [data] = "allData()"
+                        [headerColumnLines] = "this.headerColumnLines"
+                        [bodyColumnLines] = "this.bodyColumnLines"
+                        [headerRowLines] = "this.headerRowLines"
+                        [borderRadiusTop] = "this.borderRadiusTop"
+                        [tableBorder] = "this.tableBorder"
+                        [showFilter] = "this.showFilter"
+                        [showSort] = "this.showSort"
+                        [sort] = "sort()"
+                        (filterChange) = "onFilterChange($event)"
+                        (sortToggle) = "onSortToggle($event)">
+    </rsivri-grid-hedaer>
+    <rsivri-grid-body [columns]="columns"
+                      [data]="remoteModeParams ? (data() ?? []) : pagination ? (data() ?? []).slice(pageNumber() * pageSize(), (pageNumber() + 1) * pageSize()) : (data() ?? [])"
                       [bodyColumnLines] = "this.bodyColumnLines"
-                      [headerRowLines] = "this.headerRowLines"
-                      [borderRadiusTop] = "this.borderRadiusTop"
+                      [bodyRowLines] = "this.bodyRowLines"
                       [tableBorder] = "this.tableBorder"
-                      [showFilter] = "this.showFilter"
-                      [showSort] = "this.showSort"
-                      [sort] = "sort()"
-                      (filterChange) = "onFilterChange($event)"
-                      (sortToggle) = "onSortToggle($event)">
-  </rsivri-grid-hedaer>
-  <rsivri-grid-body [columns]="columns"
-                    [data]="remoteModeParams ? (data() ?? []) : pagination ? (data() ?? []).slice(pageNumber() * pageSize(), (pageNumber() + 1) * pageSize()) : (data() ?? [])"
-                    [bodyColumnLines] = "this.bodyColumnLines"
-                    [bodyRowLines] = "this.bodyRowLines"
-                    [tableBorder] = "this.tableBorder"
-                    [borderRadiusBottom] = "this.borderRadiusBottom"
-                    [diagonalRow] = "this.diagonalRow"
-                    [currentPagingSize] = "currentPagingSize"
-  >
-  </rsivri-grid-body>
+                      [borderRadiusBottom] = "this.borderRadiusBottom"
+                      [diagonalRow] = "this.diagonalRow"
+                      [currentPagingSize] = "currentPagingSize"
+    >
+    </rsivri-grid-body>
 
-  <rsivri-grid-pager [pagination] = "pagination"
-                     [pagingSizes] = "pagingSizes"
-                     [pageListSize] = "pageListSize"
-                     [currentPagingSize] = "currentPagingSize">
+    <rsivri-grid-pager [pagination] = "pagination"
+                       [pagingSizes] = "pagingSizes"
+                       [pageListSize] = "pageListSize"
+                       [currentPagingSize] = "currentPagingSize">
 
-  </rsivri-grid-pager>
+    </rsivri-grid-pager>
+  }
 </div>
