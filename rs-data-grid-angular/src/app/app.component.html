@@ -1,23 +1,64 @@
+<div style="width: 100%; display: flex; flex-direction: row;">
+<div style = "width: 20%;margin-right:15px;">
+  <mat-accordion class="settings-accordion" multi>
+    @for (group of settingsGroups; track group.title) {
+      <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ group.title }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        @for (setting of group.settings; track setting.key) {
+          <div class="settings-row" [class.settings-row-column]="setting.type === 'json'">
+            <label class="settings-label">{{ setting.label }}</label>
+            @switch (setting.type) {
+              @case ('boolean') {
+                <mat-slide-toggle [(ngModel)]="gridConfig[setting.key]"></mat-slide-toggle>
+              }
+              @case ('number') {
+                <input type="number" class="settings-input" [(ngModel)]="gridConfig[setting.key]" />
+              }
+              @case ('json') {
+                <textarea class="settings-textarea"
+                  [value]="gridConfig[setting.key] | json"
+                  (change)="onCommitJsonSetting(setting.key, $event)"></textarea>
+              }
+              @default {
+                <input type="text" class="settings-input"
+                  [value]="gridConfig[setting.key]"
+                  (keyup.enter)="onCommitStringSetting(setting.key, $event)" />
+              }
+            }
+          </div>
+          @if (setting.type === 'json' && jsonError) {
+            <div class="settings-error">{{ jsonError }}</div>
+          }
+        }
+      </mat-expansion-panel>
+    }
+  </mat-accordion>
+</div>
+<div style = "width: 80%;">
 <rsivri-grid
-  [fetchUrl]="'http://universities.hipolabs.com/search?country=United+States'"
-  [remoteMode]="false"
-  [headerRowLines]="true"
-  [headerColumnLines]="true"
-  [showFilter]="true"
-  [showSort]="true"
-  [showSearch]="true"
-  [exportExcel]="true"
-  [exportPDF]="true"
-  [bodyRowLines]="true"
-  [bodyColumnLines]="true"
-  [tableBorder]="true"
-  [borderRadiusTop]="true"
-  [borderRadiusBottom]="false"
-  [diagonalRow]="true"
-  [pagination]="true"
+  [fetchUrl]="gridConfig['fetchUrl']"
+  [entrySection]="gridConfig['entrySection']"
+  [remoteMode]="gridConfig['remoteMode']"
+  [dataSource]="gridConfig['dataSource']"
+  [headerRowLines]="gridConfig['headerRowLines']"
+  [headerColumnLines]="gridConfig['headerColumnLines']"
+  [showFilter]="gridConfig['showFilter']"
+  [showSort]="gridConfig['showSort']"
+  [showSearch]="gridConfig['showSearch']"
+  [exportExcel]="gridConfig['exportExcel']"
+  [exportPDF]="gridConfig['exportPDF']"
+  [bodyRowLines]="gridConfig['bodyRowLines']"
+  [bodyColumnLines]="gridConfig['bodyColumnLines']"
+  [tableBorder]="gridConfig['tableBorder']"
+  [borderRadiusTop]="gridConfig['borderRadiusTop']"
+  [borderRadiusBottom]="gridConfig['borderRadiusBottom']"
+  [diagonalRow]="gridConfig['diagonalRow']"
+  [pagination]="gridConfig['pagination']"
   [pagingSizes]="[10, 20, 50, 70, 100]"
-  [currentPagingSize]="10"
-  [pageListSize]="5"
+  [currentPagingSize]="gridConfig['currentPagingSize']"
+  [pageListSize]="gridConfig['pageListSize']"
 >
   <ng-template #loadingTpl>
     <div class="demo-loading">⏳ Universities are loading…</div>
@@ -26,3 +67,7 @@
     <div class="demo-error">Failed to load universities: {{ err?.message }}</div>
   </ng-template>
 </rsivri-grid>
+
+
+</div>
+</div>

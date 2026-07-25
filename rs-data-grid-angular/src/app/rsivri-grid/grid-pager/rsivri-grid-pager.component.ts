@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { DataGridStore } from '../store/data-grid.store';
 
 @Component({
@@ -8,7 +8,7 @@ import { DataGridStore } from '../store/data-grid.store';
   templateUrl: './rsivri-grid-pager.component.html',
   styleUrls: ['./rsivri-grid-pager.component.css']
 })
-export class RsivriGridPagerComponent implements OnInit {
+export class RsivriGridPagerComponent implements OnInit, OnChanges {
   @Input() pagination: boolean = false;
   @Input() pagingSizes: number[] = [];
   @Input() currentPagingSize: number = 10;
@@ -24,6 +24,16 @@ export class RsivriGridPagerComponent implements OnInit {
   ngOnInit(): void {
     this.store.changePageListSize(this.pageListSize);
     this.store.changePageSize(this.currentPagingSize);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['pageListSize'] && !changes['pageListSize'].firstChange) {
+      this.store.changePageListSize(this.pageListSize);
+    }
+    if (changes['currentPagingSize'] && !changes['currentPagingSize'].firstChange) {
+      this.store.changePageNumber(0);
+      this.store.changePageSize(this.currentPagingSize);
+    }
   }
 
   changeCurrentPaginationSize = (val: number) => {

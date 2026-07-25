@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef, effect, inject } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, TemplateRef, effect, inject } from '@angular/core';
 import { NgTemplateOutlet, TitleCasePipe } from '@angular/common';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -17,7 +17,7 @@ import { RsivriGridPagerComponent } from './grid-pager/rsivri-grid-pager.compone
   templateUrl: './rsivri-grid.component.html',
   styleUrls: ['./rsivri-grid.component.css']
 })
-export class RsivriGridComponent implements OnInit {
+export class RsivriGridComponent implements OnInit, OnChanges {
   readonly store = inject(DataGridStore);
   private readonly titleCasePipe = new TitleCasePipe();
 
@@ -117,6 +117,18 @@ export class RsivriGridComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadData();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const reloadKeys = ['fetchUrl', 'entrySection', 'remoteMode', 'dataSource', 'remoteModeParams'];
+    const shouldReload = reloadKeys.some(key => changes[key] && !changes[key].firstChange);
+    if (shouldReload) {
+      this.loadData();
+    }
+  }
+
+  private loadData(): void {
     if (this.remoteMode) {
       const endpoint = new URL(this.remoteModeParams.endpoint);
       if (this.dataSource.length > 0) {
