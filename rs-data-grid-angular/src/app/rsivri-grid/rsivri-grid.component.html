@@ -1,12 +1,16 @@
 <div [class.border-area-small]="tableBorder">
   <rsivri-grid-hedaer [columns]="columns"
+                      [data] = "allData()"
                       [headerColumnLines] = "this.headerColumnLines"
+                      [bodyColumnLines] = "this.bodyColumnLines"
                       [headerRowLines] = "this.headerRowLines"
                       [borderRadiusTop] = "this.borderRadiusTop"
-                      [tableBorder] = "this.tableBorder">
+                      [tableBorder] = "this.tableBorder"
+                      [filtering] = "this.filtering"
+                      (filterChange) = "onFilterChange($event)">
   </rsivri-grid-hedaer>
   <rsivri-grid-body [columns]="columns"
-                    [data]="remoteModeParams ? ((data$ | async) ?? []) :pagination ? ((data$ | async) ?? []).slice( (pageNumber | async) * (pageSize | async) , ((pageNumber | async) +1) * (pageSize | async)) : ((data$ | async) ?? [])"
+                    [data]="remoteModeParams ? (data() ?? []) : pagination ? (data() ?? []).slice(pageNumber() * pageSize(), (pageNumber() + 1) * pageSize()) : (data() ?? [])"
                     [bodyColumnLines] = "this.bodyColumnLines"
                     [bodyRowLines] = "this.bodyRowLines"
                     [tableBorder] = "this.tableBorder"

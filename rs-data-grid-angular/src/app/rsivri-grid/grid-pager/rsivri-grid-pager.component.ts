@@ -1,19 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
-import { Store } from '@ngrx/store';
-import {
-  changePageListSize, changePageNumber, changePageSize,
-  decreasePageNum, increasePageNum, lastPageNum
-} from '../store/data-grid.actions';
-import {
-  selectData, selectPageLimit, selectPageList,
-  selectPageNum, selectPageSize
-} from '../store/data-grid.selectors';
+import { Component, Input, OnInit, inject } from '@angular/core';
+import { DataGridStore } from '../store/data-grid.store';
 
 @Component({
   selector: 'rsivri-grid-pager',
   standalone: true,
-  imports: [AsyncPipe],
+  imports: [],
   templateUrl: './rsivri-grid-pager.component.html',
   styleUrls: ['./rsivri-grid-pager.component.css']
 })
@@ -23,31 +14,30 @@ export class RsivriGridPagerComponent implements OnInit {
   @Input() currentPagingSize: number = 10;
   @Input() pageListSize: number = 5;
 
-  pageSize$ = this.store.select(selectPageSize);
-  pageNumber$ = this.store.select(selectPageNum);
-  pageData$ = this.store.select(selectData);
-  pageList$ = this.store.select(selectPageList);
-  pageLimit$ = this.store.select(selectPageLimit);
+  private readonly store = inject(DataGridStore);
 
-  constructor(private store: Store) {}
+  pageSize = this.store.pageSize;
+  pageNumber = this.store.pageNumber;
+  pageList = this.store.pageList;
+  pageLimit = this.store.pageLimit;
 
   ngOnInit(): void {
-    this.store.dispatch(changePageListSize({ pageListSize: this.pageListSize }));
-    this.store.dispatch(changePageSize({ pageSize: this.currentPagingSize }));
+    this.store.changePageListSize(this.pageListSize);
+    this.store.changePageSize(this.currentPagingSize);
   }
 
   changeCurrentPaginationSize = (val: number) => {
-    this.store.dispatch(changePageNumber({ pageNumber: 0 }));
-    this.store.dispatch(changePageSize({ pageSize: val }));
+    this.store.changePageNumber(0);
+    this.store.changePageSize(val);
   }
 
   setpage = (index: number) => {
-    this.store.dispatch(changePageNumber({ pageNumber: index }));
+    this.store.changePageNumber(index);
   }
 
-  increasePager = () => this.store.dispatch(increasePageNum());
-  decreasePager = () => this.store.dispatch(decreasePageNum());
-  lastPage = () => this.store.dispatch(lastPageNum());
+  increasePager = () => this.store.increasePageNum();
+  decreasePager = () => this.store.decreasePageNum();
+  lastPage = () => this.store.lastPageNum();
 
   writeAS = (pageFirstItem: any, pageListSize: any, pageLimit: any) => {
     return pageFirstItem + pageListSize > pageLimit ? false : true;

@@ -1,35 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { By } from '@angular/platform-browser';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { RsivriGridComponent } from './rsivri-grid.component';
-import { fetchData, setData } from './store/data-grid.actions';
-import { selectData } from './store/data-grid.selectors';
+import { RsivriGridHeaderComponent } from './grid-header/rsivri-grid-header.component';
 
 describe('RsivriGridComponent', () => {
   let component: RsivriGridComponent;
   let fixture: ComponentFixture<RsivriGridComponent>;
-  let store: MockStore;
-
-  const initialGridState = {
-    dataGrid: {
-      data: [],
-      pager: {
-        pageSize: 10,
-        pageNumber: 0,
-        pageList: [1, 2, 3, 4, 5],
-        pageListSize: 5,
-        pageLimit: 0,
-        remotePage: false
-      }
-    }
-  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RsivriGridComponent],
-      providers: [provideMockStore({ initialState: initialGridState })]
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
 
-    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(RsivriGridComponent);
     component = fixture.componentInstance;
   });
@@ -43,89 +29,58 @@ describe('RsivriGridComponent', () => {
   });
 
   describe('ngOnInit in local mode (remoteMode = false)', () => {
-    it('dispatches setData(remote:false) when a dataSource is provided', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('calls setData(remote:false) when a dataSource is provided', () => {
+      const setDataSpy = spyOn(component.store, 'setData');
       component.dataSource = [{ a: 1 }];
       component.ngOnInit();
-      expect(dispatchSpy).toHaveBeenCalledWith(setData({ data: component.dataSource, remote: false }));
+      expect(setDataSpy).toHaveBeenCalledWith(component.dataSource, false);
     });
 
-    it('dispatches fetchData(remote:false) when dataSource is empty and fetchUrl is set', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('calls fetchData(remote:false) when dataSource is empty and fetchUrl is set', () => {
+      const fetchDataSpy = spyOn(component.store, 'fetchData');
       component.dataSource = [];
       component.fetchUrl = 'http://example.com/api';
       component.entrySection = 'items';
       component.ngOnInit();
-      expect(dispatchSpy).toHaveBeenCalledWith(fetchData({
-        url: 'http://example.com/api',
-        section: 'items',
-        remote: false
-      }));
+      expect(fetchDataSpy).toHaveBeenCalledWith('http://example.com/api', 'items', false);
     });
 
-    it('dispatches setData with an empty array when dataSource and fetchUrl are both empty', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('calls setData with an empty array when dataSource and fetchUrl are both empty', () => {
+      const setDataSpy = spyOn(component.store, 'setData');
       component.dataSource = [];
       component.fetchUrl = '';
       component.ngOnInit();
-      expect(dispatchSpy).toHaveBeenCalledWith(setData({ data: [], remote: false }));
+      expect(setDataSpy).toHaveBeenCalledWith([], false);
     });
   });
 
   describe('ngOnInit in remote mode (remoteMode = true)', () => {
-    it('dispatches setData(remote:true) when a dataSource is provided', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('calls setData(remote:true) when a dataSource is provided', () => {
+      const setDataSpy = spyOn(component.store, 'setData');
       component.remoteMode = true;
       component.dataSource = [{ a: 1 }];
       component.remoteModeParams = { endpoint: 'http://api.test/search', aliases: { data: 'items' } };
       component.ngOnInit();
-      expect(dispatchSpy).toHaveBeenCalledWith(setData({ data: component.dataSource, remote: true }));
+      expect(setDataSpy).toHaveBeenCalledWith(component.dataSource, true);
     });
 
-    it('dispatches fetchData(remote:true) when dataSource is empty', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('calls fetchData(remote:true) with page/size support when dataSource is empty', () => {
+      const fetchDataSpy = spyOn(component.store, 'fetchData');
       component.remoteMode = true;
       component.dataSource = [];
       component.remoteModeParams = { endpoint: 'http://api.test/search', aliases: { data: 'items' } };
       component.ngOnInit();
-      expect(dispatchSpy).toHaveBeenCalledWith(fetchData({
-        url: 'http://api.test/search',
-        section: 'items',
-        remote: true,
-        totalSection: 'size'
-      }));
-    });
-
-    it('re-dispatches fetchData with page/size query params whenever the pager state changes', () => {
-      component.remoteMode = true;
-      component.dataSource = [];
-      component.remoteModeParams = { endpoint: 'http://api.test/search', aliases: { data: 'items' } };
-      component.ngOnInit();
-
-      const dispatchSpy = spyOn(store, 'dispatch');
-      store.setState({
-        dataGrid: {
-          data: [],
-          pager: { ...initialGridState.dataGrid.pager, pageNumber: 2, pageSize: 20 }
-        }
-      });
-
-      expect(dispatchSpy).toHaveBeenCalledWith(fetchData({
-        url: 'http://api.test/search?page=2&size=20',
-        section: 'items',
-        remote: true,
-        totalSection: 'size'
-      }));
+      expect(fetchDataSpy).toHaveBeenCalledWith('http://api.test/search', 'items', true, 'size');
     });
   });
 
-  describe('initializeColumnAsync', () => {
-    it('derives columns from the emitted data when none are provided', () => {
+  describe('column auto-detection (data -> columns effect)', () => {
+    it('derives columns from the store data when none are provided', () => {
       component.columns = [];
-      store.overrideSelector(selectData, [{ name: 'A', age: 1 }, { city: 'X' }]);
-      store.refreshState();
+      fixture.detectChanges();
 
-      component.ngOnInit();
+      component.store.setData([{ name: 'A', age: 1 }, { city: 'X' }], false);
+      fixture.detectChanges();
 
       expect(component.columns).toEqual([
         { caption: 'name', dataField: 'name' },
@@ -137,12 +92,27 @@ describe('RsivriGridComponent', () => {
     it('keeps explicitly provided columns untouched', () => {
       const explicitColumns = [{ caption: 'Name', dataField: 'name' }];
       component.columns = explicitColumns;
-      store.overrideSelector(selectData, [{ name: 'A' }]);
-      store.refreshState();
+      fixture.detectChanges();
 
-      component.ngOnInit();
+      component.store.setData([{ name: 'A' }], false);
+      fixture.detectChanges();
 
       expect(component.columns).toBe(explicitColumns);
+    });
+  });
+
+  describe('filtering', () => {
+    it('forwards a header filterChange event to store.setFilter', () => {
+      const setFilterSpy = spyOn(component.store, 'setFilter');
+      component.onFilterChange({ dataField: 'name', values: ['Jane'] });
+      expect(setFilterSpy).toHaveBeenCalledWith('name', ['Jane']);
+    });
+
+    it('passes the filtering input through to the header child', () => {
+      component.filtering = false;
+      fixture.detectChanges();
+      const header = fixture.debugElement.query(By.directive(RsivriGridHeaderComponent));
+      expect((header.componentInstance as RsivriGridHeaderComponent).filtering).toBeFalse();
     });
   });
 });

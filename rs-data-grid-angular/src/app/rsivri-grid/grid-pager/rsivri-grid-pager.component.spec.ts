@@ -1,39 +1,28 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { RsivriGridPagerComponent } from './rsivri-grid-pager.component';
-import {
-  changePageListSize, changePageNumber, changePageSize,
-  decreasePageNum, increasePageNum, lastPageNum
-} from '../store/data-grid.actions';
+import { DataGridStore } from '../store/data-grid.store';
 
 describe('RsivriGridPagerComponent', () => {
   let component: RsivriGridPagerComponent;
   let fixture: ComponentFixture<RsivriGridPagerComponent>;
-  let store: MockStore;
-
-  const initialGridState = {
-    dataGrid: {
-      data: [],
-      pager: {
-        pageSize: 10,
-        pageNumber: 0,
-        pageList: [1, 2, 3, 4, 5],
-        pageListSize: 5,
-        pageLimit: 10,
-        remotePage: false
-      }
-    }
-  };
+  let store: DataGridStore;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RsivriGridPagerComponent],
-      providers: [provideMockStore({ initialState: initialGridState })]
+      providers: [DataGridStore, provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
 
-    store = TestBed.inject(MockStore);
+    store = TestBed.inject(DataGridStore);
     fixture = TestBed.createComponent(RsivriGridPagerComponent);
     component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    TestBed.inject(HttpTestingController).verify();
   });
 
   it('should create', () => {
@@ -41,13 +30,14 @@ describe('RsivriGridPagerComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should dispatch changePageListSize and changePageSize on init', () => {
-    const dispatchSpy = spyOn(store, 'dispatch');
+  it('should call changePageListSize and changePageSize on init', () => {
+    const listSizeSpy = spyOn(store, 'changePageListSize').and.callThrough();
+    const pageSizeSpy = spyOn(store, 'changePageSize').and.callThrough();
     component.pageListSize = 7;
     component.currentPagingSize = 25;
     fixture.detectChanges();
-    expect(dispatchSpy).toHaveBeenCalledWith(changePageListSize({ pageListSize: 7 }));
-    expect(dispatchSpy).toHaveBeenCalledWith(changePageSize({ pageSize: 25 }));
+    expect(listSizeSpy).toHaveBeenCalledWith(7);
+    expect(pageSizeSpy).toHaveBeenCalledWith(25);
   });
 
   it('should render nothing when pagination is false', () => {
@@ -58,6 +48,7 @@ describe('RsivriGridPagerComponent', () => {
 
   describe('when pagination is enabled', () => {
     beforeEach(() => {
+      store.setData(new Array(100).fill({}), false); // pageLimit = 10 with the default pageSize (10)
       component.pagination = true;
       component.pagingSizes = [10, 20, 50];
       component.pageListSize = 5;
@@ -89,71 +80,63 @@ describe('RsivriGridPagerComponent', () => {
 
     it('should mark the page matching the current page number as selected', () => {
       const cells = pageNumberCells();
-      // pageNumber$ starts at 0 -> page 1 (index 1 overall, first of the 5 page cells) is selected
+      // pageNumber starts at 0 -> page 1 (index 1 overall, first of the 5 page cells) is selected
       expect(cells[1].classList).toContain('page-numbers-selected');
       expect(cells[2].classList).not.toContain('page-numbers-selected');
     });
 
     it('should mark the paging size matching the current page size as selected', () => {
       const links = pageSizeLinks();
-      // pageSize$ starts at 10
+      // pageSize starts at 10
       expect(links[0].classList).toContain('page-selected');
       expect(links[1].classList).not.toContain('page-selected');
     });
 
-    it('should dispatch decreasePageNum when the previous control is clicked', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('should call decreasePageNum when the previous control is clicked', () => {
+      const spy = spyOn(store, 'decreasePageNum').and.callThrough();
       pageNumberCells()[0].click();
-      expect(dispatchSpy).toHaveBeenCalledWith(decreasePageNum());
+      expect(spy).toHaveBeenCalled();
     });
 
-    it('should dispatch increasePageNum when the next control is clicked', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('should call increasePageNum when the next control is clicked', () => {
+      const spy = spyOn(store, 'increasePageNum').and.callThrough();
       const cells = pageNumberCells();
       cells[cells.length - 1].click();
-      expect(dispatchSpy).toHaveBeenCalledWith(increasePageNum());
+      expect(spy).toHaveBeenCalled();
     });
 
-    it('should dispatch changePageNumber(page - 1) when a page cell is clicked', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('should call changePageNumber(page - 1) when a page cell is clicked', () => {
+      const spy = spyOn(store, 'changePageNumber').and.callThrough();
       // third page-numbers cell overall is page "2"
       pageNumberCells()[2].click();
-      expect(dispatchSpy).toHaveBeenCalledWith(changePageNumber({ pageNumber: 1 }));
+      expect(spy).toHaveBeenCalledWith(1);
     });
 
-    it('should dispatch lastPageNum when the last-page cell is clicked', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('should call lastPageNum when the last-page cell is clicked', () => {
+      const spy = spyOn(store, 'lastPageNum').and.callThrough();
       const cells = pageNumberCells();
       cells[cells.length - 2].click();
-      expect(dispatchSpy).toHaveBeenCalledWith(lastPageNum());
+      expect(spy).toHaveBeenCalled();
     });
 
-    it('should dispatch changePageNumber(0) and changePageSize(item) when a paging size link is clicked', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
+    it('should call changePageNumber(0) and changePageSize(item) when a paging size link is clicked', () => {
+      const pageNumberSpy = spyOn(store, 'changePageNumber').and.callThrough();
+      const pageSizeSpy = spyOn(store, 'changePageSize').and.callThrough();
       pageSizeLinks()[2].click();
-      expect(dispatchSpy).toHaveBeenCalledWith(changePageNumber({ pageNumber: 0 }));
-      expect(dispatchSpy).toHaveBeenCalledWith(changePageSize({ pageSize: 50 }));
+      expect(pageNumberSpy).toHaveBeenCalledWith(0);
+      expect(pageSizeSpy).toHaveBeenCalledWith(50);
     });
   });
 
   describe('when the visible page window already reaches the page limit', () => {
     it('should not render the last-page cell', () => {
-      store.setState({
-        dataGrid: {
-          data: [],
-          pager: {
-            pageSize: 10,
-            pageNumber: 5,
-            pageList: [6, 7, 8, 9, 10],
-            pageListSize: 5,
-            pageLimit: 10,
-            remotePage: false
-          }
-        }
-      });
       component.pagination = true;
       component.pagingSizes = [10];
       component.pageListSize = 5;
+      fixture.detectChanges(); // runs ngOnInit (changePageListSize/changePageSize against empty data)
+
+      store.setData(new Array(100).fill({}), false); // pageLimit = 10
+      store.lastPageNum(); // pageNumber = 9, pageList = [6..10]
       fixture.detectChanges();
 
       // decrease(<) + 5 pages [6..10] + increase(>), no separate last-page cell

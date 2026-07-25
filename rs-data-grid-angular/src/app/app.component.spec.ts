@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { provideMockStore } from '@ngrx/store/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AppComponent } from './app.component';
-import { initialState } from './rsivri-grid/store/data-grid.reducer';
-
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -11,8 +10,8 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, AppComponent],
-      providers: [provideMockStore({ initialState: { dataGrid: initialState } })],
+      imports: [AppComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
     })
     .compileComponents();
 

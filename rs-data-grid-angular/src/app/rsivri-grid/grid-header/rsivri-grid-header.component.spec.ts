@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { RsivriGridHeaderComponent } from './rsivri-grid-header.component';
 import { IColumn } from '../../../core/models/IColumn';
 
@@ -20,6 +21,7 @@ describe('RsivriGridHeaderComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RsivriGridHeaderComponent],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RsivriGridHeaderComponent);
@@ -39,6 +41,14 @@ describe('RsivriGridHeaderComponent', () => {
     return Array.from(fixture.nativeElement.querySelectorAll('.content-style'));
   }
 
+  function getFilterToggles(): HTMLButtonElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('.filter-toggle'));
+  }
+
+  function getFilterOptionCheckboxes(): HTMLInputElement[] {
+    return Array.from(fixture.nativeElement.querySelectorAll('.filter-panel input[type="checkbox"]'));
+  }
+
   it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
@@ -50,6 +60,7 @@ describe('RsivriGridHeaderComponent', () => {
     expect(component.headerColumnLines).toBeTrue();
     expect(component.tableBorder).toBeTrue();
     expect(component.borderRadiusTop).toBeTrue();
+    expect(component.filtering).toBeTrue();
   });
 
   it('should render no column cells when columns is empty', () => {
@@ -112,5 +123,83 @@ describe('RsivriGridHeaderComponent', () => {
     const cells = getCells();
     expect(cells.length).toBe(1);
     expect(cells[0].classList).not.toContain('border-right');
+  });
+
+  describe('filtering', () => {
+    it('renders one filter dropdown toggle per column, titlecased, when filtering is enabled', () => {
+      setColumns(twoColumns);
+      const toggles = getFilterToggles();
+      expect(toggles.length).toBe(2);
+      expect(toggles[0].textContent).toContain('First Name');
+      expect(toggles[1].textContent).toContain('Last Name');
+    });
+
+    it('renders no filter row when filtering is disabled', () => {
+      component.filtering = false;
+      setColumns(twoColumns);
+      expect(getFilterToggles().length).toBe(0);
+    });
+
+    it('renders no filter row when there are no columns', () => {
+      fixture.detectChanges();
+      expect(getFilterToggles().length).toBe(0);
+    });
+
+    it('does not render a dropdown panel until the toggle is clicked', () => {
+      setColumns(twoColumns);
+      expect(fixture.nativeElement.querySelector('.filter-panel')).toBeNull();
+    });
+
+    it('opens the dropdown with one checkbox per distinct value in that column', () => {
+      component.data = [
+        { firstName: 'Jane', lastName: 'Doe' },
+        { firstName: 'John', lastName: 'Smith' },
+        { firstName: 'Jane', lastName: 'Doe' },
+      ];
+      setColumns(twoColumns);
+
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+
+      expect(getFilterOptionCheckboxes().length).toBe(2);
+    });
+
+    it('emits filterChange with the dataField and the accumulated selected values when options are checked', () => {
+      component.data = [
+        { firstName: 'Jane', lastName: 'Doe' },
+        { firstName: 'John', lastName: 'Smith' },
+      ];
+      setColumns(twoColumns);
+      const emitted: { dataField: string; values: string[] }[] = [];
+      component.filterChange.subscribe(event => emitted.push(event));
+
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+
+      const checkboxes = getFilterOptionCheckboxes();
+      checkboxes[0].dispatchEvent(new Event('change'));
+      checkboxes[1].dispatchEvent(new Event('change'));
+
+      expect(emitted).toEqual([
+        { dataField: 'firstName', values: ['Jane'] },
+        { dataField: 'firstName', values: ['Jane', 'John'] },
+      ]);
+    });
+
+    it('unchecking a selected value removes it from the emitted values', () => {
+      component.data = [{ firstName: 'Jane', lastName: 'Doe' }];
+      setColumns(twoColumns);
+      const emitted: { dataField: string; values: string[] }[] = [];
+
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+
+      const checkbox = getFilterOptionCheckboxes()[0];
+      checkbox.dispatchEvent(new Event('change'));
+      component.filterChange.subscribe(event => emitted.push(event));
+      checkbox.dispatchEvent(new Event('change'));
+
+      expect(emitted).toEqual([{ dataField: 'firstName', values: [] }]);
+    });
   });
 });

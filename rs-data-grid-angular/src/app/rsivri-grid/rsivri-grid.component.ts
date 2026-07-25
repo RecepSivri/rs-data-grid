@@ -1,23 +1,25 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { Component, Input, OnInit, effect, inject } from '@angular/core';
 import { IColumn } from '../../core/models/IColumn';
-import { Store } from '@ngrx/store';
-import { fetchData, setData } from './store/data-grid.actions';
-import { selectData, selectPageNum, selectPageSize } from './store/data-grid.selectors';
-import { combineLatest, Observable } from 'rxjs';
-import { RsivriGridHeaderComponent } from './grid-header/rsivri-grid-header.component';
+import { DataGridStore } from './store/data-grid.store';
+import { FilterChangeEvent, RsivriGridHeaderComponent } from './grid-header/rsivri-grid-header.component';
 import { RsivriGridBodyComponent } from './grid-body/rsivri-grid-body.component';
 import { RsivriGridPagerComponent } from './grid-pager/rsivri-grid-pager.component';
 
 @Component({
   selector: 'rsivri-grid',
   standalone: true,
-  imports: [AsyncPipe, RsivriGridHeaderComponent, RsivriGridBodyComponent, RsivriGridPagerComponent],
+  imports: [RsivriGridHeaderComponent, RsivriGridBodyComponent, RsivriGridPagerComponent],
+  providers: [DataGridStore],
   templateUrl: './rsivri-grid.component.html',
   styleUrls: ['./rsivri-grid.component.css']
 })
 export class RsivriGridComponent implements OnInit {
-  data$: Observable<any[]> = this.store.select(selectData);
+  readonly store = inject(DataGridStore);
+
+  data = this.store.data;
+  allData = this.store.rawData;
+  pageNumber = this.store.pageNumber;
+  pageSize = this.store.pageSize;
 
   @Input() headerColumnLines: boolean = true;
   @Input() fetchUrl: string = '';
@@ -30,6 +32,7 @@ export class RsivriGridComponent implements OnInit {
   @Input() borderRadiusBottom: boolean = false;
   @Input() diagonalRow: boolean = false;
   @Input() pagination: boolean = false;
+  @Input() filtering: boolean = true;
   @Input() pagingSizes: number[] = [];
   @Input() currentPagingSize: number = 10;
   @Input() dataSource: any[] = [];
@@ -38,58 +41,38 @@ export class RsivriGridComponent implements OnInit {
   @Input() remoteMode: boolean = false;
   @Input() remoteModeParams?: any;
 
-  pageNumber: Observable<any> = this.store.select(selectPageNum);
-  pageSize: Observable<any> = this.store.select(selectPageSize);
+  constructor() {
+    effect(() => {
+      const data = this.store.data();
+      if (this.columns.length === 0) {
+        const result = Object.keys(Object.assign({}, ...data));
+        this.columns = result.map(item => ({ caption: item, dataField: item }));
+      }
+    });
+  }
 
-  constructor(private store: Store) {}
+  onFilterChange(event: FilterChangeEvent): void {
+    this.store.setFilter(event.dataField, event.values);
+  }
 
   ngOnInit() {
     if (this.remoteMode) {
       const endpoint = new URL(this.remoteModeParams.endpoint);
       if (this.dataSource.length > 0) {
-        this.store.dispatch(setData({ data: this.dataSource, remote: true }));
+        this.store.setData(this.dataSource, true);
       } else {
-        this.store.dispatch(fetchData({
-          url: endpoint.href,
-          section: this.remoteModeParams.aliases.data,
-          remote: true,
-          totalSection: 'size'
-        }));
+        this.store.fetchData(endpoint.href, this.remoteModeParams.aliases.data, true, 'size');
       }
-      combineLatest([this.pageNumber, this.pageSize]).subscribe(val => {
-        endpoint.searchParams.set('page', val[0]);
-        endpoint.searchParams.set('size', val[1]);
-        this.store.dispatch(fetchData({
-          url: endpoint.href,
-          section: this.remoteModeParams.aliases.data,
-          remote: true,
-          totalSection: 'size'
-        }));
-      });
     } else {
       if (this.dataSource.length > 0) {
-        this.store.dispatch(setData({ data: this.dataSource, remote: false }));
+        this.store.setData(this.dataSource, false);
       } else {
         if (this.fetchUrl !== '') {
-          this.store.dispatch(fetchData({
-            url: this.fetchUrl,
-            section: this.entrySection,
-            remote: false
-          }));
+          this.store.fetchData(this.fetchUrl, this.entrySection, false);
         } else {
-          this.store.dispatch(setData({ data: this.dataSource, remote: false }));
+          this.store.setData(this.dataSource, false);
         }
       }
     }
-    this.initializeColumnAsync();
-  }
-
-  initializeColumnAsync = () => {
-    this.store.select(selectData).subscribe(data => {
-      const result = Object.keys(Object.assign({}, ...data));
-      if (this.columns.length === 0) {
-        this.columns = result.map(item => ({ caption: item, dataField: item }));
-      }
-    });
   }
 }

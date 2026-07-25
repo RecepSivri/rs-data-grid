@@ -2,17 +2,17 @@
   <div class="full-row row-layout-space-between-center">
     <div class="row-layout-start page-number-background">
       <div class="page-numbers" (click)="decreasePager()"><</div>
-      @for (page of pageList$ | async; track page) {
+      @for (page of pageList(); track page) {
         <div
-          [class.page-numbers-selected]="(pageNumber$ | async) === page - 1"
+          [class.page-numbers-selected]="pageNumber() === page - 1"
           class="page-numbers"
           (click)="setpage(page - 1)">
           {{ page }}
         </div>
       }
-      @if (writeAS((pageList$ | async)?.[0], pageListSize, (pageLimit$ | async))) {
+      @if (writeAS(pageList()?.[0], pageListSize, pageLimit())) {
         <div class="page-numbers" (click)="lastPage()">
-          {{ pageLimit$ | async }}
+          {{ pageLimit() }}
         </div>
       }
       <div class="page-numbers" (click)="increasePager()">></div>
@@ -22,7 +22,7 @@
         <a
           class="pager-size"
           (click)="changeCurrentPaginationSize(item)"
-          [class.page-selected]="item === (pageSize$ | async)">
+          [class.page-selected]="item === pageSize()">
           {{ item }}
         </a>
       }

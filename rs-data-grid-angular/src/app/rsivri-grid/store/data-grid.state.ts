@@ -1,5 +1,5 @@
 export interface AppState {
-    data: [];
+    data: any[];
     pager: Pager;
 }
 
