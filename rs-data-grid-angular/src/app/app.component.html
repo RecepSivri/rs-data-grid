@@ -4,7 +4,12 @@
     @for (group of settingsGroups; track group.title) {
       <mat-expansion-panel [expanded]="true">
         <mat-expansion-panel-header>
-          <mat-panel-title>{{ group.title }}</mat-panel-title>
+          <mat-panel-title>
+            {{ group.title }}
+            @if (group.title === 'Grid Mode') {
+              <span class="panel-title-muted">({{ gridConfig['gridMode'] === 'batch' ? 'Batch' : 'Popup' }})</span>
+            }
+          </mat-panel-title>
         </mat-expansion-panel-header>
         @for (setting of group.settings; track setting.key) {
           <div class="settings-row" [class.settings-row-column]="setting.type === 'json' || setting.type === 'radio'">

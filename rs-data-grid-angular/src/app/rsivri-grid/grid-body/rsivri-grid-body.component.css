@@ -55,3 +55,27 @@
   background: #f5f5f5;
   border-color: #999999;
 }
+
+.row-action-save{
+  border-color: #1f7a3d;
+}
+
+.row-action-save:hover{
+  background: #eaf5ee;
+  border-color: #1f7a3d;
+}
+
+.inline-edit-input{
+  width: 100%;
+  box-sizing: border-box;
+  font-family: Arial;
+  font-size: 13px;
+  padding: 4px 6px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.inline-edit-input:focus{
+  outline: none;
+  border-color: #777777;
+}

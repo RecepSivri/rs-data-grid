@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, effect, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, effect, inject } from '@angular/core';
 import { NgTemplateOutlet, TitleCasePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import * as XLSX from 'xlsx';
@@ -24,6 +24,8 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   readonly store = inject(DataGridStore);
   private readonly titleCasePipe = new TitleCasePipe();
   private readonly dialog = inject(MatDialog);
+
+  @ViewChild(RsivriGridBodyComponent) bodyRef?: RsivriGridBodyComponent;
 
   data = this.store.data;
   allData = this.store.rawData;
@@ -90,9 +92,6 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   onRowEdit(row: any): void {
-    if (this.gridMode === 'batch') {
-      return;
-    }
     this.dialog.open(EditRowDialogComponent, { data: { row } }).afterClosed().subscribe(updatedRow => {
       if (updatedRow) {
         this.store.updateRow(row, updatedRow);
@@ -103,6 +102,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
   onAddRowClick(): void {
     if (this.gridMode === 'batch') {
+      this.bodyRef?.startAddingRow();
       return;
     }
     this.dialog.open(EditRowDialogComponent, { data: { columns: this.columns } }).afterClosed().subscribe(newRow => {
@@ -114,17 +114,24 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   onRowDelete(row: any): void {
-    if (this.gridMode === 'batch') {
-      return;
-    }
     this.dialog.open(ConfirmDialogComponent, {
-      data: { message: 'Are you sure you want to delete this row?' }
+      data: { title: 'Confirm delete', message: 'Are you sure you want to delete this row?' }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.store.removeRow(row);
         this.rowDelete.emit(row);
       }
     });
+  }
+
+  onBatchRowSave(payload: { original: any; updated: any }): void {
+    this.store.updateRow(payload.original, payload.updated);
+    this.rowEdit.emit(payload.updated);
+  }
+
+  onBatchRowAdd(row: any): void {
+    this.store.addRow(row);
+    this.rowAdd.emit(row);
   }
 
   private getDisplayedRows(): any[] {

@@ -60,6 +60,15 @@ export class AppComponent {
 
   settingsGroups: SettingsGroup[] = [
     {
+      title: 'Data Management',
+      settings: [
+        { key: 'fetchUrl', label: 'Fetch URL', type: 'string' },
+        { key: 'remoteMode', label: 'Remote Mode', type: 'boolean' },
+        { key: 'entrySection', label: 'Entry Section', type: 'string' },
+        { key: 'dataSource', label: 'Data Source (JSON)', type: 'json' },
+      ],
+    },
+    {
       title: 'Grid Mode',
       settings: [
         {
@@ -71,15 +80,6 @@ export class AppComponent {
             { value: 'batch', label: 'Batch' },
           ],
         },
-      ],
-    },
-    {
-      title: 'Data',
-      settings: [
-        { key: 'fetchUrl', label: 'Fetch URL', type: 'string' },
-        { key: 'remoteMode', label: 'Remote Mode', type: 'boolean' },
-        { key: 'entrySection', label: 'Entry Section', type: 'string' },
-        { key: 'dataSource', label: 'Data Source (JSON)', type: 'json' },
       ],
     },
     {
@@ -105,7 +105,7 @@ export class AppComponent {
       ],
     },
     {
-      title: 'Features',
+      title: 'Toolbar Features',
       settings: [
         { key: 'showFilter', label: 'Show Filter', type: 'boolean' },
         { key: 'showSort', label: 'Show Sort', type: 'boolean' },

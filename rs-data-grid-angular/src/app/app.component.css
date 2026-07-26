@@ -36,6 +36,13 @@
   border-bottom: 1px solid #dddddd;
 }
 
+.panel-title-muted{
+  color: #999999;
+  font-weight: normal;
+  font-size: 0.85em;
+  margin-left: 4px;
+}
+
 .settings-row{
   display: flex;
   align-items: center;

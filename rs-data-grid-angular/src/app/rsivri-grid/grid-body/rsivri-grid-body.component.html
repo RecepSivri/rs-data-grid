@@ -1,4 +1,33 @@
 <div class="column-layout full-row">
+  @if (isAddingRow) {
+    <div class="full-row" [class.row-style]="tableBorder" [class.row-style-bottom]="true">
+      <div class="full-row row-layout">
+        @for (column of columns; track column.dataField; let j = $index) {
+          <div class="full-row section-style row-layout-center-center"
+            [class.border-right]="bodyColumnLines && (j < columns.length - 1 || showActions)">
+            <input type="text" class="inline-edit-input" [(ngModel)]="addDraft[column.dataField]" />
+          </div>
+        }
+        @if (showActions) {
+          <div class="actions-cell row-layout-center-center">
+            <button type="button" class="row-action-button row-action-save" title="Save row" aria-label="Save row" (click)="onSaveAddClick()">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1f7a3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <path d="M17 21v-8H7v8"/>
+                <path d="M7 3v5h8"/>
+              </svg>
+            </button>
+            <button type="button" class="row-action-button" title="Cancel" aria-label="Cancel" (click)="onCancelAddClick()">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18"/>
+                <path d="M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
   @for (item of data; track $index; let i = $index) {
     <div class="full-row"
       [class.row-style]="tableBorder"
@@ -6,29 +35,55 @@
       [class.border-area-small]="borderRadiusBottom && i === data.length - 1"
       [class.row-background]="i % 2 == 1 && diagonalRow">
       <div class="full-row row-layout">
-        @for (column of columns; track column.dataField; let j = $index) {
-          <div class="full-row section-style row-layout-center-center"
-            [class.border-right]="bodyColumnLines && (j < columns.length - 1 || showActions)">
-            {{ item[column.dataField] }}
-          </div>
-        }
-        @if (showActions) {
-          <div class="actions-cell row-layout-center-center">
-            <button type="button" class="row-action-button" title="Edit row" aria-label="Edit row" (click)="rowEdit.emit(item)">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
-              </svg>
-            </button>
-            <button type="button" class="row-action-button" title="Delete row" aria-label="Delete row" (click)="rowDelete.emit(item)">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 6h18"/>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6"/>
-                <path d="M14 11v6"/>
-              </svg>
-            </button>
-          </div>
+        @if (item === editingRow) {
+          @for (column of columns; track column.dataField; let j = $index) {
+            <div class="full-row section-style row-layout-center-center"
+              [class.border-right]="bodyColumnLines && (j < columns.length - 1 || showActions)">
+              <input type="text" class="inline-edit-input" [(ngModel)]="editDraft[column.dataField]" />
+            </div>
+          }
+          @if (showActions) {
+            <div class="actions-cell row-layout-center-center">
+              <button type="button" class="row-action-button row-action-save" title="Save row" aria-label="Save row" (click)="onSaveEditClick()">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1f7a3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <path d="M17 21v-8H7v8"/>
+                  <path d="M7 3v5h8"/>
+                </svg>
+              </button>
+              <button type="button" class="row-action-button" title="Cancel" aria-label="Cancel" (click)="onCancelEditClick()">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 6 6 18"/>
+                  <path d="M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          }
+        } @else {
+          @for (column of columns; track column.dataField; let j = $index) {
+            <div class="full-row section-style row-layout-center-center"
+              [class.border-right]="bodyColumnLines && (j < columns.length - 1 || showActions)">
+              {{ item[column.dataField] }}
+            </div>
+          }
+          @if (showActions) {
+            <div class="actions-cell row-layout-center-center">
+              <button type="button" class="row-action-button" title="Edit row" aria-label="Edit row" (click)="onEditClick(item, $event)">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                </svg>
+              </button>
+              <button type="button" class="row-action-button" title="Delete row" aria-label="Delete row" (click)="rowDelete.emit(item)">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/>
+                  <path d="M14 11v6"/>
+                </svg>
+              </button>
+            </div>
+          }
         }
       </div>
     </div>
