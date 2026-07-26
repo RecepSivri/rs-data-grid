@@ -230,7 +230,7 @@ describe('data-grid pager math (pure helpers)', () => {
     });
 
     it('trims surrounding whitespace from the search term', () => {
-      expect(applyGlobalSearch(rows, '  jane  ')).toEqual([rows[0]]);
+      expect(applyGlobalSearch(rows, '  doe  ')).toEqual([rows[0]]);
     });
 
     it('returns an empty array when nothing matches', () => {

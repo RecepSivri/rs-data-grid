@@ -7,7 +7,7 @@
           <mat-panel-title>{{ group.title }}</mat-panel-title>
         </mat-expansion-panel-header>
         @for (setting of group.settings; track setting.key) {
-          <div class="settings-row" [class.settings-row-column]="setting.type === 'json'">
+          <div class="settings-row" [class.settings-row-column]="setting.type === 'json' || setting.type === 'radio'">
             <label class="settings-label">{{ setting.label }}</label>
             @switch (setting.type) {
               @case ('boolean') {
@@ -20,6 +20,13 @@
                 <textarea class="settings-textarea"
                   [value]="gridConfig[setting.key] | json"
                   (change)="onCommitJsonSetting(setting.key, $event)"></textarea>
+              }
+              @case ('radio') {
+                <mat-radio-group [(ngModel)]="gridConfig[setting.key]">
+                  @for (option of setting.options; track option.value) {
+                    <mat-radio-button [value]="option.value">{{ option.label }}</mat-radio-button>
+                  }
+                </mat-radio-group>
               }
               @default {
                 <input type="text" class="settings-input"
@@ -47,8 +54,14 @@
   [showFilter]="gridConfig['showFilter']"
   [showSort]="gridConfig['showSort']"
   [showSearch]="gridConfig['showSearch']"
+  [showActions]="gridConfig['showActions']"
+  [showAdd]="gridConfig['showAdd']"
+  [gridMode]="gridConfig['gridMode']"
   [exportExcel]="gridConfig['exportExcel']"
   [exportPDF]="gridConfig['exportPDF']"
+  (rowAdd)="onGridRowAdd($event)"
+  (rowEdit)="onGridRowEdit($event)"
+  (rowDelete)="onGridRowDelete($event)"
   [bodyRowLines]="gridConfig['bodyRowLines']"
   [bodyColumnLines]="gridConfig['bodyColumnLines']"
   [tableBorder]="gridConfig['tableBorder']"
@@ -56,7 +69,7 @@
   [borderRadiusBottom]="gridConfig['borderRadiusBottom']"
   [diagonalRow]="gridConfig['diagonalRow']"
   [pagination]="gridConfig['pagination']"
-  [pagingSizes]="[10, 20, 50, 70, 100]"
+  [pagingSizes]="gridConfig['pagingSizes']"
   [currentPagingSize]="gridConfig['currentPagingSize']"
   [pageListSize]="gridConfig['pageListSize']"
 >

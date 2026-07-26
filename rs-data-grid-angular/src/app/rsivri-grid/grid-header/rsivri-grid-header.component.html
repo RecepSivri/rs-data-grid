@@ -3,7 +3,7 @@
   [class.border-area-small]="borderRadiusTop">
   @for (column of columns; track column.dataField; let i = $index) {
     <div class="full-row content-style row-layout-center-center"
-      [class.border-right]="headerColumnLines && i < columns.length - 1">
+      [class.border-right]="headerColumnLines && (i < columns.length - 1 || showActions)">
       <span class="header-caption">{{ column.caption | titlecase }}</span>
       @if (showSort) {
         <button type="button" class="sort-toggle"
@@ -19,13 +19,16 @@
       }
     </div>
   }
+  @if (showActions) {
+    <div class="actions-header-cell content-style row-layout-center-center">Actions</div>
+  }
 </div>
 @if (showFilter && columns.length > 0) {
   <div class="full-row filter-row row-layout-space-between-center"
     [class.filter-row-border]="tableBorder">
     @for (column of columns; track column.dataField; let i = $index) {
       <div class="full-row filter-cell row-layout-center-center"
-        [class.border-right]="bodyColumnLines && i < columns.length - 1">
+        [class.border-right]="bodyColumnLines && (i < columns.length - 1 || showActions)">
         <div class="filter-dropdown" (click)="$event.stopPropagation()">
           <button type="button" class="filter-toggle"
             [class.filter-toggle-active]="selectedCount(column.dataField) > 0"
@@ -58,6 +61,9 @@
           }
         </div>
       </div>
+    }
+    @if (showActions) {
+      <div class="actions-header-cell filter-cell row-layout-center-center"></div>
     }
   </div>
 }

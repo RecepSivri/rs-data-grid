@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>Confirm delete</h2>
+<mat-dialog-content>
+  <p class="confirm-message">{{ data.message }}</p>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()">No</button>
+  <button mat-raised-button color="warn" type="button" (click)="onConfirm()">Yes</button>
+</mat-dialog-actions>

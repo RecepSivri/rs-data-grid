@@ -16,6 +16,11 @@
   text-overflow: ellipsis;
 }
 
+.actions-header-cell{
+  flex: 0 0 80px;
+  box-sizing: border-box;
+}
+
 .sort-toggle{
   flex: 0 0 auto;
   display: inline-flex;

@@ -3,12 +3,19 @@ import { JsonPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatRadioModule } from '@angular/material/radio';
 import { RsivriGridComponent } from './rsivri-grid/rsivri-grid.component';
+
+interface RadioOption {
+  value: string;
+  label: string;
+}
 
 interface GridSetting {
   key: string;
   label: string;
-  type: 'boolean' | 'string' | 'number' | 'json';
+  type: 'boolean' | 'string' | 'number' | 'json' | 'radio';
+  options?: RadioOption[];
 }
 
 interface SettingsGroup {
@@ -19,7 +26,7 @@ interface SettingsGroup {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RsivriGridComponent, FormsModule, MatSlideToggleModule, MatExpansionModule, JsonPipe],
+  imports: [RsivriGridComponent, FormsModule, MatSlideToggleModule, MatExpansionModule, MatRadioModule, JsonPipe],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
@@ -38,16 +45,34 @@ export class AppComponent {
     borderRadiusBottom: false,
     diagonalRow: true,
     pagination: true,
+    pagingSizes: [10, 20, 50, 70, 100],
     showFilter: true,
     showSort: true,
     showSearch: true,
+    showActions: true,
+    showAdd: true,
     exportExcel: true,
     exportPDF: true,
     currentPagingSize: 10,
     pageListSize: 5,
+    gridMode: 'popup',
   };
 
   settingsGroups: SettingsGroup[] = [
+    {
+      title: 'Grid Mode',
+      settings: [
+        {
+          key: 'gridMode',
+          label: 'Mode',
+          type: 'radio',
+          options: [
+            { value: 'popup', label: 'Popup' },
+            { value: 'batch', label: 'Batch' },
+          ],
+        },
+      ],
+    },
     {
       title: 'Data',
       settings: [
@@ -76,6 +101,7 @@ export class AppComponent {
         { key: 'pagination', label: 'Pagination', type: 'boolean' },
         { key: 'currentPagingSize', label: 'Current Paging Size', type: 'number' },
         { key: 'pageListSize', label: 'Page List Size', type: 'number' },
+        { key: 'pagingSizes', label: 'Paging Sizes', type: 'string' },
       ],
     },
     {
@@ -84,6 +110,8 @@ export class AppComponent {
         { key: 'showFilter', label: 'Show Filter', type: 'boolean' },
         { key: 'showSort', label: 'Show Sort', type: 'boolean' },
         { key: 'showSearch', label: 'Show Search', type: 'boolean' },
+        { key: 'showActions', label: 'Show Row Actions', type: 'boolean' },
+        { key: 'showAdd', label: 'Show Add Button', type: 'boolean' },
         { key: 'exportExcel', label: 'Export Excel', type: 'boolean' },
         { key: 'exportPDF', label: 'Export PDF', type: 'boolean' },
       ],
@@ -92,8 +120,26 @@ export class AppComponent {
 
   jsonError: string | null = null;
 
+  onGridRowAdd(row: any): void {
+    console.log('Added row:', row);
+  }
+
+  onGridRowEdit(row: any): void {
+    console.log('Edit row:', row);
+  }
+
+  onGridRowDelete(row: any): void {
+    console.log('Deleted row:', row);
+  }
+
   onCommitStringSetting(key: string, event: Event): void {
-    this.gridConfig = { ...this.gridConfig, [key]: (event.target as HTMLInputElement).value };
+    const raw = (event.target as HTMLInputElement).value;
+    if (key === 'pagingSizes') {
+      const parsed = raw.split(',').map(part => Number(part.trim())).filter(value => !Number.isNaN(value));
+      this.gridConfig = { ...this.gridConfig, [key]: parsed };
+      return;
+    }
+    this.gridConfig = { ...this.gridConfig, [key]: raw };
   }
 
   onCommitJsonSetting(key: string, event: Event): void {

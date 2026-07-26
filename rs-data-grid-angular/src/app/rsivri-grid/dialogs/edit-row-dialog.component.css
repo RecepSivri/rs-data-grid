@@ -1,0 +1,37 @@
+.edit-form{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 320px;
+  padding-top: 4px;
+}
+
+.edit-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.edit-label{
+  font-family: Arial;
+  font-size: 13px;
+  color: #555555;
+  flex: 1 1 auto;
+  text-transform: capitalize;
+}
+
+.edit-input{
+  width: 190px;
+  box-sizing: border-box;
+  font-family: Arial;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+}
+
+.edit-input:focus{
+  outline: none;
+  border-color: #777777;
+}

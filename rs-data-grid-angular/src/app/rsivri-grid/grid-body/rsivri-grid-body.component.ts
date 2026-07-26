@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { IColumn } from '../../../core/models/IColumn';
 
 @Component({
@@ -17,4 +17,8 @@ export class RsivriGridBodyComponent {
   @Input() borderRadiusBottom: boolean = false;
   @Input() diagonalRow: boolean = false;
   @Input() currentPagingSize: number = 10;
+  @Input() showActions: boolean = false;
+
+  @Output() rowEdit = new EventEmitter<any>();
+  @Output() rowDelete = new EventEmitter<any>();
 }

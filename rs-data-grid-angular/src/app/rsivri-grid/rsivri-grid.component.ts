@@ -1,5 +1,6 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges, TemplateRef, effect, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, effect, inject } from '@angular/core';
 import { NgTemplateOutlet, TitleCasePipe } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -8,6 +9,8 @@ import { DataGridStore } from './store/data-grid.store';
 import { FilterChangeEvent, RsivriGridHeaderComponent } from './grid-header/rsivri-grid-header.component';
 import { RsivriGridBodyComponent } from './grid-body/rsivri-grid-body.component';
 import { RsivriGridPagerComponent } from './grid-pager/rsivri-grid-pager.component';
+import { ConfirmDialogComponent } from './dialogs/confirm-dialog.component';
+import { EditRowDialogComponent } from './dialogs/edit-row-dialog.component';
 
 @Component({
   selector: 'rsivri-grid',
@@ -20,6 +23,7 @@ import { RsivriGridPagerComponent } from './grid-pager/rsivri-grid-pager.compone
 export class RsivriGridComponent implements OnInit, OnChanges {
   readonly store = inject(DataGridStore);
   private readonly titleCasePipe = new TitleCasePipe();
+  private readonly dialog = inject(MatDialog);
 
   data = this.store.data;
   allData = this.store.rawData;
@@ -44,6 +48,9 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() showFilter: boolean = false;
   @Input() showSort: boolean = false;
   @Input() showSearch: boolean = false;
+  @Input() showActions: boolean = false;
+  @Input() showAdd: boolean = false;
+  @Input() gridMode: 'popup' | 'batch' = 'popup';
   @Input() exportExcel: boolean = false;
   @Input() exportPDF: boolean = false;
   @Input() pagingSizes: number[] = [];
@@ -55,6 +62,10 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() remoteModeParams?: any;
   @Input() loadingTemplate?: TemplateRef<unknown>;
   @Input() errorTemplate?: TemplateRef<unknown>;
+
+  @Output() rowAdd = new EventEmitter<any>();
+  @Output() rowEdit = new EventEmitter<any>();
+  @Output() rowDelete = new EventEmitter<any>();
 
   constructor() {
     effect(() => {
@@ -76,6 +87,44 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
   onGlobalSearchInput(event: Event): void {
     this.store.setGlobalSearch((event.target as HTMLInputElement).value);
+  }
+
+  onRowEdit(row: any): void {
+    if (this.gridMode === 'batch') {
+      return;
+    }
+    this.dialog.open(EditRowDialogComponent, { data: { row } }).afterClosed().subscribe(updatedRow => {
+      if (updatedRow) {
+        this.store.updateRow(row, updatedRow);
+        this.rowEdit.emit(updatedRow);
+      }
+    });
+  }
+
+  onAddRowClick(): void {
+    if (this.gridMode === 'batch') {
+      return;
+    }
+    this.dialog.open(EditRowDialogComponent, { data: { columns: this.columns } }).afterClosed().subscribe(newRow => {
+      if (newRow) {
+        this.store.addRow(newRow);
+        this.rowAdd.emit(newRow);
+      }
+    });
+  }
+
+  onRowDelete(row: any): void {
+    if (this.gridMode === 'batch') {
+      return;
+    }
+    this.dialog.open(ConfirmDialogComponent, {
+      data: { message: 'Are you sure you want to delete this row?' }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.store.removeRow(row);
+        this.rowDelete.emit(row);
+      }
+    });
   }
 
   private getDisplayedRows(): any[] {

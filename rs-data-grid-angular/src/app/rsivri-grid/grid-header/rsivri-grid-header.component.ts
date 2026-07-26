@@ -25,6 +25,7 @@ export class RsivriGridHeaderComponent {
   @Input() borderRadiusTop: boolean = true;
   @Input() showFilter: boolean = false;
   @Input() showSort: boolean = false;
+  @Input() showActions: boolean = false;
   @Input() sort: SortState = { field: null, direction: null };
 
   @Output() filterChange = new EventEmitter<FilterChangeEvent>();

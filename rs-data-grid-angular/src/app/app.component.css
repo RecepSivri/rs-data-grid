@@ -49,6 +49,13 @@
   align-items: stretch;
 }
 
+mat-radio-group{
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: 4px;
+}
+
 .settings-label{
   font-size: 12px;
   color: #555555;

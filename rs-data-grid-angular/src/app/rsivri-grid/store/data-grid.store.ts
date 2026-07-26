@@ -208,6 +208,21 @@ export class DataGridStore {
     this._state.update(s => setDataWrapper(s, data, remote, remoteDatasize));
   }
 
+  addRow(row: any) {
+    const s = this._state();
+    this.setData([row, ...s.data], s.pager.remotePage, s.pager.remoteDataSize);
+  }
+
+  removeRow(row: any) {
+    const s = this._state();
+    this.setData(s.data.filter(r => r !== row), s.pager.remotePage, s.pager.remoteDataSize);
+  }
+
+  updateRow(oldRow: any, newRow: any) {
+    const s = this._state();
+    this.setData(s.data.map(r => r === oldRow ? newRow : r), s.pager.remotePage, s.pager.remoteDataSize);
+  }
+
   fetchData(baseUrl: string, section: string | undefined, remote: boolean, totalSection?: string) {
     this._fetchConfig.set({ baseUrl, section, remote, totalSection });
   }
