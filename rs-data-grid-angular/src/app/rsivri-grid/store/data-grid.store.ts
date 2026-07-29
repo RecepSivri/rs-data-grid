@@ -134,6 +134,8 @@ interface FetchConfig {
   section?: string;
   remote: boolean;
   totalSection?: string;
+  method?: string;
+  headers?: Record<string, string>;
 }
 
 @Injectable()
@@ -167,7 +169,7 @@ export class DataGridStore {
       return undefined;
     }
     if (!cfg.remote) {
-      return cfg.baseUrl;
+      return { url: cfg.baseUrl, method: cfg.method, headers: cfg.headers };
     }
     const url = new URL(cfg.baseUrl);
     url.searchParams.set('page', String(this.pageNumber()));
@@ -186,7 +188,7 @@ export class DataGridStore {
     if (search !== '') {
       url.searchParams.set('search', search);
     }
-    return url.href;
+    return { url: url.href, method: cfg.method, headers: cfg.headers };
   });
 
   constructor() {
@@ -223,8 +225,8 @@ export class DataGridStore {
     this.setData(s.data.map(r => r === oldRow ? newRow : r), s.pager.remotePage, s.pager.remoteDataSize);
   }
 
-  fetchData(baseUrl: string, section: string | undefined, remote: boolean, totalSection?: string) {
-    this._fetchConfig.set({ baseUrl, section, remote, totalSection });
+  fetchData(baseUrl: string, section: string | undefined, remote: boolean, totalSection?: string, method?: string, headers?: Record<string, string>) {
+    this._fetchConfig.set({ baseUrl, section, remote, totalSection, method, headers });
   }
 
   changePageSize(pageSize: number) {

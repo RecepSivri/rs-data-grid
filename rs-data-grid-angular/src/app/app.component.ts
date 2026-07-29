@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatTabsModule } from '@angular/material/tabs';
 import { RsivriGridComponent } from './rsivri-grid/rsivri-grid.component';
 
 interface RadioOption {
@@ -26,13 +27,19 @@ interface SettingsGroup {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RsivriGridComponent, FormsModule, MatSlideToggleModule, MatExpansionModule, MatRadioModule, JsonPipe],
+  imports: [RsivriGridComponent, FormsModule, MatSlideToggleModule, MatExpansionModule, MatRadioModule, MatTabsModule, JsonPipe],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  httpMethods: string[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
+
   gridConfig: Record<string, any> = {
     fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
+    apiMethod: 'GET',
+    apiHeadersRaw: '',
+    apiHeaders: {},
+    authToken: '',
     entrySection: '',
     remoteMode: false,
     dataSource: [],
@@ -59,15 +66,6 @@ export class AppComponent {
   };
 
   settingsGroups: SettingsGroup[] = [
-    {
-      title: 'Data Management',
-      settings: [
-        { key: 'fetchUrl', label: 'Fetch URL', type: 'string' },
-        { key: 'remoteMode', label: 'Remote Mode', type: 'boolean' },
-        { key: 'entrySection', label: 'Entry Section', type: 'string' },
-        { key: 'dataSource', label: 'Data Source (JSON)', type: 'json' },
-      ],
-    },
     {
       title: 'Grid Mode',
       settings: [
@@ -99,6 +97,7 @@ export class AppComponent {
       title: 'Pagination',
       settings: [
         { key: 'pagination', label: 'Pagination', type: 'boolean' },
+        { key: 'remoteMode', label: 'Remote Mode', type: 'boolean' },
         { key: 'currentPagingSize', label: 'Current Paging Size', type: 'number' },
         { key: 'pageListSize', label: 'Page List Size', type: 'number' },
         { key: 'pagingSizes', label: 'Paging Sizes', type: 'string' },
@@ -119,6 +118,23 @@ export class AppComponent {
   ];
 
   jsonError: string | null = null;
+
+  private parseLooseJson(raw: string): any {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      // Fall through to relaxed parsing (single-quoted strings, unquoted keys).
+    }
+    const withDoubleQuotedStrings = raw.replace(/'((?:[^'\\]|\\.)*)'/g, (_match, inner) => {
+      const unescaped = (inner as string).replace(/\\'/g, "'");
+      return `"${unescaped.replace(/"/g, '\\"')}"`;
+    });
+    const withQuotedKeys = withDoubleQuotedStrings.replace(
+      /([{,]\s*)([A-Za-z_$][A-Za-z0-9_$]*)\s*:/g,
+      '$1"$2":'
+    );
+    return JSON.parse(withQuotedKeys);
+  }
 
   onGridRowAdd(row: any): void {
     console.log('Added row:', row);
@@ -142,6 +158,23 @@ export class AppComponent {
     this.gridConfig = { ...this.gridConfig, [key]: raw };
   }
 
+  onCommitHeadersSetting(event: Event): void {
+    const raw = (event.target as HTMLTextAreaElement).value;
+    const headers: Record<string, string> = {};
+    raw.split('\n').forEach(line => {
+      const separatorIndex = line.indexOf(':');
+      if (separatorIndex === -1) {
+        return;
+      }
+      const key = line.slice(0, separatorIndex).trim();
+      const value = line.slice(separatorIndex + 1).trim();
+      if (key) {
+        headers[key] = value;
+      }
+    });
+    this.gridConfig = { ...this.gridConfig, apiHeadersRaw: raw, apiHeaders: headers };
+  }
+
   onCommitJsonSetting(key: string, event: Event): void {
     const raw = (event.target as HTMLTextAreaElement).value.trim();
     if (raw === '') {
@@ -150,7 +183,7 @@ export class AppComponent {
       return;
     }
     try {
-      const parsed = JSON.parse(raw);
+      const parsed = this.parseLooseJson(raw);
       this.jsonError = null;
       this.gridConfig = { ...this.gridConfig, [key]: Array.isArray(parsed) ? parsed : [parsed] };
     } catch {

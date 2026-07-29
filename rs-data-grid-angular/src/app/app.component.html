@@ -1,6 +1,62 @@
 <div style="width: 100%; display: flex; flex-direction: row;">
 <div style = "width: 20%;margin-right:15px;">
   <mat-accordion class="settings-accordion" multi>
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Data Management</mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-tab-group class="data-source-tabs" animationDuration="0ms">
+        <mat-tab label="API">
+          <div class="settings-tab-content">
+            <div class="settings-row settings-row-column">
+              <label class="settings-label">Request</label>
+              <div class="postman-row">
+                <select class="settings-input settings-method-select" [(ngModel)]="gridConfig['apiMethod']">
+                  @for (method of httpMethods; track method) {
+                    <option [value]="method">{{ method }}</option>
+                  }
+                </select>
+                <input type="text" class="settings-input settings-input-wide"
+                  [value]="gridConfig['fetchUrl']"
+                  (keyup.enter)="onCommitStringSetting('fetchUrl', $event)" />
+              </div>
+            </div>
+            <div class="settings-row settings-row-column">
+              <label class="settings-label">Headers</label>
+              <textarea class="settings-textarea settings-textarea-short"
+                placeholder="Content-Type: application/json"
+                [value]="gridConfig['apiHeadersRaw']"
+                (change)="onCommitHeadersSetting($event)"></textarea>
+            </div>
+            <div class="settings-row settings-row-column">
+              <label class="settings-label">Auth Token (Bearer)</label>
+              <input type="text" class="settings-input settings-input-wide"
+                [value]="gridConfig['authToken']"
+                (keyup.enter)="onCommitStringSetting('authToken', $event)" />
+            </div>
+            <div class="settings-row settings-row-column">
+              <label class="settings-label">Entry Section</label>
+              <input type="text" class="settings-input settings-input-wide"
+                [value]="gridConfig['entrySection']"
+                (keyup.enter)="onCommitStringSetting('entrySection', $event)" />
+            </div>
+          </div>
+        </mat-tab>
+        <mat-tab label="JSON">
+          <div class="settings-tab-content">
+            <div class="settings-row settings-row-column">
+              <label class="settings-label">Data Source (JSON)</label>
+              <textarea class="settings-textarea"
+                [value]="gridConfig['dataSource'] | json"
+                (change)="onCommitJsonSetting('dataSource', $event)"></textarea>
+              @if (jsonError) {
+                <div class="settings-error">{{ jsonError }}</div>
+              }
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-expansion-panel>
     @for (group of settingsGroups; track group.title) {
       <mat-expansion-panel [expanded]="true">
         <mat-expansion-panel-header>
@@ -51,6 +107,9 @@
 <div style = "width: 80%;">
 <rsivri-grid
   [fetchUrl]="gridConfig['fetchUrl']"
+  [fetchMethod]="gridConfig['apiMethod']"
+  [fetchHeaders]="gridConfig['apiHeaders']"
+  [authToken]="gridConfig['authToken']"
   [entrySection]="gridConfig['entrySection']"
   [remoteMode]="gridConfig['remoteMode']"
   [dataSource]="gridConfig['dataSource']"

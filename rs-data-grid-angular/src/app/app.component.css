@@ -101,6 +101,44 @@ mat-radio-group{
   border-color: #777777;
 }
 
+.data-source-tabs{
+  font-family: Arial;
+}
+
+.settings-tab-content{
+  padding: 12px 4px 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-select{
+  width: 100%;
+}
+
+.settings-input-wide{
+  width: 100%;
+}
+
+.postman-row{
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.settings-method-select{
+  flex: 0 0 90px;
+  width: 90px;
+}
+
+.postman-row .settings-input-wide{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings-textarea-short{
+  min-height: 44px;
+}
+
 .settings-error{
   font-size: 11px;
   color: #b3261e;
