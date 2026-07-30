@@ -19,21 +19,84 @@
   border-radius: 4px;
 }
 
+.app-sidenav{
+  width: 20%;
+  min-width: 260px;
+  margin: 0 15px 0 0;
+  background: #262a2e;
+  border: 1px solid #dddddd;
+  border-left: none;
+  border-radius: 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidenav-title{
+  font-family: Arial;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: #1b1e21;
+  padding: 16px;
+  border-bottom: 3px solid #ff6c37;
+  flex: 0 0 auto;
+}
+
 .settings-accordion{
   font-family: Arial;
-  border: 1px solid #dddddd;
-  border-radius: 6px;
+  border: none;
+  border-radius: 0;
   overflow: hidden;
+  flex: 1 1 auto;
 }
 
 .settings-accordion ::ng-deep .mat-expansion-panel{
   box-shadow: none !important;
   border-radius: 0 !important;
   margin: 0 !important;
+  background: #262a2e;
 }
 
 .settings-accordion ::ng-deep .mat-expansion-panel:not(:last-child){
-  border-bottom: 1px solid #dddddd;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-accordion ::ng-deep .mat-expansion-panel-header{
+  height: 48px !important;
+  padding: 0 16px !important;
+  border-left: 4px solid transparent;
+}
+
+.settings-accordion ::ng-deep .mat-expansion-panel-header:hover{
+  background: rgba(255, 108, 55, 0.1) !important;
+}
+
+.settings-accordion ::ng-deep .mat-expansion-panel-header-title{
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #e8e9ea;
+}
+
+.settings-accordion ::ng-deep .mat-expansion-indicator::after{
+  color: #e8e9ea;
+}
+
+.settings-accordion ::ng-deep .mat-expanded > .mat-expansion-panel-header{
+  border-left-color: #ff6c37;
+  background: rgba(255, 108, 55, 0.14);
+}
+
+.settings-accordion ::ng-deep .mat-expansion-panel-body{
+  background: #ffffff;
+  border-top: 1px solid #eeeeee;
+  max-height: 340px;
+  overflow-y: auto;
 }
 
 .panel-title-muted{
@@ -81,7 +144,7 @@ mat-radio-group{
 
 .settings-input:focus{
   outline: none;
-  border-color: #777777;
+  border-color: #ff6c37;
 }
 
 .settings-textarea{
@@ -98,7 +161,7 @@ mat-radio-group{
 
 .settings-textarea:focus{
   outline: none;
-  border-color: #777777;
+  border-color: #ff6c37;
 }
 
 .data-source-tabs{
@@ -137,6 +200,17 @@ mat-radio-group{
 
 .settings-textarea-short{
   min-height: 44px;
+}
+
+.settings-fetch-button{
+  width: 100%;
+  background-color: #ff6c37 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.settings-fetch-button:hover{
+  background-color: #e0562b !important;
 }
 
 .settings-error{

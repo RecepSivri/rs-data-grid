@@ -14,6 +14,12 @@
         <span>{{ loadError()?.message || 'Something went wrong while loading data.' }}</span>
       </div>
     }
+  } @else if ((data() ?? []).length === 0) {
+    @if (emptyTemplate) {
+      <ng-container *ngTemplateOutlet="emptyTemplate"></ng-container>
+    } @else {
+      <div class="grid-state grid-state-empty">No data to display.</div>
+    }
   } @else {
     @if (showSearch || exportExcel || exportPDF || showAdd) {
       <div class="grid-toolbar">

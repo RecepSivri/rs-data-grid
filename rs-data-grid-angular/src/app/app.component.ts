@@ -5,6 +5,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatButtonModule } from '@angular/material/button';
 import { RsivriGridComponent } from './rsivri-grid/rsivri-grid.component';
 
 interface RadioOption {
@@ -27,7 +28,7 @@ interface SettingsGroup {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RsivriGridComponent, FormsModule, MatSlideToggleModule, MatExpansionModule, MatRadioModule, MatTabsModule, JsonPipe],
+  imports: [RsivriGridComponent, FormsModule, MatSlideToggleModule, MatExpansionModule, MatRadioModule, MatTabsModule, MatButtonModule, JsonPipe],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

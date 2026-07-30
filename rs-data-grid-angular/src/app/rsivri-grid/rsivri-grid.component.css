@@ -21,6 +21,10 @@
   border-color: #e3b6b3;
 }
 
+.grid-state-empty{
+  color: #777777;
+}
+
 .grid-state-icon{
   font-size: 16px;
   line-height: 1;

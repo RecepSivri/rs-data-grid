@@ -67,6 +67,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() remoteModeParams?: any;
   @Input() loadingTemplate?: TemplateRef<unknown>;
   @Input() errorTemplate?: TemplateRef<unknown>;
+  @Input() emptyTemplate?: TemplateRef<unknown>;
 
   @Output() rowAdd = new EventEmitter<any>();
   @Output() rowEdit = new EventEmitter<any>();
@@ -183,9 +184,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const reloadKeys = ['fetchUrl', 'fetchMethod', 'fetchHeaders', 'authToken', 'entrySection', 'remoteMode', 'dataSource', 'remoteModeParams'];
-    const shouldReload = reloadKeys.some(key => changes[key] && !changes[key].firstChange);
-    if (shouldReload) {
+    if (changes['dataSource'] && !changes['dataSource'].firstChange) {
       this.loadData();
     }
   }
@@ -196,6 +195,10 @@ export class RsivriGridComponent implements OnInit, OnChanges {
       headers['Authorization'] = `Bearer ${this.authToken}`;
     }
     return Object.keys(headers).length > 0 ? headers : undefined;
+  }
+
+  fetchNow(): void {
+    this.loadData();
   }
 
   private loadData(): void {

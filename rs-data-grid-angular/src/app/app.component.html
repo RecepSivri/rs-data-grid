@@ -1,7 +1,8 @@
-<div style="width: 100%; display: flex; flex-direction: row;">
-<div style = "width: 20%;margin-right:15px;">
+<div style="width: 100%; min-height: 100vh; display: flex; flex-direction: row; margin: 0;">
+<div class="app-sidenav">
+  <div class="sidenav-title">Grid Settings</div>
   <mat-accordion class="settings-accordion" multi>
-    <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel [expanded]="false">
       <mat-expansion-panel-header>
         <mat-panel-title>Data Management</mat-panel-title>
       </mat-expansion-panel-header>
@@ -18,7 +19,7 @@
                 </select>
                 <input type="text" class="settings-input settings-input-wide"
                   [value]="gridConfig['fetchUrl']"
-                  (keyup.enter)="onCommitStringSetting('fetchUrl', $event)" />
+                  (input)="onCommitStringSetting('fetchUrl', $event)" />
               </div>
             </div>
             <div class="settings-row settings-row-column">
@@ -26,19 +27,16 @@
               <textarea class="settings-textarea settings-textarea-short"
                 placeholder="Content-Type: application/json"
                 [value]="gridConfig['apiHeadersRaw']"
-                (change)="onCommitHeadersSetting($event)"></textarea>
+                (input)="onCommitHeadersSetting($event)"></textarea>
             </div>
             <div class="settings-row settings-row-column">
               <label class="settings-label">Auth Token (Bearer)</label>
               <input type="text" class="settings-input settings-input-wide"
                 [value]="gridConfig['authToken']"
-                (keyup.enter)="onCommitStringSetting('authToken', $event)" />
+                (input)="onCommitStringSetting('authToken', $event)" />
             </div>
-            <div class="settings-row settings-row-column">
-              <label class="settings-label">Entry Section</label>
-              <input type="text" class="settings-input settings-input-wide"
-                [value]="gridConfig['entrySection']"
-                (keyup.enter)="onCommitStringSetting('entrySection', $event)" />
+            <div class="settings-row">
+              <button mat-flat-button type="button" class="settings-fetch-button" (click)="grid.fetchNow()">Fetch</button>
             </div>
           </div>
         </mat-tab>
@@ -58,7 +56,7 @@
       </mat-tab-group>
     </mat-expansion-panel>
     @for (group of settingsGroups; track group.title) {
-      <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel [expanded]="false">
         <mat-expansion-panel-header>
           <mat-panel-title>
             {{ group.title }}
@@ -105,7 +103,7 @@
   </mat-accordion>
 </div>
 <div style = "width: 80%;">
-<rsivri-grid
+<rsivri-grid #grid
   [fetchUrl]="gridConfig['fetchUrl']"
   [fetchMethod]="gridConfig['apiMethod']"
   [fetchHeaders]="gridConfig['apiHeaders']"
