@@ -39,10 +39,10 @@
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: #ffffff;
+  color: #f2f2f3;
   background: #1b1e21;
   padding: 16px;
-  border-bottom: 3px solid #ff6c37;
+  border-bottom: 1px solid #45484c;
   flex: 0 0 auto;
 }
 
@@ -72,7 +72,7 @@
 }
 
 .settings-accordion ::ng-deep .mat-expansion-panel-header:hover{
-  background: rgba(255, 108, 55, 0.1) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .settings-accordion ::ng-deep .mat-expansion-panel-header-title{
@@ -87,20 +87,52 @@
   color: #e8e9ea;
 }
 
+.settings-accordion ::ng-deep mat-radio-button .mdc-label,
+.settings-accordion ::ng-deep mat-radio-button .mat-radio-label-content{
+  color: #e8e9ea !important;
+}
+
+.settings-accordion ::ng-deep .mat-mdc-tab-labels,
+.settings-accordion ::ng-deep .mat-mdc-tab-label-container{
+  background: #1b1e21;
+}
+
+.settings-accordion ::ng-deep .mdc-tab__text-label{
+  color: #b0b3b6 !important;
+}
+
+.settings-accordion ::ng-deep .mdc-tab--active .mdc-tab__text-label{
+  color: #f2f2f3 !important;
+  font-weight: 700;
+}
+
+.settings-accordion ::ng-deep .mdc-tab-indicator__content--underline{
+  border-color: #8a8d90 !important;
+}
+
+.settings-accordion ::ng-deep .mat-mdc-tab-body-content{
+  background: #2f3338;
+}
+
 .settings-accordion ::ng-deep .mat-expanded > .mat-expansion-panel-header{
-  border-left-color: #ff6c37;
-  background: rgba(255, 108, 55, 0.14);
+  border-left-color: #8a8d90;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .settings-accordion ::ng-deep .mat-expansion-panel-body{
-  background: #ffffff;
-  border-top: 1px solid #eeeeee;
+  background: #2f3338;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   max-height: 340px;
   overflow-y: auto;
 }
 
+.settings-accordion ::ng-deep .no-scroll-panel .mat-expansion-panel-body{
+  max-height: none;
+  overflow: visible;
+}
+
 .panel-title-muted{
-  color: #999999;
+  color: #b0b3b6;
   font-weight: normal;
   font-size: 0.85em;
   margin-left: 4px;
@@ -128,7 +160,7 @@ mat-radio-group{
 
 .settings-label{
   font-size: 12px;
-  color: #555555;
+  color: #c7cacd;
   flex: 1 1 auto;
 }
 
@@ -138,13 +170,20 @@ mat-radio-group{
   font-family: Arial;
   font-size: 12px;
   padding: 4px 6px;
-  border: 1px solid #cccccc;
+  background: #1b1e21;
+  color: #e8e9ea;
+  border: 1px solid #44494e;
   border-radius: 4px;
+}
+
+.settings-input::placeholder,
+.settings-textarea::placeholder{
+  color: #797d81;
 }
 
 .settings-input:focus{
   outline: none;
-  border-color: #ff6c37;
+  border-color: #8a8d90;
 }
 
 .settings-textarea{
@@ -154,14 +193,16 @@ mat-radio-group{
   font-family: monospace;
   font-size: 11px;
   padding: 6px;
-  border: 1px solid #cccccc;
+  background: #1b1e21;
+  color: #e8e9ea;
+  border: 1px solid #44494e;
   border-radius: 4px;
   resize: vertical;
 }
 
 .settings-textarea:focus{
   outline: none;
-  border-color: #ff6c37;
+  border-color: #8a8d90;
 }
 
 .data-source-tabs{
@@ -206,7 +247,7 @@ mat-radio-group{
   width: 100%;
   background-color: #ff6c37 !important;
   color: #ffffff !important;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .settings-fetch-button:hover{
@@ -215,7 +256,8 @@ mat-radio-group{
 
 .settings-error{
   font-size: 11px;
-  color: #b3261e;
+  font-weight: 700;
+  color: #f2f2f3;
   margin-top: -4px;
   margin-bottom: 4px;
 }

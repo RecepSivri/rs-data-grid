@@ -59,9 +59,7 @@ export const useDataGridStore = () => {
   };
 
   const changePageSize = (pageSize: number) => {
-    const length = state.value.pager.remotePage
-      ? state.value.data.length
-      : applyGlobalSearch(applyFilters(state.value.data, filters.value), globalSearch.value).length;
+    const length = state.value.pager.remotePage ? state.value.data.length : searchedData.value.length;
     const pageLimit = Math.ceil(length / pageSize);
     state.value = { ...state.value, pager: { ...state.value.pager, pageSize, pageLimit, pageList: returnPageList(state.value.pager.pageListSize, pageLimit) } };
   };
@@ -72,7 +70,7 @@ export const useDataGridStore = () => {
       state.value = { ...state.value, pager: { ...state.value.pager, pageNumber: 0 } };
       return;
     }
-    const pageLimit = Math.ceil(applyGlobalSearch(applyFilters(state.value.data, filters.value), globalSearch.value).length / state.value.pager.pageSize);
+    const pageLimit = Math.ceil(searchedData.value.length / state.value.pager.pageSize);
     state.value = {
       ...state.value,
       pager: { ...state.value.pager, pageNumber: 0, pageLimit, pageList: returnPageList(state.value.pager.pageListSize, pageLimit) },
@@ -85,7 +83,7 @@ export const useDataGridStore = () => {
       state.value = { ...state.value, pager: { ...state.value.pager, pageNumber: 0 } };
       return;
     }
-    const pageLimit = Math.ceil(applyGlobalSearch(applyFilters(state.value.data, filters.value), search).length / state.value.pager.pageSize);
+    const pageLimit = Math.ceil(searchedData.value.length / state.value.pager.pageSize);
     state.value = {
       ...state.value,
       pager: { ...state.value.pager, pageNumber: 0, pageLimit, pageList: returnPageList(state.value.pager.pageListSize, pageLimit) },

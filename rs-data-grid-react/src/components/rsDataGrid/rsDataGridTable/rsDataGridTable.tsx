@@ -1,79 +1,221 @@
-import { useContext } from 'react';
-import { IColumn, ICustomization } from '../models/rsDataGrid.models';
-import './rsDataGridTable.scss'
-import {TableStateContext} from '../rsDataGrid'
-export interface IRsDataGridTableProps {
-  data?: any[];
-  column?: IColumn[];
-  customization?: ICustomization;
+import { forwardRef, useImperativeHandle, useState } from 'react';
+import { IColumn, GridMode } from '../models/rsDataGrid.models';
+import './rsDataGridTable.scss';
+
+export interface RsDataGridTableProps {
+  columns: IColumn[];
+  data: any[];
+  bodyRowLines: boolean;
+  bodyColumnLines: boolean;
+  tableBorder: boolean;
+  borderRadiusBottom: boolean;
+  diagonalRow: boolean;
+  showActions: boolean;
+  gridMode: GridMode;
+  onRowEdit: (row: any) => void;
+  onRowDelete: (row: any) => void;
+  onBatchRowSave: (payload: { original: any; updated: any }) => void;
+  onBatchRowAdd: (row: any) => void;
+  onRequestConfirm: (title: string, message: string) => Promise<boolean>;
 }
 
-const getHeight = (column: IColumn[]) => {
-  const arr: number[] = column.map((columnItem: IColumn) => {
-    const val: any = parseInt(columnItem.customize?.height?.replace(/\D/g, "") + '')
-    return val ? val : 0
-  });
-  return Math.max(...arr);
+export interface RsDataGridTableHandle {
+  startAddingRow: () => void;
 }
 
-export const RsDataGridTable = (param: IRsDataGridTableProps)  => {
-  const {column, customization} = param;
-  const border:any = customization?.border;
-  const crossRow:any = customization?.crossRow;
+const SaveIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1f7a3d" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <path d="M17 21v-8H7v8" />
+    <path d="M7 3v5h8" />
+  </svg>
+);
 
-  const tableState: any = useContext(TableStateContext);
-  const {data, page} = tableState.dataTableState;
-  console.log('rs-data-grid-table', tableState.dataTableState);
+const CancelIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 6 6 18" />
+    <path d="M6 6l12 12" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <path d="M10 11v6" />
+    <path d="M14 11v6" />
+  </svg>
+);
+
+export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTableProps>((props, ref) => {
+  const {
+    columns,
+    data,
+    bodyRowLines,
+    bodyColumnLines,
+    tableBorder,
+    borderRadiusBottom,
+    diagonalRow,
+    showActions,
+    gridMode,
+    onRowEdit,
+    onRowDelete,
+    onBatchRowSave,
+    onBatchRowAdd,
+    onRequestConfirm,
+  } = props;
+
+  const [editingRow, setEditingRow] = useState<any>(null);
+  const [editDraft, setEditDraft] = useState<Record<string, string>>({});
+  const [isAddingRow, setIsAddingRow] = useState(false);
+  const [addDraft, setAddDraft] = useState<Record<string, string>>({});
+
+  useImperativeHandle(ref, () => ({
+    startAddingRow: () => {
+      setIsAddingRow(true);
+      const draft: Record<string, string> = {};
+      for (const column of columns) {
+        draft[column.dataField] = '';
+      }
+      setAddDraft(draft);
+    },
+  }));
+
+  const startEditingRow = (row: any) => {
+    setEditingRow(row);
+    const draft: Record<string, string> = {};
+    for (const column of columns) {
+      const value = row[column.dataField];
+      draft[column.dataField] = value === null || value === undefined ? '' : String(value);
+    }
+    setEditDraft(draft);
+  };
+
+  const onEditClick = (row: any, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (gridMode === 'batch') {
+      startEditingRow(row);
+    } else {
+      onRowEdit(row);
+    }
+  };
+
+  const onSaveEditClick = async () => {
+    const confirmed = await onRequestConfirm('Confirm save', 'Are you sure you want to save the changes to this row?');
+    if (confirmed) {
+      const updated = { ...editingRow, ...editDraft };
+      onBatchRowSave({ original: editingRow, updated });
+      setEditingRow(null);
+    }
+  };
+
+  const onCancelEditClick = () => setEditingRow(null);
+
+  const onSaveAddClick = async () => {
+    const confirmed = await onRequestConfirm('Confirm add', 'Are you sure you want to add this row?');
+    if (confirmed) {
+      onBatchRowAdd({ ...addDraft });
+      setIsAddingRow(false);
+    }
+  };
+
+  const onCancelAddClick = () => setIsAddingRow(false);
+
+  const cellClass = (j: number) =>
+    'full-row section-style row-layout-center-center' + (bodyColumnLines && (j < columns.length - 1 || showActions) ? ' border-right' : '');
+
   return (
-    <div className="column-start-layout rs-data-grid-table">
-      {
-        column && data &&
-        data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).map((item: any, index: number) => {
-          return <div className="row-start-layout rs-data-grid-table-row"
-          style={{
-            borderBottom: border ? border.borderInnerHorizontal ? (index !== data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).length -1 ?  ( border ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc'):   '1px solid #ccc') : "") : "" : "",
-            height: getHeight(column) > 0 ? getHeight(column) + 'px' : 'unset',
-            backgroundColor: crossRow ? (crossRow.crossRowEnable ? (index %2 === 0 ? crossRow.crossRowColors1 : crossRow.crossRowColors2) : ''): ''
-          }} 
-           key={'row-table-' + index}>
-          {
-              column.map((value: any, index2: number) => {
-                return (<div className="rs-data-grid-table-cell row-layout-center "
-                style={{
-                  borderRight: border ? border.borderInnerVertical ? (index2 !== column.length -1 ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc') : "") : "" : "",
-                  width: value.customize ? (value.customize.width ? value.customize.width : 'inherit') : '100%'
-                }} 
-                key={'column-table-' + index + '-' + index2}>{
-                  value.customize ? (value.customize.template ? value.customize.template : item[value.dataField]) :item[value.dataField]}</div>);
-              })
-          }
+    <div className="column-layout full-row">
+      {isAddingRow && (
+        <div className={'full-row' + (tableBorder ? ' row-style' : '') + ' row-style-bottom'}>
+          <div className="full-row row-layout">
+            {columns.map((column, j) => (
+              <div key={column.dataField} className={cellClass(j)}>
+                <input
+                  type="text"
+                  className="inline-edit-input"
+                  value={addDraft[column.dataField] ?? ''}
+                  onChange={e => setAddDraft({ ...addDraft, [column.dataField]: e.target.value })}
+                />
+              </div>
+            ))}
+            {showActions && (
+              <div className="actions-cell row-layout-center-center">
+                <button type="button" className="row-action-button row-action-save" title="Save row" aria-label="Save row" onClick={onSaveAddClick}>
+                  <SaveIcon />
+                </button>
+                <button type="button" className="row-action-button" title="Cancel" aria-label="Cancel" onClick={onCancelAddClick}>
+                  <CancelIcon />
+                </button>
+              </div>
+            )}
           </div>
-        })
-      }
-      {
-        !column && data &&
-        data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).map((item: any, index: number) => {
-          return <div className="row-start-layout rs-data-grid-table-row"
-          style={{
-            borderBottom: border ? border.borderInnerHorizontal ? (index !== data.slice(page.page * page.pageSize , returnLastSize(data, page.page+1, page.pageSize)).length -1 ?  ( border ? (border.borderColor ? '1px solid '+ border.borderColor : '1px solid #ccc'):   '1px solid #ccc') : "") : "" : "",
-          }} 
-           key={'row-table-' + index}>
-          {
-              Object.values(item).map((value: any, index2: number) => {
-                return (<div className="rs-data-grid-table-cell row-layout-center "
-                style={{
-                  borderRight: index2 !== Object.values(item).length -1 ?  "1px solid #ccc" : ""
-                }} 
-                key={'column-table-' + index + '-' + index2}>{value}</div>);
-              })
-          }
+        </div>
+      )}
+      {data.map((item, i) => {
+        const isEditingThis = item === editingRow;
+        const rowClass =
+          'full-row' +
+          (tableBorder ? ' row-style' : '') +
+          ((tableBorder && i === data.length - 1) || (bodyRowLines && i !== data.length - 1) ? ' row-style-bottom' : '') +
+          (borderRadiusBottom && i === data.length - 1 ? ' border-area-small' : '') +
+          (i % 2 === 1 && diagonalRow ? ' row-background' : '');
+        return (
+          <div key={i} className={rowClass}>
+            <div className="full-row row-layout">
+              {isEditingThis ? (
+                <>
+                  {columns.map((column, j) => (
+                    <div key={column.dataField} className={cellClass(j)}>
+                      <input
+                        type="text"
+                        className="inline-edit-input"
+                        value={editDraft[column.dataField] ?? ''}
+                        onChange={e => setEditDraft({ ...editDraft, [column.dataField]: e.target.value })}
+                      />
+                    </div>
+                  ))}
+                  {showActions && (
+                    <div className="actions-cell row-layout-center-center">
+                      <button type="button" className="row-action-button row-action-save" title="Save row" aria-label="Save row" onClick={onSaveEditClick}>
+                        <SaveIcon />
+                      </button>
+                      <button type="button" className="row-action-button" title="Cancel" aria-label="Cancel" onClick={onCancelEditClick}>
+                        <CancelIcon />
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {columns.map((column, j) => (
+                    <div key={column.dataField} className={cellClass(j)}>
+                      {item[column.dataField]}
+                    </div>
+                  ))}
+                  {showActions && (
+                    <div className="actions-cell row-layout-center-center">
+                      <button type="button" className="row-action-button" title="Edit row" aria-label="Edit row" onClick={e => onEditClick(item, e)}>
+                        <EditIcon />
+                      </button>
+                      <button type="button" className="row-action-button" title="Delete row" aria-label="Delete row" onClick={() => onRowDelete(item)}>
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        })
-      }
+        );
+      })}
     </div>
-  )
-}
-
-const returnLastSize = (data: any[], lastSize: number, pageSize: number) => {
-  return data.length > (lastSize * pageSize) ? lastSize * pageSize : data.length;
-}
+  );
+});

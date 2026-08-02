@@ -1,81 +1,91 @@
-import { useContext } from 'react';
-import { ICustomization } from '../models/rsDataGrid.models'
-import { TableStateContext } from '../rsDataGrid';
-import './rsDataGridPager.scss'
-export interface IRsDataGridPagerProps {
-  customization? :ICustomization
+import { useEffect, useRef } from 'react';
+import { DataGridStoreApi } from '../store/useDataGridStore';
+import './rsDataGridPager.scss';
+
+export interface RsDataGridPagerProps {
+  pagination: boolean;
+  pagingSizes: number[];
+  currentPagingSize: number;
+  pageListSize: number;
+  store: DataGridStoreApi;
 }
 
+export const RsDataGridPager = ({ pagination, pagingSizes, currentPagingSize, pageListSize, store }: RsDataGridPagerProps) => {
+  const { pageSize, pageNumber, pageList, pageLimit, changePageListSize, changePageSize, changePageNumber, increasePageNum, decreasePageNum, lastPageNum } = store;
 
-export const RsDataGridPager = (param: IRsDataGridPagerProps)  => {
-  const tableState: any = useContext(TableStateContext);
-  const {customization} = param;
-  const {border} = customization ? customization: {border: null};
-  const {dataTableState, setDataTable} = tableState;
-  const {page} = dataTableState;
-  let pageNumbers: number[] = [];
-  for(let i = 0; i < page.length; ++i){
-    pageNumbers.push(i)
-  }
+  const didInit = useRef(false);
+  useEffect(() => {
+    changePageListSize(pageListSize);
+    changePageSize(currentPagingSize);
+    didInit.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const setPageSize = (val: number) =>{
-    setDataTable({...dataTableState, page: {...dataTableState.page, pageSize: val, length: Math.ceil(dataTableState.data.length / val)}})
-  }
+  useEffect(() => {
+    if (!didInit.current) {
+      return;
+    }
+    changePageListSize(pageListSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageListSize]);
 
-  const setPageNumber = (val: number) =>{
-    setDataTable({...dataTableState, page: {...dataTableState.page, page: val}})
+  useEffect(() => {
+    if (!didInit.current) {
+      return;
+    }
+    changePageNumber(0);
+    changePageSize(currentPagingSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPagingSize]);
+
+  const changeCurrentPaginationSize = (val: number) => {
+    changePageNumber(0);
+    changePageSize(val);
+  };
+
+  const setpage = (index: number) => changePageNumber(index);
+  const increasePager = () => increasePageNum();
+  const decreasePager = () => decreasePageNum();
+  const lastPage = () => lastPageNum();
+
+  const writeAS = (pageFirstItem: any, listSize: any, limit: any) => pageFirstItem + listSize > limit ? false : true;
+
+  if (!pagination) {
+    return null;
   }
 
   return (
-    <div
-    className='rs-datagrid-pager row-layout-space-between'>
-      <div className='row-start-layout rs-datagrid-pager-number-list'
-      style={{
-        border: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc'
-      }}>
-        <div 
-              onClick = {() => {setPageNumber(page.page-1 > 0 ? page.page-1  : 0)}}
-              style={{
-                borderRight: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc' 
-              }}
-              key={'page-number-item-last' } className='rs-datagrid-pager-number-item'>{'<'}</div>  
-        
-        {
-            pageNumbers.map((item: number, index: number) => {
-              return page.pageCurrSize > index &&  <div style={{
-                borderRight: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc' 
-              }}
-              onClick = {() => {setPageNumber(item)}}
-              key={'page-number-item-' + index } className='rs-datagrid-pager-number-item'>{item +1}</div>
-            })
-        }
-
-        <div 
-              onClick = {() => {setPageNumber(page.length-1)}}
-              style={{
-                borderRight: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc',
-                minWidth: '40px'
-              }}
-              key={'page-number-item-last' } className='rs-datagrid-pager-number-item'>{page.length}</div>  
-        <div 
-              onClick = {() => {setPageNumber(page.page + 1 > page.length ? page.length  : page.page + 1 )}}
-              key={'page-number-item-last' } className='rs-datagrid-pager-number-item'>{'>'}</div> 
-        
+    <div className="full-row row-layout-space-between-center">
+      <div className="row-layout-start page-number-background">
+        <div className="page-numbers" onClick={decreasePager}>{'<'}</div>
+        {pageList.map(page => (
+          <div
+            key={page}
+            className={'page-numbers' + (pageNumber === page - 1 ? ' page-numbers-selected' : '')}
+            onClick={() => setpage(page - 1)}
+          >
+            {page}
+          </div>
+        ))}
+        {writeAS(pageList?.[0], pageListSize, pageLimit) && (
+          <div className="page-numbers" onClick={lastPage}>
+            {pageLimit}
+          </div>
+        )}
+        <div className="page-numbers" onClick={increasePager}>{'>'}</div>
       </div>
-      <div className='row-start-layout rs-datagrid-pager-size-list'
-      style={{
-        border: border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc'
-      }}>
-      {
-        page.pageSizeList.map((item: any, index: number) => {
-          return <div style={{
-            borderRight: index !== page.pageSizeList.length-1 ? border ? border.borderOuter ?  '1px solid ' +  border.borderColor: '' :'1px solid #ccc' : ''
-          }}
-          onClick = {() => {setPageSize(item)}}
-          key={'page-size-item-' + index } className='rs-datagrid-pager-size-item'>{item}</div>
-        })
-      }
+      <div className="row-layout">
+        {pagingSizes.map(item => (
+          <button
+            key={item}
+            type="button"
+            className={'pager-size' + (item === pageSize ? ' page-selected' : '')}
+            onClick={() => changeCurrentPaginationSize(item)}
+          >
+            {item}
+          </button>
+        ))}
       </div>
     </div>
-  )
-}
+  );
+};

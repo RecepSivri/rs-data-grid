@@ -33,6 +33,25 @@ export const setDataWrapper = (state: AppState, data: any, remote: boolean, remo
       }})
 }
 
+export const resolveDataPath = (data: any, path: string | undefined): any => {
+  if (!path || path.trim() === '') {
+    return data;
+  }
+  const segments = path
+    .trim()
+    .replace(/\[(\d+)\]/g, '.$1')
+    .split('.')
+    .filter(segment => segment !== '');
+  let current = data;
+  for (const segment of segments) {
+    if (current === null || current === undefined) {
+      return undefined;
+    }
+    current = current[segment];
+  }
+  return current;
+}
+
 export const applyFilters = (data: any[], filters: Record<string, string[]>): any[] => {
   const activeFilters = Object.entries(filters).filter(([, values]) => Array.isArray(values) && values.length > 0);
   if (activeFilters.length === 0) {
@@ -199,7 +218,7 @@ export class DataGridStore {
         return;
       }
       this.setData(
-        cfg.section ? values[cfg.section] || [] : values || [],
+        resolveDataPath(values, cfg.section) || [],
         cfg.remote,
         cfg.totalSection ? values[cfg.totalSection] : undefined
       );

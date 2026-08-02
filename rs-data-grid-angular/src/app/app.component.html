@@ -2,7 +2,7 @@
 <div class="app-sidenav">
   <div class="sidenav-title">Grid Settings</div>
   <mat-accordion class="settings-accordion" multi>
-    <mat-expansion-panel [expanded]="false">
+    <mat-expansion-panel class="no-scroll-panel" [expanded]="false">
       <mat-expansion-panel-header>
         <mat-panel-title>Data Management</mat-panel-title>
       </mat-expansion-panel-header>
@@ -34,6 +34,13 @@
               <input type="text" class="settings-input settings-input-wide"
                 [value]="gridConfig['authToken']"
                 (input)="onCommitStringSetting('authToken', $event)" />
+            </div>
+            <div class="settings-row settings-row-column">
+              <label class="settings-label">Entry Section</label>
+              <input type="text" class="settings-input settings-input-wide"
+                placeholder="e.g. data or data.items or data.arr[0]"
+                [value]="gridConfig['entrySection']"
+                (input)="onCommitStringSetting('entrySection', $event)" />
             </div>
             <div class="settings-row">
               <button mat-flat-button type="button" class="settings-fetch-button" (click)="grid.fetchNow()">Fetch</button>

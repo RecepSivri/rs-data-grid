@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import type { IColumn, FilterChangeEvent } from '../models/rsDataGrid.models';
 import type { SortState } from '../store/dataGridStore';
 import { applyFilters } from '../store/dataGridStore';
@@ -35,7 +35,11 @@ const closeDropdown = () => {
 onMounted(() => document.addEventListener('click', closeDropdown));
 onUnmounted(() => document.removeEventListener('click', closeDropdown));
 
-const getOptions = (dataField: string): string[] => {
+const openDropdownOptions = computed<string[]>(() => {
+  const dataField = openDataField.value;
+  if (!dataField) {
+    return [];
+  }
   const otherFilters = { ...selectedValues };
   delete otherFilters[dataField];
   const rows = applyFilters(props.data, otherFilters);
@@ -47,7 +51,9 @@ const getOptions = (dataField: string): string[] => {
     }
   }
   return Array.from(values).sort();
-};
+});
+
+const getOptions = (dataField: string): string[] => (openDataField.value === dataField ? openDropdownOptions.value : []);
 
 const sortDirection = (dataField: string): 'asc' | 'desc' | null => (props.sort.field === dataField ? props.sort.direction : null);
 
