@@ -6,12 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:single-spa": "vite build --config vite.single-spa.config.ts",
+    "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
+    "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 5173 --strictPort"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "single-spa-vue": "^3.0.1",
     "vue": "^3.5.40",
     "vuetify": "^4.1.7",
     "xlsx": "^0.18.5"
@@ -23,6 +27,8 @@
     "sass": "^1.102.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.0",
+    "vite-plugin-css-injected-by-js": "^5.0.2",
+    "vite-plugin-node-polyfills": "^0.28.0",
     "vue-tsc": "^3.3.8"
   }
 }

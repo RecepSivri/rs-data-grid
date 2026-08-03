@@ -10,6 +10,8 @@
 
 # production
 /build
+/dist
+/dist-single-spa
 
 # misc
 .DS_Store

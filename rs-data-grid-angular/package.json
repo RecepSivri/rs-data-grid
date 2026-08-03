@@ -8,7 +8,9 @@
     "build": "ng build",
     "test": "ng test",
     "test:coverage": "ng test --watch=false --code-coverage",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "build:single-spa:rsivri-data-grid": "ng build rsivri-data-grid --configuration production",
+    "serve:single-spa:rsivri-data-grid": "ng s --project rsivri-data-grid --disable-host-check --port 4200 --live-reload false"
   },
   "private": true,
   "dependencies": {
@@ -25,10 +27,13 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "rxjs": "~7.8.0",
+    "single-spa": ">=4.0.0",
+    "single-spa-angular": "^20.1.0",
     "tslib": "^2.6.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "20.0.0",
     "@angular-devkit/build-angular": "^20.0.0",
     "@angular/cli": "^20.0.0",
     "@angular/compiler-cli": "^20.0.0",
@@ -39,6 +44,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "style-loader": "^3.3.1",
     "typescript": "~5.8.0"
   }
 }
