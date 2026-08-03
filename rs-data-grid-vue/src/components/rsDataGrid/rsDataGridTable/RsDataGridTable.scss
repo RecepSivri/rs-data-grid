@@ -8,6 +8,8 @@
 }
 
 .section-style{
+  box-sizing: border-box;
+  padding-left: 5px;
   padding-bottom: 5px;
   padding-top: 5px;
   min-height: 50px;
@@ -21,6 +23,12 @@
 .border-area-small{
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
+}
+
+.index-cell{
+  box-sizing: border-box;
+  flex: 0 0 50px;
+  color: #777777;
 }
 
 .row-background{

@@ -32,6 +32,7 @@ const props = withDefaults(
     showSearch?: boolean;
     showActions?: boolean;
     showAdd?: boolean;
+    showIndex?: boolean;
     gridMode?: GridMode;
     exportExcel?: boolean;
     exportPDF?: boolean;
@@ -63,6 +64,7 @@ const props = withDefaults(
     showSearch: false,
     showActions: false,
     showAdd: false,
+    showIndex: false,
     gridMode: 'popup',
     exportExcel: false,
     exportPDF: false,
@@ -80,6 +82,7 @@ const emit = defineEmits<{
   rowAdd: [row: any];
   rowEdit: [row: any];
   rowDelete: [row: any];
+  batchSave: [payload: { added: any[]; updated: { original: any; updated: any }[] }];
 }>();
 
 const titleCase = (value: string): string => value.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
@@ -164,13 +167,21 @@ const onRowEditRequest = (row: any) => {
 };
 
 const onAddRowClick = () => {
-  if (props.gridMode === 'batch') {
+  if (props.gridMode === 'row') {
     tableRef.value?.startAddingRow();
+    return;
+  }
+  if (props.gridMode === 'batch') {
+    tableRef.value?.addBatchRow();
     return;
   }
   editDialog.open = true;
   editDialog.row = undefined;
   editDialog.columns = effectiveColumns.value;
+};
+
+const onSaveBatchClick = () => {
+  tableRef.value?.saveBatch();
 };
 
 const onEditDialogSave = (result: Record<string, any>) => {
@@ -204,6 +215,16 @@ const onBatchRowSave = (payload: { original: any; updated: any }) => {
 const onBatchRowAdd = (row: any) => {
   store.addRow(row);
   emit('rowAdd', row);
+};
+
+const onBatchCommit = (payload: { added: any[]; updated: { original: any; updated: any }[] }) => {
+  for (const { original, updated } of payload.updated) {
+    store.updateRow(original, updated);
+  }
+  for (const row of payload.added) {
+    store.addRow(row);
+  }
+  emit('batchSave', payload);
 };
 
 const getDisplayedRows = (): any[] => {
@@ -261,11 +282,18 @@ const bodyRows = computed(() => getDisplayedRows());
       <slot name="empty"><div class="grid-state grid-state-empty">No data to display.</div></slot>
     </template>
     <template v-else>
-      <div v-if="showSearch || exportExcel || exportPDF || showAdd" class="grid-toolbar">
+      <div v-if="showSearch || exportExcel || exportPDF || showAdd || gridMode === 'batch'" class="grid-toolbar">
         <button v-if="showAdd" type="button" class="export-button" title="Add row" aria-label="Add row" @click="onAddRowClick">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M12 5v14" />
             <path d="M5 12h14" />
+          </svg>
+        </button>
+        <button v-if="gridMode === 'batch'" type="button" class="export-button batch-save-button" title="Save batch changes" aria-label="Save batch changes" @click="onSaveBatchClick">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1f7a3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <path d="M17 21v-8H7v8" />
+            <path d="M7 3v5h8" />
           </svg>
         </button>
         <button v-if="exportExcel" type="button" class="export-button" title="Export to Excel" aria-label="Export to Excel" @click="onExportExcelClick">
@@ -303,6 +331,7 @@ const bodyRows = computed(() => getDisplayedRows());
         :show-filter="showFilter"
         :show-sort="showSort"
         :show-actions="showActions"
+        :show-index="showIndex"
         :sort="store.sort"
         @filter-change="onFilterChange"
         @sort-toggle="onSortToggle"
@@ -317,12 +346,15 @@ const bodyRows = computed(() => getDisplayedRows());
         :border-radius-bottom="borderRadiusBottom"
         :diagonal-row="diagonalRow"
         :show-actions="showActions"
+        :show-index="showIndex"
+        :index-offset="!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0"
         :grid-mode="gridMode"
         :on-request-confirm="requestConfirm"
         @row-edit="onRowEditRequest"
         @row-delete="onRowDeleteRequest"
         @batch-row-save="onBatchRowSave"
         @batch-row-add="onBatchRowAdd"
+        @batch-commit="onBatchCommit"
       />
       <RsDataGridPager :pagination="pagination" :paging-sizes="pagingSizes" :page-list-size="pageListSize" :current-paging-size="currentPagingSize" :store="store" />
     </template>

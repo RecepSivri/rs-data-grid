@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import type { IColumn, GridMode } from '../models/rsDataGrid.models';
 
 const props = defineProps<{
@@ -11,6 +11,8 @@ const props = defineProps<{
   borderRadiusBottom: boolean;
   diagonalRow: boolean;
   showActions: boolean;
+  showIndex: boolean;
+  indexOffset: number;
   gridMode: GridMode;
   onRequestConfirm: (title: string, message: string) => Promise<boolean>;
 }>();
@@ -20,6 +22,7 @@ const emit = defineEmits<{
   rowDelete: [row: any];
   batchRowSave: [payload: { original: any; updated: any }];
   batchRowAdd: [row: any];
+  batchCommit: [payload: { added: any[]; updated: { original: any; updated: any }[] }];
 }>();
 
 const editingRow = ref<any>(null);
@@ -31,6 +34,15 @@ const clearDraft = (draft: Record<string, string>) => {
   Object.keys(draft).forEach(key => delete draft[key]);
 };
 
+const toDraft = (row: any): Record<string, string> => {
+  const draft: Record<string, string> = {};
+  for (const column of props.columns) {
+    const value = row[column.dataField];
+    draft[column.dataField] = value === null || value === undefined ? '' : String(value);
+  }
+  return draft;
+};
+
 const startAddingRow = () => {
   isAddingRow.value = true;
   clearDraft(addDraft);
@@ -38,8 +50,6 @@ const startAddingRow = () => {
     addDraft[column.dataField] = '';
   }
 };
-
-defineExpose({ startAddingRow });
 
 const startEditingRow = (row: any) => {
   editingRow.value = row;
@@ -52,7 +62,7 @@ const startEditingRow = (row: any) => {
 
 const onEditClick = (row: any, event: MouseEvent) => {
   event.stopPropagation();
-  if (props.gridMode === 'batch') {
+  if (props.gridMode === 'row') {
     startEditingRow(row);
   } else {
     emit('rowEdit', row);
@@ -92,12 +102,66 @@ const rowClass = (i: number) => ({
   'border-area-small': props.borderRadiusBottom && i === props.data.length - 1,
   'row-background': i % 2 === 1 && props.diagonalRow,
 });
+
+// Batch mode: every cell is directly editable; changes accumulate locally until "Save batch" is clicked.
+const batchDrafts = ref<Record<string, string>[]>([]);
+const batchNewDrafts = ref<Record<string, string>[]>([]);
+let batchDraftRowRefs: any[] = [];
+
+const syncBatchDrafts = () => {
+  const draftByRow = new Map<any, Record<string, string>>();
+  batchDraftRowRefs.forEach((row, i) => {
+    if (batchDrafts.value[i]) {
+      draftByRow.set(row, batchDrafts.value[i]);
+    }
+  });
+  batchDrafts.value = props.data.map(row => draftByRow.get(row) ?? toDraft(row));
+  batchDraftRowRefs = props.data;
+};
+
+watch(
+  () => [props.data, props.gridMode] as const,
+  () => {
+    if (props.gridMode === 'batch') {
+      syncBatchDrafts();
+    }
+  },
+  { immediate: true }
+);
+
+const addBatchRow = () => {
+  batchNewDrafts.value = [...batchNewDrafts.value, toDraft({})];
+};
+
+const removeBatchNewRow = (index: number) => {
+  batchNewDrafts.value = batchNewDrafts.value.filter((_, i) => i !== index);
+};
+
+const saveBatch = () => {
+  const updated: { original: any; updated: any }[] = [];
+  props.data.forEach((row, i) => {
+    const draft = batchDrafts.value[i];
+    if (!draft) {
+      return;
+    }
+    const isDirty = props.columns.some(column => String(row[column.dataField] ?? '') !== draft[column.dataField]);
+    if (isDirty) {
+      updated.push({ original: row, updated: { ...row, ...draft } });
+    }
+  });
+  const added = batchNewDrafts.value.map(draft => ({ ...draft }));
+  batchNewDrafts.value = [];
+  emit('batchCommit', { added, updated });
+};
+
+defineExpose({ startAddingRow, addBatchRow, saveBatch });
 </script>
 
 <template>
   <div class="column-layout full-row">
     <div v-if="isAddingRow" class="full-row" :class="{ 'row-style': tableBorder, 'row-style-bottom': true }">
       <div class="full-row row-layout">
+        <div v-if="showIndex" class="index-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }"></div>
         <div
           v-for="(column, j) in columns"
           :key="column.dataField"
@@ -125,7 +189,29 @@ const rowClass = (i: number) => ({
     </div>
     <div v-for="(item, i) in data" :key="i" class="full-row" :class="rowClass(i)">
       <div class="full-row row-layout">
-        <template v-if="item === editingRow">
+        <div v-if="showIndex" class="index-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }">{{ indexOffset + i + 1 }}</div>
+        <template v-if="gridMode === 'batch'">
+          <div
+            v-for="(column, j) in columns"
+            :key="column.dataField"
+            class="full-row section-style row-layout-center-center"
+            :class="{ 'border-right': cellBorderRight(j) }"
+          >
+            <input type="text" class="inline-edit-input" v-model="batchDrafts[i][column.dataField]" />
+          </div>
+          <div v-if="showActions" class="actions-cell row-layout-center-center">
+            <button type="button" class="row-action-button" title="Delete row" aria-label="Delete row" @click="emit('rowDelete', item)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+            </button>
+          </div>
+        </template>
+        <template v-else-if="item === editingRow">
           <div
             v-for="(column, j) in columns"
             :key="column.dataField"
@@ -178,6 +264,37 @@ const rowClass = (i: number) => ({
         </template>
       </div>
     </div>
+    <template v-if="gridMode === 'batch'">
+      <div
+        v-for="(draft, i) in batchNewDrafts"
+        :key="'new-' + i"
+        class="full-row"
+        :class="{ 'row-style': tableBorder, 'row-style-bottom': true }"
+      >
+        <div class="full-row row-layout">
+          <div v-if="showIndex" class="index-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }"></div>
+          <div
+            v-for="(column, j) in columns"
+            :key="column.dataField"
+            class="full-row section-style row-layout-center-center"
+            :class="{ 'border-right': cellBorderRight(j) }"
+          >
+            <input type="text" class="inline-edit-input" v-model="draft[column.dataField]" />
+          </div>
+          <div v-if="showActions" class="actions-cell row-layout-center-center">
+            <button type="button" class="row-action-button" title="Remove row" aria-label="Remove row" @click="removeBatchNewRow(i)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 

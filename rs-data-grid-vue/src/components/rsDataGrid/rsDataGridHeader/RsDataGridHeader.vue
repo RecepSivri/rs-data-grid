@@ -15,6 +15,7 @@ const props = defineProps<{
   showFilter: boolean;
   showSort: boolean;
   showActions: boolean;
+  showIndex: boolean;
   sort: SortState;
 }>();
 
@@ -95,6 +96,11 @@ const clearFilter = (dataField: string, event: MouseEvent) => {
       :class="{ 'border-header': tableBorder, 'border-area-small': borderRadiusTop }"
     >
       <div
+        v-if="showIndex"
+        class="index-header-cell content-style row-layout-center-center"
+        :class="{ 'border-right': headerColumnLines }"
+      >#</div>
+      <div
         v-for="(column, i) in columns"
         :key="column.dataField"
         class="full-row content-style row-layout-center-center"
@@ -121,6 +127,11 @@ const clearFilter = (dataField: string, event: MouseEvent) => {
       class="full-row filter-row row-layout-space-between-center"
       :class="{ 'filter-row-border': tableBorder }"
     >
+      <div
+        v-if="showIndex"
+        class="index-header-cell filter-cell row-layout-center-center"
+        :class="{ 'border-right': bodyColumnLines }"
+      ></div>
       <div
         v-for="(column, i) in columns"
         :key="column.dataField"

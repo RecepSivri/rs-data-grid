@@ -45,6 +45,7 @@ const gridConfig = reactive<Record<string, any>>({
   showSearch: true,
   showActions: true,
   showAdd: true,
+  showIndex: false,
   exportExcel: true,
   exportPDF: true,
   currentPagingSize: 10,
@@ -62,6 +63,7 @@ const settingsGroups: SettingsGroup[] = [
         type: 'radio',
         options: [
           { value: 'popup', label: 'Popup' },
+          { value: 'row', label: 'Row' },
           { value: 'batch', label: 'Batch' },
         ],
       },
@@ -78,6 +80,7 @@ const settingsGroups: SettingsGroup[] = [
       { key: 'borderRadiusTop', label: 'Border Radius Top', type: 'boolean' },
       { key: 'borderRadiusBottom', label: 'Border Radius Bottom', type: 'boolean' },
       { key: 'diagonalRow', label: 'Diagonal Row', type: 'boolean' },
+      { key: 'showIndex', label: 'Show Index', type: 'boolean' },
     ],
   },
   {
@@ -125,6 +128,7 @@ const dataTab = ref(0);
 const onGridRowAdd = (row: any) => console.log('Added row:', row);
 const onGridRowEdit = (row: any) => console.log('Edit row:', row);
 const onGridRowDelete = (row: any) => console.log('Deleted row:', row);
+const onGridBatchSave = (payload: { added: any[]; updated: { original: any; updated: any }[] }) => console.log('Batch save:', payload);
 
 const onCommitStringSetting = (key: string, raw: string) => {
   if (key === 'pagingSizes') {
@@ -261,7 +265,7 @@ const onStringSettingKeyup = (key: string, event: KeyboardEvent) => {
           <v-expansion-panel-title>
             <span class="panel-title">
               {{ group.title }}
-              <span v-if="group.title === 'Grid Mode'" class="panel-title-muted">({{ gridConfig.gridMode === 'batch' ? 'Batch' : 'Popup' }})</span>
+              <span v-if="group.title === 'Grid Mode'" class="panel-title-muted">({{ gridConfig.gridMode === 'batch' ? 'Batch' : gridConfig.gridMode === 'row' ? 'Row' : 'Popup' }})</span>
             </span>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -316,6 +320,7 @@ const onStringSettingKeyup = (key: string, event: KeyboardEvent) => {
         :show-search="gridConfig.showSearch"
         :show-actions="gridConfig.showActions"
         :show-add="gridConfig.showAdd"
+        :show-index="gridConfig.showIndex"
         :grid-mode="gridConfig.gridMode"
         :export-excel="gridConfig.exportExcel"
         :exportPDF="gridConfig.exportPDF"
@@ -332,6 +337,7 @@ const onStringSettingKeyup = (key: string, event: KeyboardEvent) => {
         @row-add="onGridRowAdd"
         @row-edit="onGridRowEdit"
         @row-delete="onGridRowDelete"
+        @batch-save="onGridBatchSave"
       />
     </div>
   </div>
