@@ -1,0 +1,35 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+#app-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 8px 0;
+  background: #1c1e21;
+}
+
+.app-tab {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px 6px 0 0;
+  background: #2b2e33;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.app-tab:hover {
+  background: #3a3d43;
+}
+
+.app-tab-active {
+  background: #ffffff;
+  color: #111;
+  font-weight: bold;
+}
+
+#single-spa-application {
+  padding: 0;
+}

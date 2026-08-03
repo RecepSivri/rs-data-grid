@@ -1,0 +1,18 @@
+{
+  "name": "rs-data-grid-root-config",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "single-spa": "^6.0.3"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.0",
+    "vite": "^6.0.0"
+  }
+}
