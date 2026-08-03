@@ -14,6 +14,7 @@ export interface RsDataGridHeaderProps {
   showFilter: boolean;
   showSort: boolean;
   showActions: boolean;
+  showIndex: boolean;
   sort: SortState;
   onFilterChange: (event: FilterChangeEvent) => void;
   onSortToggle: (dataField: string) => void;
@@ -32,6 +33,7 @@ export const RsDataGridHeader = ({
   showFilter,
   showSort,
   showActions,
+  showIndex,
   sort,
   onFilterChange,
   onSortToggle,
@@ -100,6 +102,7 @@ export const RsDataGridHeader = ({
           (borderRadiusTop ? ' border-area-small' : '')
         }
       >
+        {showIndex && <div className={'index-header-cell content-style row-layout-center-center' + (headerColumnLines ? ' border-right' : '')}>#</div>}
         {columns.map((column, i) => (
           <div
             key={column.dataField}
@@ -127,6 +130,7 @@ export const RsDataGridHeader = ({
       </div>
       {showFilter && columns.length > 0 && (
         <div className={'full-row filter-row row-layout-space-between-center' + (tableBorder ? ' filter-row-border' : '')}>
+          {showIndex && <div className={'index-header-cell filter-cell row-layout-center-center' + (bodyColumnLines ? ' border-right' : '')}></div>}
           {columns.map((column, i) => (
             <div
               key={column.dataField}

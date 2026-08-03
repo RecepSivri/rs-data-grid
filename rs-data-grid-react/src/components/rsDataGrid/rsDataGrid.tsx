@@ -31,6 +31,7 @@ export interface RsDataGridProps {
   showSearch?: boolean;
   showActions?: boolean;
   showAdd?: boolean;
+  showIndex?: boolean;
   gridMode?: GridMode;
   exportExcel?: boolean;
   exportPDF?: boolean;
@@ -47,6 +48,7 @@ export interface RsDataGridProps {
   onRowAdd?: (row: any) => void;
   onRowEdit?: (row: any) => void;
   onRowDelete?: (row: any) => void;
+  onBatchSave?: (payload: { added: any[]; updated: { original: any; updated: any }[] }) => void;
 }
 
 export interface RsDataGridHandle {
@@ -77,6 +79,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     showSearch = false,
     showActions = false,
     showAdd = false,
+    showIndex = false,
     gridMode = 'popup',
     exportExcel = false,
     exportPDF = false,
@@ -93,6 +96,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     onRowAdd,
     onRowEdit,
     onRowDelete,
+    onBatchSave,
   } = props;
 
   const store = useDataGridStore();
@@ -180,11 +184,19 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   const onRowEditRequest = (row: any) => setEditDialog({ open: true, row });
 
   const onAddRowClick = () => {
-    if (gridMode === 'batch') {
+    if (gridMode === 'row') {
       tableRef.current?.startAddingRow();
       return;
     }
+    if (gridMode === 'batch') {
+      tableRef.current?.addBatchRow();
+      return;
+    }
     setEditDialog({ open: true, columns: effectiveColumns });
+  };
+
+  const onSaveBatchClick = () => {
+    tableRef.current?.saveBatch();
   };
 
   const onEditDialogSave = (result: Record<string, any>) => {
@@ -216,6 +228,16 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   const onBatchRowAdd = (row: any) => {
     store.addRow(row);
     onRowAdd?.(row);
+  };
+
+  const onBatchCommit = (payload: { added: any[]; updated: { original: any; updated: any }[] }) => {
+    for (const { original, updated } of payload.updated) {
+      store.updateRow(original, updated);
+    }
+    for (const row of payload.added) {
+      store.addRow(row);
+    }
+    onBatchSave?.(payload);
   };
 
   const getDisplayedRows = useCallback((): any[] => {
@@ -272,13 +294,28 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
         emptyTemplate ?? <div className="grid-state grid-state-empty">No data to display.</div>
       ) : (
         <>
-          {(showSearch || exportExcel || exportPDF || showAdd) && (
+          {(showSearch || exportExcel || exportPDF || showAdd || gridMode === 'batch') && (
             <div className="grid-toolbar">
               {showAdd && (
                 <button type="button" className="export-button" title="Add row" aria-label="Add row" onClick={onAddRowClick}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#333333" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
                     <path d="M12 5v14" />
                     <path d="M5 12h14" />
+                  </svg>
+                </button>
+              )}
+              {gridMode === 'batch' && (
+                <button
+                  type="button"
+                  className="export-button batch-save-button"
+                  title="Save batch changes"
+                  aria-label="Save batch changes"
+                  onClick={onSaveBatchClick}
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1f7a3d" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <path d="M17 21v-8H7v8" />
+                    <path d="M7 3v5h8" />
                   </svg>
                 </button>
               )}
@@ -326,6 +363,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
             showFilter={showFilter}
             showSort={showSort}
             showActions={showActions}
+            showIndex={showIndex}
             sort={store.sort}
             onFilterChange={onFilterChange}
             onSortToggle={onSortToggle}
@@ -340,11 +378,14 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
             borderRadiusBottom={borderRadiusBottom}
             diagonalRow={diagonalRow}
             showActions={showActions}
+            showIndex={showIndex}
+            indexOffset={!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0}
             gridMode={gridMode}
             onRowEdit={onRowEditRequest}
             onRowDelete={onRowDeleteRequest}
             onBatchRowSave={onBatchRowSave}
             onBatchRowAdd={onBatchRowAdd}
+            onBatchCommit={onBatchCommit}
             onRequestConfirm={requestConfirm}
           />
           <RsDataGridPager pagination={pagination} pagingSizes={pagingSizes} pageListSize={pageListSize} currentPagingSize={currentPagingSize} store={store} />

@@ -55,6 +55,7 @@ const initialGridConfig: Record<string, any> = {
   showSearch: true,
   showActions: true,
   showAdd: true,
+  showIndex: false,
   exportExcel: true,
   exportPDF: true,
   currentPagingSize: 10,
@@ -72,6 +73,7 @@ const settingsGroups: SettingsGroup[] = [
         type: 'radio',
         options: [
           { value: 'popup', label: 'Popup' },
+          { value: 'row', label: 'Row' },
           { value: 'batch', label: 'Batch' },
         ],
       },
@@ -88,6 +90,7 @@ const settingsGroups: SettingsGroup[] = [
       { key: 'borderRadiusTop', label: 'Border Radius Top', type: 'boolean' },
       { key: 'borderRadiusBottom', label: 'Border Radius Bottom', type: 'boolean' },
       { key: 'diagonalRow', label: 'Diagonal Row', type: 'boolean' },
+      { key: 'showIndex', label: 'Show Index', type: 'boolean' },
     ],
   },
   {
@@ -147,6 +150,7 @@ function App() {
   const onGridRowAdd = (row: any) => console.log('Added row:', row);
   const onGridRowEdit = (row: any) => console.log('Edit row:', row);
   const onGridRowDelete = (row: any) => console.log('Deleted row:', row);
+  const onGridBatchSave = (payload: { added: any[]; updated: { original: any; updated: any }[] }) => console.log('Batch save:', payload);
 
   const onCommitStringSetting = (key: string, raw: string) => {
     if (key === 'pagingSizes') {
@@ -342,7 +346,9 @@ function App() {
                 <span className="panel-title">
                   {group.title}
                   {group.title === 'Grid Mode' && (
-                    <span className="panel-title-muted">({gridConfig.gridMode === 'batch' ? 'Batch' : 'Popup'})</span>
+                    <span className="panel-title-muted">
+                      ({gridConfig.gridMode === 'batch' ? 'Batch' : gridConfig.gridMode === 'row' ? 'Row' : 'Popup'})
+                    </span>
                   )}
                 </span>
               </AccordionSummary>
@@ -378,12 +384,14 @@ function App() {
           showSearch={gridConfig.showSearch}
           showActions={gridConfig.showActions}
           showAdd={gridConfig.showAdd}
+          showIndex={gridConfig.showIndex}
           gridMode={gridConfig.gridMode}
           exportExcel={gridConfig.exportExcel}
           exportPDF={gridConfig.exportPDF}
           onRowAdd={onGridRowAdd}
           onRowEdit={onGridRowEdit}
           onRowDelete={onGridRowDelete}
+          onBatchSave={onGridBatchSave}
           bodyRowLines={gridConfig.bodyRowLines}
           bodyColumnLines={gridConfig.bodyColumnLines}
           tableBorder={gridConfig.tableBorder}

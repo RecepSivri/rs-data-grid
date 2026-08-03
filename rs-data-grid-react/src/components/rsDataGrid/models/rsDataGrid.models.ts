@@ -8,7 +8,7 @@ export interface FilterChangeEvent {
   values: string[];
 }
 
-export type GridMode = 'popup' | 'batch';
+export type GridMode = 'popup' | 'row' | 'batch';
 
 export interface RemoteModeParams {
   endpoint: string;

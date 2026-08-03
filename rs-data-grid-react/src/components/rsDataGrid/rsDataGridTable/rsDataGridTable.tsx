@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { IColumn, GridMode } from '../models/rsDataGrid.models';
 import './rsDataGridTable.scss';
 
@@ -11,16 +11,21 @@ export interface RsDataGridTableProps {
   borderRadiusBottom: boolean;
   diagonalRow: boolean;
   showActions: boolean;
+  showIndex: boolean;
+  indexOffset: number;
   gridMode: GridMode;
   onRowEdit: (row: any) => void;
   onRowDelete: (row: any) => void;
   onBatchRowSave: (payload: { original: any; updated: any }) => void;
   onBatchRowAdd: (row: any) => void;
+  onBatchCommit: (payload: { added: any[]; updated: { original: any; updated: any }[] }) => void;
   onRequestConfirm: (title: string, message: string) => Promise<boolean>;
 }
 
 export interface RsDataGridTableHandle {
   startAddingRow: () => void;
+  addBatchRow: () => void;
+  saveBatch: () => void;
 }
 
 const SaveIcon = () => (
@@ -64,11 +69,14 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
     borderRadiusBottom,
     diagonalRow,
     showActions,
+    showIndex,
+    indexOffset,
     gridMode,
     onRowEdit,
     onRowDelete,
     onBatchRowSave,
     onBatchRowAdd,
+    onBatchCommit,
     onRequestConfirm,
   } = props;
 
@@ -76,6 +84,64 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
   const [isAddingRow, setIsAddingRow] = useState(false);
   const [addDraft, setAddDraft] = useState<Record<string, string>>({});
+
+  const toDraft = (row: any): Record<string, string> => {
+    const draft: Record<string, string> = {};
+    for (const column of columns) {
+      const value = row[column.dataField];
+      draft[column.dataField] = value === null || value === undefined ? '' : String(value);
+    }
+    return draft;
+  };
+
+  const [batchDrafts, setBatchDrafts] = useState<Record<string, string>[]>([]);
+  const [batchNewDrafts, setBatchNewDrafts] = useState<Record<string, string>[]>([]);
+  const batchDraftRowRefsRef = useRef<any[]>([]);
+
+  useEffect(() => {
+    if (gridMode !== 'batch') {
+      return;
+    }
+    const draftByRow = new Map<any, Record<string, string>>();
+    batchDraftRowRefsRef.current.forEach((row, i) => {
+      const existing = batchDrafts[i];
+      if (existing) {
+        draftByRow.set(row, existing);
+      }
+    });
+    setBatchDrafts(data.map(row => draftByRow.get(row) ?? toDraft(row)));
+    batchDraftRowRefsRef.current = data;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, gridMode, columns]);
+
+  const updateBatchDraft = (i: number, field: string, value: string) => {
+    setBatchDrafts(prev => prev.map((draft, idx) => (idx === i ? { ...draft, [field]: value } : draft)));
+  };
+
+  const updateBatchNewDraft = (i: number, field: string, value: string) => {
+    setBatchNewDrafts(prev => prev.map((draft, idx) => (idx === i ? { ...draft, [field]: value } : draft)));
+  };
+
+  const removeBatchNewRow = (index: number) => {
+    setBatchNewDrafts(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const saveBatch = () => {
+    const updated: { original: any; updated: any }[] = [];
+    data.forEach((row, i) => {
+      const draft = batchDrafts[i];
+      if (!draft) {
+        return;
+      }
+      const isDirty = columns.some(column => String(row[column.dataField] ?? '') !== draft[column.dataField]);
+      if (isDirty) {
+        updated.push({ original: row, updated: { ...row, ...draft } });
+      }
+    });
+    const added = batchNewDrafts.map(draft => ({ ...draft }));
+    setBatchNewDrafts([]);
+    onBatchCommit({ added, updated });
+  };
 
   useImperativeHandle(ref, () => ({
     startAddingRow: () => {
@@ -86,6 +152,10 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
       }
       setAddDraft(draft);
     },
+    addBatchRow: () => {
+      setBatchNewDrafts(prev => [...prev, toDraft({})]);
+    },
+    saveBatch,
   }));
 
   const startEditingRow = (row: any) => {
@@ -100,7 +170,7 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
 
   const onEditClick = (row: any, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (gridMode === 'batch') {
+    if (gridMode === 'row') {
       startEditingRow(row);
     } else {
       onRowEdit(row);
@@ -131,11 +201,14 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
   const cellClass = (j: number) =>
     'full-row section-style row-layout-center-center' + (bodyColumnLines && (j < columns.length - 1 || showActions) ? ' border-right' : '');
 
+  const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+
   return (
     <div className="column-layout full-row">
       {isAddingRow && (
         <div className={'full-row' + (tableBorder ? ' row-style' : '') + ' row-style-bottom'}>
           <div className="full-row row-layout">
+            {showIndex && <div className={indexCellClass}></div>}
             {columns.map((column, j) => (
               <div key={column.dataField} className={cellClass(j)}>
                 <input
@@ -170,7 +243,28 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
         return (
           <div key={i} className={rowClass}>
             <div className="full-row row-layout">
-              {isEditingThis ? (
+              {showIndex && <div className={indexCellClass}>{indexOffset + i + 1}</div>}
+              {gridMode === 'batch' ? (
+                <>
+                  {columns.map((column, j) => (
+                    <div key={column.dataField} className={cellClass(j)}>
+                      <input
+                        type="text"
+                        className="inline-edit-input"
+                        value={batchDrafts[i]?.[column.dataField] ?? ''}
+                        onChange={e => updateBatchDraft(i, column.dataField, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                  {showActions && (
+                    <div className="actions-cell row-layout-center-center">
+                      <button type="button" className="row-action-button" title="Delete row" aria-label="Delete row" onClick={() => onRowDelete(item)}>
+                        <DeleteIcon />
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : isEditingThis ? (
                 <>
                   {columns.map((column, j) => (
                     <div key={column.dataField} className={cellClass(j)}>
@@ -216,6 +310,31 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
           </div>
         );
       })}
+      {gridMode === 'batch' &&
+        batchNewDrafts.map((draft, i) => (
+          <div key={'new-' + i} className={'full-row' + (tableBorder ? ' row-style' : '') + ' row-style-bottom'}>
+            <div className="full-row row-layout">
+              {showIndex && <div className={indexCellClass}></div>}
+              {columns.map((column, j) => (
+                <div key={column.dataField} className={cellClass(j)}>
+                  <input
+                    type="text"
+                    className="inline-edit-input"
+                    value={draft[column.dataField] ?? ''}
+                    onChange={e => updateBatchNewDraft(i, column.dataField, e.target.value)}
+                  />
+                </div>
+              ))}
+              {showActions && (
+                <div className="actions-cell row-layout-center-center">
+                  <button type="button" className="row-action-button" title="Remove row" aria-label="Remove row" onClick={() => removeBatchNewRow(i)}>
+                    <DeleteIcon />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
     </div>
   );
 });
