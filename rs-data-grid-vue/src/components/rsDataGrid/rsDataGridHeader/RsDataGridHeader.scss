@@ -25,6 +25,7 @@
 .index-header-cell{
   flex: 0 0 50px;
   box-sizing: border-box;
+  align-self: stretch;
   justify-content: center;
   text-align: center;
 }
@@ -70,10 +71,12 @@
 }
 
 .border-header{
+  box-sizing: border-box;
   border: 1px solid #cccccc;
 }
 
 .filter-row-border{
+  box-sizing: border-box;
   border-left: 1px solid #cccccc;
   border-right: 1px solid #cccccc;
   border-bottom: 1px solid #cccccc;

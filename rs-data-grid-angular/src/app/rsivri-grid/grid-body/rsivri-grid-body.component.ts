@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { IColumn } from '../../../core/models/IColumn';
@@ -11,7 +11,7 @@ import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
   templateUrl: './rsivri-grid-body.component.html',
   styleUrls: ['./rsivri-grid-body.component.css']
 })
-export class RsivriGridBodyComponent {
+export class RsivriGridBodyComponent implements OnChanges {
   private readonly dialog = inject(MatDialog);
 
   @Input() columns: IColumn[] = [];
@@ -23,12 +23,15 @@ export class RsivriGridBodyComponent {
   @Input() diagonalRow: boolean = false;
   @Input() currentPagingSize: number = 10;
   @Input() showActions: boolean = false;
-  @Input() gridMode: 'popup' | 'batch' = 'popup';
+  @Input() showIndex: boolean = false;
+  @Input() indexOffset: number = 0;
+  @Input() gridMode: 'popup' | 'row' | 'batch' = 'popup';
 
   @Output() rowEdit = new EventEmitter<any>();
   @Output() rowDelete = new EventEmitter<any>();
   @Output() batchRowSave = new EventEmitter<{ original: any; updated: any }>();
   @Output() batchRowAdd = new EventEmitter<any>();
+  @Output() batchCommit = new EventEmitter<{ added: any[]; updated: { original: any; updated: any }[] }>();
 
   editingRow: any = null;
   editDraft: Record<string, string> = {};
@@ -36,9 +39,64 @@ export class RsivriGridBodyComponent {
   isAddingRow: boolean = false;
   addDraft: Record<string, string> = {};
 
+  batchDrafts: Record<string, string>[] = [];
+  batchNewDrafts: Record<string, string>[] = [];
+  private batchDraftRowRefs: any[] = [];
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.gridMode === 'batch' && (changes['data'] || changes['columns'] || changes['gridMode'])) {
+      this.syncBatchDrafts();
+    }
+  }
+
+  private syncBatchDrafts(): void {
+    const draftByRow = new Map<any, Record<string, string>>();
+    this.batchDraftRowRefs.forEach((row, i) => {
+      if (this.batchDrafts[i]) {
+        draftByRow.set(row, this.batchDrafts[i]);
+      }
+    });
+    this.batchDrafts = this.data.map(row => draftByRow.get(row) ?? this.toDraft(row));
+    this.batchDraftRowRefs = this.data;
+  }
+
+  private toDraft(row: any): Record<string, string> {
+    const draft: Record<string, string> = {};
+    for (const column of this.columns) {
+      const value = row[column.dataField];
+      draft[column.dataField] = value === null || value === undefined ? '' : String(value);
+    }
+    return draft;
+  }
+
+  addBatchRow(): void {
+    this.batchNewDrafts = [...this.batchNewDrafts, this.toDraft({})];
+  }
+
+  removeBatchNewRow(index: number): void {
+    this.batchNewDrafts = this.batchNewDrafts.filter((_, i) => i !== index);
+  }
+
+  saveBatch(): void {
+    const updated: { original: any; updated: any }[] = [];
+    this.data.forEach((row, i) => {
+      const draft = this.batchDrafts[i];
+      if (!draft) {
+        return;
+      }
+      const isDirty = this.columns.some(column => String(row[column.dataField] ?? '') !== draft[column.dataField]);
+      if (isDirty) {
+        updated.push({ original: row, updated: { ...row, ...draft } });
+      }
+    });
+    const added = this.batchNewDrafts.map(draft => ({ ...draft }));
+    this.batchNewDrafts = [];
+    this.batchCommit.emit({ added, updated });
+  }
+
   onEditClick(row: any, event: Event): void {
     event.stopPropagation();
-    if (this.gridMode === 'batch') {
+    if (this.gridMode === 'row') {
       this.startEditingRow(row);
     } else {
       this.rowEdit.emit(row);

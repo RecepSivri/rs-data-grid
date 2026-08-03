@@ -59,6 +59,7 @@ export class AppComponent {
     showSearch: true,
     showActions: true,
     showAdd: true,
+    showIndex: false,
     exportExcel: true,
     exportPDF: true,
     currentPagingSize: 10,
@@ -76,6 +77,7 @@ export class AppComponent {
           type: 'radio',
           options: [
             { value: 'popup', label: 'Popup' },
+            { value: 'row', label: 'Row' },
             { value: 'batch', label: 'Batch' },
           ],
         },
@@ -92,6 +94,7 @@ export class AppComponent {
         { key: 'borderRadiusTop', label: 'Border Radius Top', type: 'boolean' },
         { key: 'borderRadiusBottom', label: 'Border Radius Bottom', type: 'boolean' },
         { key: 'diagonalRow', label: 'Diagonal Row', type: 'boolean' },
+        { key: 'showIndex', label: 'Show Index', type: 'boolean' },
       ],
     },
     {
@@ -147,6 +150,10 @@ export class AppComponent {
 
   onGridRowDelete(row: any): void {
     console.log('Deleted row:', row);
+  }
+
+  onGridBatchSave(payload: { added: any[]; updated: { original: any; updated: any }[] }): void {
+    console.log('Batch save:', payload);
   }
 
   onCommitStringSetting(key: string, event: Event): void {

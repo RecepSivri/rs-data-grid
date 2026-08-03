@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npx vue-tsc -b --noEmit*)",
+      "Bash(curl -sf http://localhost:*)",
+      "Bash(curl -s http://localhost:*)",
+      "Bash(npm ls *)",
+      "Bash(git check-ignore *)"
+    ]
+  }
+}

@@ -68,7 +68,7 @@
           <mat-panel-title>
             {{ group.title }}
             @if (group.title === 'Grid Mode') {
-              <span class="panel-title-muted">({{ gridConfig['gridMode'] === 'batch' ? 'Batch' : 'Popup' }})</span>
+              <span class="panel-title-muted">({{ gridConfig['gridMode'] === 'batch' ? 'Batch' : gridConfig['gridMode'] === 'row' ? 'Row' : 'Popup' }})</span>
             }
           </mat-panel-title>
         </mat-expansion-panel-header>
@@ -125,12 +125,14 @@
   [showSearch]="gridConfig['showSearch']"
   [showActions]="gridConfig['showActions']"
   [showAdd]="gridConfig['showAdd']"
+  [showIndex]="gridConfig['showIndex']"
   [gridMode]="gridConfig['gridMode']"
   [exportExcel]="gridConfig['exportExcel']"
   [exportPDF]="gridConfig['exportPDF']"
   (rowAdd)="onGridRowAdd($event)"
   (rowEdit)="onGridRowEdit($event)"
   (rowDelete)="onGridRowDelete($event)"
+  (batchSave)="onGridBatchSave($event)"
   [bodyRowLines]="gridConfig['bodyRowLines']"
   [bodyColumnLines]="gridConfig['bodyColumnLines']"
   [tableBorder]="gridConfig['tableBorder']"
