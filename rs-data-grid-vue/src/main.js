@@ -30,7 +30,10 @@ const vueLifecycles = singleSpaVue({
   appOptions: {
     el: '#single-spa-application',
     render() {
-      return h(App);
+      // single-spa-vue merges the root-config's customProps (gridConfig,
+      // fetchNonce, onRowAdd, ...) into this app instance's reactive data;
+      // forward them on to App as real props.
+      return h(App, this.$data);
     },
   },
 });

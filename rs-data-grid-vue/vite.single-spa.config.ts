@@ -12,11 +12,10 @@ export default defineConfig({
   // UMD lib mode doesn't get Vite's usual process.env.NODE_ENV replacement,
   // which some dependencies read at module-load time.
   define: {
-    'process.env.NODE_ENV': JSON.stringify('development'),
+    'process.env.NODE_ENV': JSON.stringify('production'),
   },
   build: {
     outDir: 'dist-single-spa',
-    minify: false,
     lib: {
       entry: 'src/main.js',
       name: 'rs-data-grid-vue',
