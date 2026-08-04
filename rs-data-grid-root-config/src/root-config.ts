@@ -1,5 +1,5 @@
-import { registerApplication, start } from 'single-spa';
-import { getCustomProps } from './grid-settings';
+import { mountRootParcel } from 'single-spa';
+import { getCustomProps, setUpdateHook } from './grid-settings';
 import { renderSidebar } from './sidebar';
 
 interface TabDef {
@@ -35,8 +35,8 @@ const tabs: TabDef[] = [
 ];
 
 // Each app builds to a UMD bundle that assigns itself to a global variable
-// (window[globalName] = { bootstrap, mount, unmount }). Loading it with a
-// plain <script> tag and reading that global sidesteps SystemJS's UMD
+// (window[globalName] = { bootstrap, mount, unmount, update }). Loading it with
+// a plain <script> tag and reading that global sidesteps SystemJS's UMD
 // interop, which doesn't reliably unwrap named exports from these bundles.
 function loadUmdApp(tab: TabDef): Promise<any> {
   const existing = (window as any)[tab.globalName];
@@ -59,20 +59,58 @@ function loadUmdApp(tab: TabDef): Promise<any> {
   });
 }
 
+// single-spa's `registerApplication`/`triggerAppChange` combo never calls a
+// mounted (and still-active) top-level application's `update` lifecycle --
+// that hook only exists on the Parcels API. Since the sidebar needs to push
+// live settings changes into whichever framework tab is currently mounted
+// (without a route/hash change), each tab is mounted as a root parcel here
+// instead, and the sidebar's "notifyChange" calls `.update()` on it directly.
+interface MountedTab {
+  mountPromise: Promise<unknown>;
+  unmount: () => Promise<unknown>;
+  update?: (props: unknown) => Promise<unknown>;
+}
+
+let activeParcel: MountedTab | null = null;
+let activeHash: string | null = null;
+let switchChain: Promise<void> = Promise.resolve();
+
+function currentTab(): TabDef {
+  return tabs.find(tab => tab.hash === location.hash) ?? tabs[0];
+}
+
+function switchToActiveTab(): void {
+  switchChain = switchChain.then(async () => {
+    const tab = currentTab();
+    if (activeHash === tab.hash) {
+      return;
+    }
+    activeHash = tab.hash;
+
+    const outgoing = activeParcel;
+    activeParcel = null;
+    if (outgoing) {
+      await outgoing.mountPromise.catch(() => {});
+      await outgoing.unmount().catch(err => console.error(`Failed to unmount previous tab`, err));
+    }
+
+    const domElement = document.getElementById('single-spa-application')!;
+    const parcel = mountRootParcel(() => loadUmdApp(tab), { domElement, ...getCustomProps() }) as MountedTab;
+    activeParcel = parcel;
+    await parcel.mountPromise.catch(err => console.error(`Failed to mount ${tab.label}`, err));
+  });
+}
+
+setUpdateHook(() => {
+  activeParcel?.update?.(getCustomProps())?.catch(err => console.error('Failed to push settings update', err));
+});
+
 if (!tabs.some(tab => tab.hash === location.hash)) {
   location.hash = tabs[0].hash;
 }
 
-for (const tab of tabs) {
-  registerApplication({
-    name: tab.name,
-    app: () => loadUmdApp(tab),
-    activeWhen: () => location.hash === tab.hash,
-    customProps: () => getCustomProps(),
-  });
-}
-
-start();
+window.addEventListener('hashchange', switchToActiveTab);
+switchToActiveTab();
 
 renderSidebar(document.getElementById('app-sidebar')!);
 

@@ -1,5 +1,3 @@
-import { triggerAppChange } from 'single-spa';
-
 export interface RadioOption {
   value: string;
   label: string;
@@ -108,16 +106,22 @@ export const settingsGroups: SettingsGroup[] = [
   },
 ];
 
-// Re-renders the sidebar (to reflect state changes like jsonError) and
-// re-runs single-spa's reroute so the mounted app's `update()` lifecycle
-// gets called with fresh customProps.
+// Re-renders the sidebar (to reflect state changes like jsonError) and pushes
+// the latest gridConfig/fetchNonce into whichever framework tab is currently
+// mounted, via the root parcel's `update()` lifecycle (root-config.ts wires
+// this hook up to the active parcel -- single-spa only calls `update` on
+// parcels, never on plain registerApplication apps).
 let requestRerender: (() => void) | null = null;
+let requestUpdate: (() => void) | null = null;
 export function setRerenderHook(fn: () => void): void {
   requestRerender = fn;
 }
+export function setUpdateHook(fn: () => void): void {
+  requestUpdate = fn;
+}
 
 function notifyChange(): void {
-  triggerAppChange();
+  requestUpdate?.();
   requestRerender?.();
 }
 
