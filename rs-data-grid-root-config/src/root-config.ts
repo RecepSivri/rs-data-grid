@@ -1,4 +1,6 @@
 import { registerApplication, start } from 'single-spa';
+import { getCustomProps } from './grid-settings';
+import { renderSidebar } from './sidebar';
 
 interface TabDef {
   name: string;
@@ -66,10 +68,13 @@ for (const tab of tabs) {
     name: tab.name,
     app: () => loadUmdApp(tab),
     activeWhen: () => location.hash === tab.hash,
+    customProps: () => getCustomProps(),
   });
 }
 
 start();
+
+renderSidebar(document.getElementById('app-sidebar')!);
 
 function renderTabs(): void {
   const container = document.getElementById('app-tabs')!;

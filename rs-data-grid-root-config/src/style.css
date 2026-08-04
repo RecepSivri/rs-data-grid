@@ -30,6 +30,263 @@ body {
   font-weight: bold;
 }
 
+.app-shell {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  min-height: calc(100vh - 46px);
+  margin: 0;
+}
+
 #single-spa-application {
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 0;
+}
+
+.app-sidenav {
+  width: 20%;
+  min-width: 260px;
+  flex: 0 0 auto;
+  margin: 0 15px 0 0;
+  background: #262a2e;
+  border: 1px solid #dddddd;
+  border-left: none;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidenav-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #f2f2f3;
+  background: #1b1e21;
+  padding: 16px;
+  border-bottom: 1px solid #45484c;
+  flex: 0 0 auto;
+}
+
+.settings-accordion {
+  flex: 1 1 auto;
+}
+
+.settings-panel {
+  background: #262a2e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-panel[open] > .panel-title {
+  border-left-color: #8a8d90;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-title {
+  display: block;
+  height: 48px;
+  line-height: 48px;
+  padding: 0 16px;
+  border-left: 4px solid transparent;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #e8e9ea;
+  cursor: pointer;
+  list-style: none;
+}
+
+.panel-title::-webkit-details-marker {
+  display: none;
+}
+
+.panel-title:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel-title-muted {
+  color: #b0b3b6;
+  font-weight: normal;
+  font-size: 0.85em;
+  margin-left: 4px;
+  text-transform: none;
+}
+
+.settings-panel-body {
+  background: #2f3338;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 16px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.no-scroll-panel .settings-panel-body {
+  max-height: none;
+  overflow: visible;
+}
+
+.data-source-tabs {
+  display: flex;
+  gap: 2px;
+  background: #1b1e21;
+  margin: -12px -16px 8px;
+  padding: 0 12px;
+}
+
+.tab-btn {
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  color: #b0b3b6;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn-active {
+  color: #f2f2f3;
+  font-weight: 700;
+  border-bottom-color: #8a8d90;
+}
+
+.settings-tab-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.settings-row-column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.settings-radio-group {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.settings-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #e8e9ea;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.settings-label {
+  font-size: 12px;
+  color: #c7cacd;
+  flex: 1 1 auto;
+}
+
+.settings-input {
+  width: 90px;
+  box-sizing: border-box;
+  font-family: Arial;
+  font-size: 12px;
+  padding: 4px 6px;
+  background: #1b1e21;
+  color: #e8e9ea;
+  border: 1px solid #44494e;
+  border-radius: 4px;
+}
+
+.settings-input::placeholder,
+.settings-textarea::placeholder {
+  color: #797d81;
+}
+
+.settings-input:focus {
+  outline: none;
+  border-color: #8a8d90;
+}
+
+.settings-switch {
+  width: 34px;
+  height: 20px;
+  accent-color: #8a8d90;
+  cursor: pointer;
+}
+
+.settings-textarea {
+  width: 100%;
+  min-height: 70px;
+  box-sizing: border-box;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 6px;
+  background: #1b1e21;
+  color: #e8e9ea;
+  border: 1px solid #44494e;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.settings-textarea:focus {
+  outline: none;
+  border-color: #8a8d90;
+}
+
+.settings-select {
+  width: 100%;
+}
+
+.settings-input-wide {
+  width: 100%;
+}
+
+.postman-row {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.settings-method-select {
+  flex: 0 0 90px;
+  width: 90px;
+}
+
+.postman-row .settings-input-wide {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings-textarea-short {
+  min-height: 44px;
+}
+
+.settings-fetch-button {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #ff6c37;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-fetch-button:hover {
+  background-color: #e0562b;
+}
+
+.settings-error {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f2f2f3;
+  margin-top: -4px;
+  margin-bottom: 4px;
 }

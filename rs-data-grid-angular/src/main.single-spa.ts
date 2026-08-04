@@ -21,11 +21,23 @@ const lifecycles = singleSpaAngular({
   template: '<app-root />',
   NgZone: 'noop',
   domElementGetter: () => document.getElementById('single-spa-application')!,
+  // Called while this app stays mounted and the root-config's customProps
+  // change (e.g. a sidebar setting was toggled while this tab is active).
+  updateFunction: singleSpaProps => {
+    singleSpaPropsSubject.next(singleSpaProps);
+    return Promise.resolve();
+  },
 });
 
 export const bootstrap = lifecycles.bootstrap;
-export const mount = lifecycles.mount;
+// bootstrapFunction only runs once; re-push props on every mount too, since
+// switching tabs away and back unmounts/remounts without re-bootstrapping.
+export const mount = (props: unknown) => {
+  singleSpaPropsSubject.next(props as never);
+  return (lifecycles.mount as (props: unknown) => Promise<unknown>)(props);
+};
 export const unmount = lifecycles.unmount;
+export const update = lifecycles.update;
 
 // When this bundle is served directly (`ng serve`, not loaded through the
 // single-spa root-config), nothing ever calls bootstrap/mount, so the page
