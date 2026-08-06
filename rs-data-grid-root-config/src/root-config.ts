@@ -22,13 +22,36 @@ const ICONS = {
   jquery: `<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="11" fill="#0868AC"/><text x="12" y="16" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle">jQ</text></svg>`,
 };
 
+// In dev, each microfrontend runs its own `watch:single-spa`/`serve:single-spa`
+// on a fixed port, so root-config (also dev-served, on :9000) has to reach
+// across origins to load them. In a production build there are no separate
+// dev servers -- build-all.sh copies every app's bundle into this app's own
+// dist/mfe/<name>/ folder, so the whole thing ships and deploys as ONE
+// self-contained static package and the bundles are fetched same-origin,
+// relative to wherever that one package ends up hosted.
+const REMOTE_BASE_URLS: Record<string, string> = import.meta.env.DEV
+  ? {
+      react: 'http://localhost:3000',
+      angular: 'http://localhost:4200',
+      vue: 'http://localhost:5173',
+      vanilla: 'http://localhost:3001',
+      jquery: 'http://localhost:3002',
+    }
+  : {
+      react: '/mfe/react',
+      angular: '/mfe/angular',
+      vue: '/mfe/vue',
+      vanilla: '/mfe/vanilla',
+      jquery: '/mfe/jquery',
+    };
+
 const tabs: TabDef[] = [
   {
     name: '@rs-data-grid/react',
     label: 'React',
     hash: '#/react',
     globalName: 'rs-data-grid-react',
-    scriptUrl: 'http://localhost:3000/rs-data-grid-react.js',
+    scriptUrl: `${REMOTE_BASE_URLS.react}/rs-data-grid-react.js`,
     icon: ICONS.react,
   },
   {
@@ -36,7 +59,7 @@ const tabs: TabDef[] = [
     label: 'Angular',
     hash: '#/angular',
     globalName: 'rsivri-data-grid',
-    scriptUrl: 'http://localhost:4200/main.js',
+    scriptUrl: `${REMOTE_BASE_URLS.angular}/main.js`,
     icon: ICONS.angular,
   },
   {
@@ -44,7 +67,7 @@ const tabs: TabDef[] = [
     label: 'Vue',
     hash: '#/vue',
     globalName: 'rs-data-grid-vue',
-    scriptUrl: 'http://localhost:5173/rs-data-grid-vue.js',
+    scriptUrl: `${REMOTE_BASE_URLS.vue}/rs-data-grid-vue.js`,
     icon: ICONS.vue,
   },
   {
@@ -52,7 +75,7 @@ const tabs: TabDef[] = [
     label: 'Vanilla JS',
     hash: '#/vanilla',
     globalName: 'rs-data-grid-vanilla',
-    scriptUrl: 'http://localhost:3001/rs-data-grid-vanilla.js',
+    scriptUrl: `${REMOTE_BASE_URLS.vanilla}/rs-data-grid-vanilla.js`,
     icon: ICONS.vanilla,
   },
   {
@@ -60,7 +83,7 @@ const tabs: TabDef[] = [
     label: 'jQuery',
     hash: '#/jquery',
     globalName: 'rs-data-grid-jquery',
-    scriptUrl: 'http://localhost:3002/rs-data-grid-jquery.js',
+    scriptUrl: `${REMOTE_BASE_URLS.jquery}/rs-data-grid-jquery.js`,
     icon: ICONS.jquery,
   },
 ];

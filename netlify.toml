@@ -1,0 +1,18 @@
+[build]
+  command = "./build-all.sh"
+  publish = "rs-data-grid-root-config/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Routing between frameworks is done client-side via location.hash
+# (#/react, #/angular, ...), which never reaches the server, so this isn't
+# needed for the tab switcher itself. It's kept as a standard SPA fallback:
+# any request path with no matching file in the published folder (e.g. a
+# stray deep link) still resolves to the shell instead of Netlify's 404 page.
+# Real files -- including everything under /mfe/<name>/ -- are always served
+# as themselves first; this only applies when nothing on disk matches.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

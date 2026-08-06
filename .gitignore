@@ -44,3 +44,7 @@ typings
 # System Files
 .DS_Store
 Thumbs.db
+
+# local production-preview server (serve-all.sh / stop-all.sh)
+.serve-all.pids
+.serve-all-logs/

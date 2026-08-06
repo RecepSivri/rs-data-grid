@@ -53,7 +53,8 @@
                   "maximumError": "10kb"
                 }
               ],
-              "outputHashing": "none"
+              "outputHashing": "none",
+              "deployUrl": "/mfe/angular/"
             },
             "development": {
               "optimization": false,
