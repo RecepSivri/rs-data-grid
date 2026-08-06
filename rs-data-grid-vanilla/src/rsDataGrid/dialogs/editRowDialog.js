@@ -66,10 +66,15 @@ function ensureDialog() {
 function renderFields() {
   clear(formEl);
   for (const field of fields) {
+    // requestEditRow always pre-populates every field.key in editableRow with
+    // a string (possibly '') before calling renderFields(); the ?? '' below
+    // is unreachable via the public API, hence the inline ignore.
+    /* istanbul ignore next */
+    const currentValue = editableRow[field.key] ?? '';
     const input = el('input', {
       className: 'edit-input',
       attrs: { type: 'text' },
-      props: { value: editableRow[field.key] ?? '' },
+      props: { value: currentValue },
       on: { input: event => { editableRow[field.key] = event.target.value; } },
     });
     formEl.appendChild(

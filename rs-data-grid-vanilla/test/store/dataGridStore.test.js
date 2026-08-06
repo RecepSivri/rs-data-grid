@@ -157,6 +157,13 @@ describe('applyGlobalSearch', () => {
   it('returns empty array when nothing matches', () => {
     expect(applyGlobalSearch(data, 'zzz')).toEqual([]);
   });
+
+  it('tolerates a null/undefined field value within a row (String(value ?? "") fallback)', () => {
+    const withNullField = [{ name: 'Carl', nickname: null }, { name: 'Dana', nickname: undefined }];
+    expect(applyGlobalSearch(withNullField, 'carl')).toEqual([{ name: 'Carl', nickname: null }]);
+    // A row whose only unmatched field is null/undefined must not throw and must correctly not-match.
+    expect(applyGlobalSearch(withNullField, 'zzz')).toEqual([]);
+  });
 });
 
 describe('compareValues', () => {
@@ -295,6 +302,15 @@ describe('returnPageStateRelatedPageNum', () => {
     const result = returnPageStateRelatedPageNum(state, 5, 'none');
     expect(result.pager.pageNumber).toBe(5);
     expect(result.pager.pageList).toBe(state.pager.pageList);
+  });
+
+  it('caps the advancing window at pageLimit when pageVal + pageListSize would exceed it (branch2, window-clamp true branch)', () => {
+    // pageVal=7, pageListSize=5 -> 7+5=12 > pageLimit(10), so the window
+    // must stop at 10 instead of listing a full 5-wide window past it.
+    const state = makeState({ pageList: [4, 5, 6, 7, 8], pageListSize: 5, pageLimit: 10 });
+    const result = returnPageStateRelatedPageNum(state, 7, 'none');
+    expect(result.pager.pageNumber).toBe(7);
+    expect(result.pager.pageList).toEqual([8, 9, 10]);
   });
 });
 

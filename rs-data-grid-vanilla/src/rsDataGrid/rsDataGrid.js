@@ -315,6 +315,11 @@ export function createGrid() {
       renderPending = true;
       return;
     }
+    /* istanbul ignore next -- store.subscribe(renderNow) is only ever
+       registered inside render(), after containerEl/lastProps are already
+       assigned at the top of that same call, and destroy()'s unsubscribe()
+       synchronously removes the subscription before nulling them out. There
+       is no path that invokes renderNow() while either is unset. */
     if (!containerEl || !lastProps) {
       return;
     }

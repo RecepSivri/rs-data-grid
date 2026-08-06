@@ -32,6 +32,11 @@ export function createTable() {
     const draftByRow = new Map();
     batchDraftRowRefs.forEach((row, i) => {
       const existing = batchDrafts[i];
+      /* istanbul ignore else -- batchDraftRowRefs and batchDrafts are only
+         ever reassigned together, as same-length arrays, at the bottom of
+         this function; existing is therefore always defined for every index
+         this loop visits. Kept as a guard for structural safety, not a
+         reachable-via-the-public-API case. */
       if (existing) {
         draftByRow.set(row, existing);
       }
@@ -41,6 +46,10 @@ export function createTable() {
   }
 
   function renderCurrent() {
+    /* istanbul ignore else -- every internal caller of renderCurrent() is
+       itself only reachable from a DOM event on previously-rendered content
+       or from startAddingRow/addBatchRow (both only meaningfully called
+       after an initial render), so containerEl/lastProps are always set. */
     if (containerEl && lastProps) {
       render(containerEl, lastProps);
     }

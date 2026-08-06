@@ -56,6 +56,11 @@ describe('rsDataGridHeader', () => {
       expect(container.querySelector('.index-header-cell').textContent).toBe('#');
     });
 
+    it('omits border-right on the caption index cell when headerColumnLines is false', () => {
+      header.render(container, baseProps({ showIndex: true, headerColumnLines: false }));
+      expect(container.querySelector('.index-header-cell').className).not.toContain('border-right');
+    });
+
     it('omits the index header cell when showIndex is false', () => {
       header.render(container, baseProps({ showIndex: false }));
       expect(container.querySelector('.index-header-cell')).toBeNull();
@@ -164,11 +169,22 @@ describe('rsDataGridHeader', () => {
       expect(container.querySelector('.filter-row').className).toContain('filter-row-border');
     });
 
+    it('omits filter-row-border when tableBorder is false', () => {
+      header.render(container, baseProps({ showFilter: true, tableBorder: false }));
+      expect(container.querySelector('.filter-row').className).not.toContain('filter-row-border');
+    });
+
     it('renders an index filter cell when showIndex is true, bordered per bodyColumnLines', () => {
       header.render(container, baseProps({ showFilter: true, showIndex: true, bodyColumnLines: true }));
       const indexCell = container.querySelector('.filter-row .index-header-cell');
       expect(indexCell).not.toBeNull();
       expect(indexCell.className).toContain('border-right');
+    });
+
+    it('omits border-right on the filter-row index cell when bodyColumnLines is false', () => {
+      header.render(container, baseProps({ showFilter: true, showIndex: true, bodyColumnLines: false }));
+      const indexCell = container.querySelector('.filter-row .index-header-cell');
+      expect(indexCell.className).not.toContain('border-right');
     });
 
     it('renders an actions filter cell when showActions is true', () => {

@@ -203,6 +203,26 @@ describe('rsDataGridTable', () => {
       expect(nameInput.value).toBe('Alicia');
     });
 
+    it('fills a newly-added column with an empty string on the edit draft (column added mid-edit)', () => {
+      const row = { name: 'Alice', age: 30 };
+      table.render(container, baseProps({ gridMode: 'row', data: [row], columns: [columns[0]] }));
+      container.querySelectorAll('.row-action-button')[0].click(); // Edit -- editDraft built from just [name]
+      table.render(container, baseProps({ gridMode: 'row', data: [row], columns })); // columns grows mid-edit
+      const inputs = container.querySelectorAll('.inline-edit-input');
+      expect(inputs.length).toBe(2);
+      expect(inputs[1].value).toBe('');
+    });
+
+    it('omits the actions cell while editing a row when showActions is false', () => {
+      const row = { name: 'Alice', age: 30 };
+      table.render(container, baseProps({ gridMode: 'row', data: [row], showActions: true }));
+      container.querySelectorAll('.row-action-button')[0].click(); // Edit
+      table.render(container, baseProps({ gridMode: 'row', data: [row], showActions: false }));
+      // Re-entering render with editingRow still set (same row reference) keeps edit mode.
+      expect(container.querySelector('.actions-cell')).toBeNull();
+      expect(container.querySelectorAll('.inline-edit-input').length).toBe(2);
+    });
+
     it('Save prompts onRequestConfirm, and on confirm calls onBatchRowSave with {original, updated} and exits edit mode', async () => {
       const row = { name: 'Alice', age: 30 };
       const onBatchRowSave = vi.fn();
@@ -255,6 +275,44 @@ describe('rsDataGridTable', () => {
       const cancelBtn = container.querySelectorAll('.row-action-button')[1];
       cancelBtn.click();
       expect(container.querySelector('.inline-edit-input')).toBeNull();
+    });
+
+    it('renders a blank index cell on the add row when showIndex is true', () => {
+      table.render(container, baseProps({ showIndex: true }));
+      table.startAddingRow();
+      const addRowEl = container.querySelector('.row-style-bottom');
+      expect(addRowEl.querySelector('.index-cell')).not.toBeNull();
+      expect(addRowEl.querySelector('.index-cell').textContent).toBe('');
+    });
+
+    it('omits border-right on the add-row index cell when bodyColumnLines is false', () => {
+      table.render(container, baseProps({ showIndex: true, bodyColumnLines: false }));
+      table.startAddingRow();
+      expect(container.querySelector('.index-cell').className).not.toContain('border-right');
+    });
+
+    it('omits the Save/Cancel actions cell on the add row when showActions is false', () => {
+      table.render(container, baseProps({ showActions: false }));
+      table.startAddingRow();
+      const addRowEl = container.querySelector('.row-style-bottom');
+      expect(addRowEl.querySelector('.actions-cell')).toBeNull();
+    });
+
+    it('omits the row-style class on the add row when tableBorder is false', () => {
+      table.render(container, baseProps({ tableBorder: false }));
+      table.startAddingRow();
+      const addRowEl = container.querySelector('.row-style-bottom');
+      expect(addRowEl.className).not.toContain('row-style ');
+      expect(addRowEl.className.trim()).not.toBe('full-row row-style row-style-bottom');
+    });
+
+    it('fills a newly-added column with an empty string on the add row draft (column added mid-add)', () => {
+      table.render(container, baseProps({ columns: [columns[0]] }));
+      table.startAddingRow();
+      table.render(container, baseProps({ columns })); // columns grows while isAddingRow is still true
+      const inputs = container.querySelectorAll('.row-style-bottom .inline-edit-input');
+      expect(inputs.length).toBe(2);
+      expect(inputs[1].value).toBe('');
     });
 
     it('typing into the add-row input mutates the draft', () => {
@@ -315,6 +373,32 @@ describe('rsDataGridTable', () => {
       input.dispatchEvent(new Event('input'));
       expect(container.querySelectorAll('.inline-edit-input')[0]).toBe(input);
       expect(input.value).toBe('Alicia');
+    });
+
+    it('fills a newly-added column with an empty string in a reused batch draft (column added mid-session)', () => {
+      const rowA = { name: 'Alice', age: 30 };
+      table.render(container, batchProps({ columns: [columns[0]], data: [rowA] }));
+      // Same row reference persists, but columns grows -- syncBatchDrafts
+      // reuses the existing draft object (found via draftByRow.get(row)) as-is,
+      // which never had an "age" key, so the input must fall back to ''.
+      table.render(container, batchProps({ columns, data: [rowA] }));
+      const inputs = container.querySelectorAll('.inline-edit-input');
+      expect(inputs.length).toBe(2);
+      expect(inputs[1].value).toBe('');
+    });
+
+    it('ignores an input event dispatched on a stale (detached) batch input after a shrinking re-render', () => {
+      const rowA = { name: 'Alice', age: 30 };
+      const rowB = { name: 'Bob', age: 25 };
+      table.render(container, batchProps({ data: [rowA, rowB] }));
+      const staleSecondRowInput = container.querySelectorAll('.inline-edit-input')[2]; // rowB's name input
+      // Re-render with fewer rows -- batchDrafts shrinks to length 1, so
+      // index 1 (rowB's former slot) no longer has a draft.
+      table.render(container, batchProps({ data: [rowA] }));
+      expect(() => {
+        staleSecondRowInput.value = 'stale-edit';
+        staleSecondRowInput.dispatchEvent(new Event('input'));
+      }).not.toThrow();
     });
 
     it('preserves in-progress edits across a re-render when the same row references persist (syncBatchDrafts by reference)', () => {
@@ -391,6 +475,30 @@ describe('rsDataGridTable', () => {
       expect(newRowIndexCell.textContent).toBe('');
     });
 
+    it('omits border-right on a new batch row index cell when bodyColumnLines is false', () => {
+      table.render(container, batchProps({ showIndex: true, bodyColumnLines: false }));
+      table.addBatchRow();
+      const rows = container.querySelectorAll('.column-layout > .full-row');
+      expect(rows[2].querySelector('.index-cell').className).not.toContain('border-right');
+    });
+
+    it('omits the row-style class on a new batch row when tableBorder is false', () => {
+      table.render(container, batchProps({ tableBorder: false }));
+      table.addBatchRow();
+      const rows = container.querySelectorAll('.column-layout > .full-row');
+      expect(rows[2].className.trim()).not.toBe('full-row row-style row-style-bottom');
+    });
+
+    it('fills a newly-added column with an empty string on a pending new batch row (column added mid-session)', () => {
+      table.render(container, batchProps({ columns: [columns[0]] }));
+      table.addBatchRow();
+      table.render(container, batchProps({ columns })); // columns grows while the new-row draft is pending
+      const rows = container.querySelectorAll('.column-layout > .full-row');
+      const newRowInputs = rows[2].querySelectorAll('.inline-edit-input');
+      expect(newRowInputs.length).toBe(2);
+      expect(newRowInputs[1].value).toBe('');
+    });
+
     it('omits the Remove button on a new batch row when showActions is false', () => {
       table.render(container, batchProps({ showActions: false }));
       table.addBatchRow();
@@ -427,6 +535,27 @@ describe('rsDataGridTable', () => {
       table.saveBatch();
       table.render(container, batchProps({ onBatchCommit }));
       expect(container.querySelectorAll('.column-layout > .full-row').length).toBe(2); // just the 2 original data rows
+    });
+
+    it('saveBatch skips rows with no corresponding draft instead of throwing', () => {
+      // batchDrafts only gets populated by a gridMode:'batch' render. Calling
+      // saveBatch() right after a non-batch render (lastProps.data non-empty,
+      // batchDrafts still []) exercises the defensive `if (!draft) return;`
+      // guard and must not throw or report any dirty rows.
+      const rowA = { name: 'Alice', age: 30 };
+      const onBatchCommit = vi.fn();
+      table.render(container, baseProps({ data: [rowA], gridMode: 'popup', onBatchCommit }));
+      table.saveBatch();
+      expect(onBatchCommit).toHaveBeenCalledWith({ added: [], updated: [] });
+    });
+
+    it('treats a null/undefined original field value as "" when dirty-checking against the draft', () => {
+      const rowA = { name: 'Alice', age: null };
+      const onBatchCommit = vi.fn();
+      table.render(container, batchProps({ data: [rowA], onBatchCommit }));
+      // toDraft() already normalized age's null to '' -- untouched, so not dirty.
+      table.saveBatch();
+      expect(onBatchCommit).toHaveBeenCalledWith({ added: [], updated: [] });
     });
 
     it('saveBatch produces no updated entries when nothing changed', () => {

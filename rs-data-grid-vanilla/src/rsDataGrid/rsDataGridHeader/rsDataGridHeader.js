@@ -173,6 +173,13 @@ export function createHeader() {
   }
 
   function renderCurrent() {
+    /* istanbul ignore else -- containerEl/lastProps are both assigned
+       synchronously at the top of render(), before the document click
+       listener that can trigger closeDropdown()/renderCurrent() is even
+       attached (see the end of render()); every internal caller of
+       renderCurrent() is itself only reachable from a DOM event on
+       previously-rendered content, so the false case is unreachable via
+       the public API. */
     if (containerEl && lastProps) {
       render(containerEl, lastProps);
     }
