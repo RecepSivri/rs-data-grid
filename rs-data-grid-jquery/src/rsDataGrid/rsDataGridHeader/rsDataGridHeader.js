@@ -74,7 +74,12 @@ export function createHeader() {
       event.stopPropagation();
       const $input = $(this);
       const dataField = $input.data('field');
-      const value = $input.data('value');
+      // .attr(), not .data(): jQuery's .data() auto-casts data-value into a
+      // Number/Boolean/JSON when it looks like one (e.g. a numeric "age"
+      // column's option value "30"), but getOptions()/applyFilters() always
+      // compare via String(row[field]) -- a stray Number here would silently
+      // never match, breaking the filter for any numeric-looking value.
+      const value = $input.attr('data-value');
       const current = selectedValues[dataField] ?? [];
       const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
       selectedValues = { ...selectedValues, [dataField]: next };

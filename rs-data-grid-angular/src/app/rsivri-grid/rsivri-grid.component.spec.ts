@@ -21,11 +21,18 @@ describe('RsivriGridComponent', () => {
   });
 
   it('should create and render its header/body/pager children', () => {
+    component.dataSource = [{ a: 1 }];
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(fixture.nativeElement.querySelector('rsivri-grid-hedaer')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('rsivri-grid-body')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('rsivri-grid-pager')).toBeTruthy();
+  });
+
+  it('shows the empty-state message when there is no data to display', () => {
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.grid-state-empty')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('rsivri-grid-hedaer')).toBeNull();
   });
 
   describe('ngOnInit in local mode (remoteMode = false)', () => {
@@ -42,7 +49,21 @@ describe('RsivriGridComponent', () => {
       component.fetchUrl = 'http://example.com/api';
       component.entrySection = 'items';
       component.ngOnInit();
-      expect(fetchDataSpy).toHaveBeenCalledWith('http://example.com/api', 'items', false);
+      expect(fetchDataSpy).toHaveBeenCalledWith('http://example.com/api', 'items', false, undefined, 'GET', undefined);
+    });
+
+    it('includes an Authorization header derived from authToken and any custom fetchHeaders', () => {
+      const fetchDataSpy = spyOn(component.store, 'fetchData');
+      component.dataSource = [];
+      component.fetchUrl = 'http://example.com/api';
+      component.entrySection = 'items';
+      component.fetchMethod = 'POST';
+      component.fetchHeaders = { 'X-Custom': '1' };
+      component.authToken = 'secret';
+      component.ngOnInit();
+      expect(fetchDataSpy).toHaveBeenCalledWith(
+        'http://example.com/api', 'items', false, undefined, 'POST', { 'X-Custom': '1', Authorization: 'Bearer secret' }
+      );
     });
 
     it('calls setData with an empty array when dataSource and fetchUrl are both empty', () => {
@@ -70,7 +91,7 @@ describe('RsivriGridComponent', () => {
       component.dataSource = [];
       component.remoteModeParams = { endpoint: 'http://api.test/search', aliases: { data: 'items' } };
       component.ngOnInit();
-      expect(fetchDataSpy).toHaveBeenCalledWith('http://api.test/search', 'items', true, 'size');
+      expect(fetchDataSpy).toHaveBeenCalledWith('http://api.test/search', 'items', true, 'size', 'GET', undefined);
     });
   });
 
@@ -110,6 +131,7 @@ describe('RsivriGridComponent', () => {
 
     it('passes the showFilter input through to the header child', () => {
       component.showFilter = true;
+      component.dataSource = [{ a: 1 }];
       fixture.detectChanges();
       const header = fixture.debugElement.query(By.directive(RsivriGridHeaderComponent));
       expect((header.componentInstance as RsivriGridHeaderComponent).showFilter).toBeTrue();

@@ -14,7 +14,9 @@
     "preview": "vite preview",
     "build:single-spa": "vite build --config vite.single-spa.config.ts",
     "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
-    "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 3001 --strictPort"
+    "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 3001 --strictPort",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "browserslist": {
     "production": [
@@ -29,8 +31,11 @@
     ]
   },
   "devDependencies": {
+    "@vitest/coverage-istanbul": "^4.1.10",
+    "jsdom": "^30.0.1",
     "vite": "^8.2.0",
     "vite-plugin-css-injected-by-js": "^5.0.2",
-    "vite-plugin-node-polyfills": "^0.28.0"
+    "vite-plugin-node-polyfills": "^0.28.0",
+    "vitest": "^4.1.10"
   }
 }

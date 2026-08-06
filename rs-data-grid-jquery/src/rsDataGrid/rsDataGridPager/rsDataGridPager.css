@@ -19,16 +19,17 @@
 }
 
 .page-numbers {
+  box-sizing: border-box;
   text-align: center;
   padding-top: 3px;
   padding-bottom: 3px;
-  padding-left: 5px;
-  padding-right: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
   font-size: 20px;
+  white-space: nowrap;
   cursor: pointer;
   border-right: 1px solid #cccccc;
-  width: 30px;
-  max-width: 60px;
+  min-width: 30px;
 }
 
 .page-number-background {

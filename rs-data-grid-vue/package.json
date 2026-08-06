@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "build:single-spa": "vite build --config vite.single-spa.config.ts",
     "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
-    "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 5173 --strictPort"
+    "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 5173 --strictPort",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -23,12 +25,16 @@
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
+    "@vitest/coverage-istanbul": "^4.1.10",
+    "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.9.1",
+    "jsdom": "^30.0.1",
     "sass": "^1.102.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.0",
     "vite-plugin-css-injected-by-js": "^5.0.2",
     "vite-plugin-node-polyfills": "^0.28.0",
+    "vitest": "^4.1.10",
     "vue-tsc": "^3.3.8"
   }
 }
