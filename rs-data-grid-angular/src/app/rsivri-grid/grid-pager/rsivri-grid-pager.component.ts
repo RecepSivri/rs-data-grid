@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { DataGridStore } from '../store/data-grid.store';
 
 @Component({
@@ -6,7 +6,8 @@ import { DataGridStore } from '../store/data-grid.store';
   standalone: true,
   imports: [],
   templateUrl: './rsivri-grid-pager.component.html',
-  styleUrls: ['./rsivri-grid-pager.component.css']
+  styleUrls: ['./rsivri-grid-pager.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RsivriGridPagerComponent implements OnInit, OnChanges {
   @Input() pagination: boolean = false;

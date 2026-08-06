@@ -1,0 +1,25 @@
+{
+  "name": "rs-data-grid-jquery",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "jquery": "^3.7.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:single-spa": "vite build --config vite.single-spa.config.ts",
+    "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
+    "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 3002 --strictPort"
+  },
+  "devDependencies": {
+    "vite": "^8.2.0",
+    "vite-plugin-css-injected-by-js": "^5.0.2",
+    "vite-plugin-node-polyfills": "^0.28.0"
+  }
+}

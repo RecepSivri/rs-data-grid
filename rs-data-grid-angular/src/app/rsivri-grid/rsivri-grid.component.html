@@ -84,7 +84,7 @@
                         (sortToggle) = "onSortToggle($event)">
     </rsivri-grid-hedaer>
     <rsivri-grid-body [columns]="columns"
-                      [data]="remoteModeParams ? (data() ?? []) : pagination ? (data() ?? []).slice(pageNumber() * pageSize(), (pageNumber() + 1) * pageSize()) : (data() ?? [])"
+                      [data]="getPagedData()"
                       [bodyColumnLines] = "this.bodyColumnLines"
                       [bodyRowLines] = "this.bodyRowLines"
                       [tableBorder] = "this.tableBorder"

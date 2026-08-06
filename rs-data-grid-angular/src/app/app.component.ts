@@ -1,4 +1,4 @@
-import { Component, computed, effect, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RsivriGridComponent } from './rsivri-grid/rsivri-grid.component';
 import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
@@ -50,7 +50,8 @@ interface GridAppProps {
   standalone: true,
   imports: [RsivriGridComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
   private readonly singleSpaProps = toSignal(singleSpaPropsSubject);

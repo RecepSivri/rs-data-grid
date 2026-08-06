@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { IColumn } from '../../../core/models/IColumn';
 import { applyFilters, SortState } from '../store/data-grid.store';
@@ -13,7 +13,8 @@ export interface FilterChangeEvent {
   standalone: true,
   imports: [TitleCasePipe],
   templateUrl: './rsivri-grid-header.component.html',
-  styleUrls: ['./rsivri-grid-header.component.css']
+  styleUrls: ['./rsivri-grid-header.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RsivriGridHeaderComponent {
   @Input() columns: IColumn[] = [];

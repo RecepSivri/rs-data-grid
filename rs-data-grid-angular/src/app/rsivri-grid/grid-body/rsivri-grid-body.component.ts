@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { IColumn } from '../../../core/models/IColumn';
@@ -9,7 +9,8 @@ import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './rsivri-grid-body.component.html',
-  styleUrls: ['./rsivri-grid-body.component.css']
+  styleUrls: ['./rsivri-grid-body.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RsivriGridBodyComponent implements OnChanges {
   private readonly dialog = inject(MatDialog);

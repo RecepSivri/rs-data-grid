@@ -12,13 +12,6 @@ interface TabDef {
 
 const tabs: TabDef[] = [
   {
-    name: '@rs-data-grid/angular',
-    label: 'Angular',
-    hash: '#/angular',
-    globalName: 'rsivri-data-grid',
-    scriptUrl: 'http://localhost:4200/main.js',
-  },
-  {
     name: '@rs-data-grid/react',
     label: 'React',
     hash: '#/react',
@@ -26,11 +19,32 @@ const tabs: TabDef[] = [
     scriptUrl: 'http://localhost:3000/rs-data-grid-react.js',
   },
   {
+    name: '@rs-data-grid/angular',
+    label: 'Angular',
+    hash: '#/angular',
+    globalName: 'rsivri-data-grid',
+    scriptUrl: 'http://localhost:4200/main.js',
+  },
+  {
     name: '@rs-data-grid/vue',
     label: 'Vue',
     hash: '#/vue',
     globalName: 'rs-data-grid-vue',
     scriptUrl: 'http://localhost:5173/rs-data-grid-vue.js',
+  },
+  {
+    name: '@rs-data-grid/vanilla',
+    label: 'Vanilla JS',
+    hash: '#/vanilla',
+    globalName: 'rs-data-grid-vanilla',
+    scriptUrl: 'http://localhost:3001/rs-data-grid-vanilla.js',
+  },
+  {
+    name: '@rs-data-grid/jquery',
+    label: 'jQuery',
+    hash: '#/jquery',
+    globalName: 'rs-data-grid-jquery',
+    scriptUrl: 'http://localhost:3002/rs-data-grid-jquery.js',
   },
 ];
 
@@ -77,6 +91,10 @@ let switchChain: Promise<void> = Promise.resolve();
 
 function currentTab(): TabDef {
   return tabs.find(tab => tab.hash === location.hash) ?? tabs[0];
+}
+
+export function getActiveTabLabel(): string {
+  return currentTab().label;
 }
 
 function switchToActiveTab(): void {

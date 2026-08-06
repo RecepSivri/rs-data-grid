@@ -1,0 +1,7 @@
+node_modules
+dist
+dist-single-spa
+
+.DS_Store
+*.local
+npm-debug.log*
