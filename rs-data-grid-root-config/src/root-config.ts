@@ -210,6 +210,11 @@ function applyTheme(theme: 'dark' | 'light'): void {
   const topbar = document.querySelector('.app-topbar');
   const sidenav = document.querySelector('.app-sidenav');
   const toggleBtn = document.getElementById('theme-toggle-btn');
+  // .app-sidenav has a 15px right margin (breathing room before the
+  // content pane); body's own background shows through that gap, so it
+  // needs to track the theme too -- otherwise it stays stuck white and
+  // shows up as a stray light seam once the sidebar/content are dark.
+  document.body.setAttribute('data-theme', theme);
   topbar?.setAttribute('data-theme', theme);
   sidenav?.setAttribute('data-theme', theme);
   toggleBtn?.setAttribute('data-theme', theme);

@@ -5,6 +5,16 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: #1b1e21;
+  transition: background 0.2s ease;
+}
+
+/* .app-sidenav's own right margin leaves a 15px gap before the content
+   pane; body's background shows through it, so it has to track the theme
+   too or that gap stays a stray light/dark seam against the two panes on
+   either side of it. */
+body[data-theme='light'] {
+  background: #f0f0f1;
 }
 
 /* Shell theme tokens (sidebar + topbar). Separate from each mounted grid's
@@ -219,6 +229,25 @@ body {
 .app-tab-active {
   background: #16181a;
   color: #ffffff;
+}
+
+/* No border-color override here: each .app-tab-<framework> class below
+   already sets its own tinted border, which is specific enough to survive
+   fine on a light background too -- overriding it here would need higher
+   specificity than those rules and clobber the per-framework color. */
+.app-topbar[data-theme='light'] .app-tab {
+  background: #ffffff;
+  color: #55595e;
+}
+
+.app-topbar[data-theme='light'] .app-tab:hover {
+  background: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.app-topbar[data-theme='light'] .app-tab-active {
+  background: #f0f0f1;
+  color: #1a1a1a;
 }
 
 /* Per-framework brand color, matching each tab's icon (see ICONS in
