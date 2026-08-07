@@ -352,42 +352,44 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
               )}
             </div>
           )}
-          <RsDataGridHeader
-            columns={effectiveColumns}
-            data={store.rawData}
-            headerRowLines={headerRowLines}
-            headerColumnLines={headerColumnLines}
-            bodyColumnLines={bodyColumnLines}
-            tableBorder={tableBorder}
-            borderRadiusTop={borderRadiusTop}
-            showFilter={showFilter}
-            showSort={showSort}
-            showActions={showActions}
-            showIndex={showIndex}
-            sort={store.sort}
-            onFilterChange={onFilterChange}
-            onSortToggle={onSortToggle}
-          />
-          <RsDataGridTable
-            ref={tableRef}
-            columns={effectiveColumns}
-            data={bodyRows}
-            bodyRowLines={bodyRowLines}
-            bodyColumnLines={bodyColumnLines}
-            tableBorder={tableBorder}
-            borderRadiusBottom={borderRadiusBottom}
-            diagonalRow={diagonalRow}
-            showActions={showActions}
-            showIndex={showIndex}
-            indexOffset={!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0}
-            gridMode={gridMode}
-            onRowEdit={onRowEditRequest}
-            onRowDelete={onRowDeleteRequest}
-            onBatchRowSave={onBatchRowSave}
-            onBatchRowAdd={onBatchRowAdd}
-            onBatchCommit={onBatchCommit}
-            onRequestConfirm={requestConfirm}
-          />
+          <div className="grid-scroll-x">
+            <RsDataGridHeader
+              columns={effectiveColumns}
+              data={store.rawData}
+              headerRowLines={headerRowLines}
+              headerColumnLines={headerColumnLines}
+              bodyColumnLines={bodyColumnLines}
+              tableBorder={tableBorder}
+              borderRadiusTop={borderRadiusTop}
+              showFilter={showFilter}
+              showSort={showSort}
+              showActions={showActions}
+              showIndex={showIndex}
+              sort={store.sort}
+              onFilterChange={onFilterChange}
+              onSortToggle={onSortToggle}
+            />
+            <RsDataGridTable
+              ref={tableRef}
+              columns={effectiveColumns}
+              data={bodyRows}
+              bodyRowLines={bodyRowLines}
+              bodyColumnLines={bodyColumnLines}
+              tableBorder={tableBorder}
+              borderRadiusBottom={borderRadiusBottom}
+              diagonalRow={diagonalRow}
+              showActions={showActions}
+              showIndex={showIndex}
+              indexOffset={!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0}
+              gridMode={gridMode}
+              onRowEdit={onRowEditRequest}
+              onRowDelete={onRowDeleteRequest}
+              onBatchRowSave={onBatchRowSave}
+              onBatchRowAdd={onBatchRowAdd}
+              onBatchCommit={onBatchCommit}
+              onRequestConfirm={requestConfirm}
+            />
+          </div>
           <RsDataGridPager pagination={pagination} pagingSizes={pagingSizes} pageListSize={pageListSize} currentPagingSize={currentPagingSize} store={store} />
         </>
       )}

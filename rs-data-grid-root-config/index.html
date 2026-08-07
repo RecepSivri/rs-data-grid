@@ -7,10 +7,16 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app-tabs"></div>
+    <div class="app-topbar">
+      <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" type="button" aria-label="Toggle settings menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div id="app-tabs"></div>
+    </div>
     <div class="app-shell">
       <div id="app-sidebar"></div>
       <div id="single-spa-application" class="app-main"></div>
+      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
     </div>
     <script type="module" src="/src/root-config.ts"></script>
   </body>

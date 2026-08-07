@@ -320,42 +320,44 @@ const bodyRows = computed(() => getDisplayedRows());
           />
         </div>
       </div>
-      <RsDataGridHeader
-        :columns="effectiveColumns"
-        :data="store.rawData"
-        :header-row-lines="headerRowLines"
-        :header-column-lines="headerColumnLines"
-        :body-column-lines="bodyColumnLines"
-        :table-border="tableBorder"
-        :border-radius-top="borderRadiusTop"
-        :show-filter="showFilter"
-        :show-sort="showSort"
-        :show-actions="showActions"
-        :show-index="showIndex"
-        :sort="store.sort"
-        @filter-change="onFilterChange"
-        @sort-toggle="onSortToggle"
-      />
-      <RsDataGridTable
-        ref="tableRef"
-        :columns="effectiveColumns"
-        :data="bodyRows"
-        :body-row-lines="bodyRowLines"
-        :body-column-lines="bodyColumnLines"
-        :table-border="tableBorder"
-        :border-radius-bottom="borderRadiusBottom"
-        :diagonal-row="diagonalRow"
-        :show-actions="showActions"
-        :show-index="showIndex"
-        :index-offset="!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0"
-        :grid-mode="gridMode"
-        :on-request-confirm="requestConfirm"
-        @row-edit="onRowEditRequest"
-        @row-delete="onRowDeleteRequest"
-        @batch-row-save="onBatchRowSave"
-        @batch-row-add="onBatchRowAdd"
-        @batch-commit="onBatchCommit"
-      />
+      <div class="grid-scroll-x">
+        <RsDataGridHeader
+          :columns="effectiveColumns"
+          :data="store.rawData"
+          :header-row-lines="headerRowLines"
+          :header-column-lines="headerColumnLines"
+          :body-column-lines="bodyColumnLines"
+          :table-border="tableBorder"
+          :border-radius-top="borderRadiusTop"
+          :show-filter="showFilter"
+          :show-sort="showSort"
+          :show-actions="showActions"
+          :show-index="showIndex"
+          :sort="store.sort"
+          @filter-change="onFilterChange"
+          @sort-toggle="onSortToggle"
+        />
+        <RsDataGridTable
+          ref="tableRef"
+          :columns="effectiveColumns"
+          :data="bodyRows"
+          :body-row-lines="bodyRowLines"
+          :body-column-lines="bodyColumnLines"
+          :table-border="tableBorder"
+          :border-radius-bottom="borderRadiusBottom"
+          :diagonal-row="diagonalRow"
+          :show-actions="showActions"
+          :show-index="showIndex"
+          :index-offset="!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0"
+          :grid-mode="gridMode"
+          :on-request-confirm="requestConfirm"
+          @row-edit="onRowEditRequest"
+          @row-delete="onRowDeleteRequest"
+          @batch-row-save="onBatchRowSave"
+          @batch-row-add="onBatchRowAdd"
+          @batch-commit="onBatchCommit"
+        />
+      </div>
       <RsDataGridPager :pagination="pagination" :paging-sizes="pagingSizes" :page-list-size="pageListSize" :current-paging-size="currentPagingSize" :store="store" />
     </template>
     <EditRowDialog :open="editDialog.open" :row="editDialog.row" :columns="editDialog.columns" @save="onEditDialogSave" @cancel="onEditDialogCancel" />

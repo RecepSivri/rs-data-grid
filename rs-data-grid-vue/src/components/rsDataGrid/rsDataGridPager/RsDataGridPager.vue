@@ -42,7 +42,7 @@ const writeAS = (pageFirstItem: any, pageListSize: any, pageLimit: any) => (page
 </script>
 
 <template>
-  <div v-if="pagination" class="full-row row-layout-space-between-center">
+  <div v-if="pagination" class="full-row row-layout-space-between-center pager-row">
     <div class="row-layout-start page-number-background">
       <div class="page-numbers" @click="decreasePager">{{ '<' }}</div>
       <div

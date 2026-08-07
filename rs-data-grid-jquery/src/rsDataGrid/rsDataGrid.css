@@ -37,10 +37,15 @@
 
 .grid-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
   padding-bottom: 6px;
+}
+
+.grid-scroll-x {
+  overflow-x: auto;
 }
 
 .export-button {

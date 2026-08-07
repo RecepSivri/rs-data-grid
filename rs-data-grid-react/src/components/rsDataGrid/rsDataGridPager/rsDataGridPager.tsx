@@ -55,7 +55,7 @@ export const RsDataGridPager = ({ pagination, pagingSizes, currentPagingSize, pa
   }
 
   return (
-    <div className="full-row row-layout-space-between-center">
+    <div className="full-row row-layout-space-between-center pager-row">
       <div className="row-layout-start page-number-background">
         <div className="page-numbers" onClick={decreasePager}>{'<'}</div>
         {pageList.map(page => (

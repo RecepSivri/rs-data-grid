@@ -68,40 +68,42 @@
         }
       </div>
     }
-    <rsivri-grid-hedaer [columns]="columns"
-                        [data] = "allData()"
-                        [headerColumnLines] = "this.headerColumnLines"
+    <div class="grid-scroll-x">
+      <rsivri-grid-hedaer [columns]="columns"
+                          [data] = "allData()"
+                          [headerColumnLines] = "this.headerColumnLines"
+                          [bodyColumnLines] = "this.bodyColumnLines"
+                          [headerRowLines] = "this.headerRowLines"
+                          [borderRadiusTop] = "this.borderRadiusTop"
+                          [tableBorder] = "this.tableBorder"
+                          [showFilter] = "this.showFilter"
+                          [showSort] = "this.showSort"
+                          [showActions] = "this.showActions"
+                          [showIndex] = "this.showIndex"
+                          [sort] = "sort()"
+                          (filterChange) = "onFilterChange($event)"
+                          (sortToggle) = "onSortToggle($event)">
+      </rsivri-grid-hedaer>
+      <rsivri-grid-body [columns]="columns"
+                        [data]="getPagedData()"
                         [bodyColumnLines] = "this.bodyColumnLines"
-                        [headerRowLines] = "this.headerRowLines"
-                        [borderRadiusTop] = "this.borderRadiusTop"
+                        [bodyRowLines] = "this.bodyRowLines"
                         [tableBorder] = "this.tableBorder"
-                        [showFilter] = "this.showFilter"
-                        [showSort] = "this.showSort"
+                        [borderRadiusBottom] = "this.borderRadiusBottom"
+                        [diagonalRow] = "this.diagonalRow"
+                        [currentPagingSize] = "currentPagingSize"
                         [showActions] = "this.showActions"
                         [showIndex] = "this.showIndex"
-                        [sort] = "sort()"
-                        (filterChange) = "onFilterChange($event)"
-                        (sortToggle) = "onSortToggle($event)">
-    </rsivri-grid-hedaer>
-    <rsivri-grid-body [columns]="columns"
-                      [data]="getPagedData()"
-                      [bodyColumnLines] = "this.bodyColumnLines"
-                      [bodyRowLines] = "this.bodyRowLines"
-                      [tableBorder] = "this.tableBorder"
-                      [borderRadiusBottom] = "this.borderRadiusBottom"
-                      [diagonalRow] = "this.diagonalRow"
-                      [currentPagingSize] = "currentPagingSize"
-                      [showActions] = "this.showActions"
-                      [showIndex] = "this.showIndex"
-                      [indexOffset] = "!remoteModeParams && pagination ? pageNumber() * pageSize() : 0"
-                      [gridMode] = "this.gridMode"
-                      (rowEdit) = "onRowEdit($event)"
-                      (rowDelete) = "onRowDelete($event)"
-                      (batchRowSave) = "onBatchRowSave($event)"
-                      (batchRowAdd) = "onBatchRowAdd($event)"
-                      (batchCommit) = "onBatchCommit($event)"
-    >
-    </rsivri-grid-body>
+                        [indexOffset] = "!remoteModeParams && pagination ? pageNumber() * pageSize() : 0"
+                        [gridMode] = "this.gridMode"
+                        (rowEdit) = "onRowEdit($event)"
+                        (rowDelete) = "onRowDelete($event)"
+                        (batchRowSave) = "onBatchRowSave($event)"
+                        (batchRowAdd) = "onBatchRowAdd($event)"
+                        (batchCommit) = "onBatchCommit($event)"
+      >
+      </rsivri-grid-body>
+    </div>
 
     <rsivri-grid-pager [pagination] = "pagination"
                        [pagingSizes] = "pagingSizes"

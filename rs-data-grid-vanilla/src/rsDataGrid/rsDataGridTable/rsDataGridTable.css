@@ -16,7 +16,7 @@
   min-height: 50px;
   max-height: 50px;
   white-space: nowrap;
-  min-width: 5px;
+  min-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
 }

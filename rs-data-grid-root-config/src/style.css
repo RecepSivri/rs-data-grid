@@ -7,12 +7,51 @@ body {
   overflow: hidden;
 }
 
-#app-tabs {
+.app-topbar {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  background: #1c1e21;
+}
+
+#app-tabs {
   display: flex;
   gap: 10px;
   padding: 10px 12px;
-  background: #1c1e21;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.sidebar-toggle-btn {
+  display: none;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #2b2e33;
+}
+
+.sidebar-toggle-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #e8e9ea;
+  border-radius: 1px;
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 .app-tab {
@@ -473,4 +512,44 @@ body {
   color: #f2f2f3;
   margin-top: -4px;
   margin-bottom: 4px;
+}
+
+/* Below this width the sidebar and content no longer fit side by side
+   without squeezing the grid unusably narrow (verified: at 390px wide the
+   content pane was left with ~115px). The sidebar becomes an off-canvas
+   drawer instead -- hidden by default, toggled by the hamburger button,
+   overlaying the now full-width content -- covering phones and portrait
+   tablets alike. */
+@media (max-width: 820px) {
+  .sidebar-toggle-btn {
+    display: flex;
+  }
+
+  .app-sidenav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    width: 82%;
+    max-width: 320px;
+    min-width: 0;
+    margin: 0;
+    border-left: 1px solid #dddddd;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.35);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+
+  .app-sidenav.app-sidenav-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop.visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
 }

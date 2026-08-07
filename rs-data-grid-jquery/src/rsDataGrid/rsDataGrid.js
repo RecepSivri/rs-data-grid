@@ -301,7 +301,8 @@ export function createGrid() {
       store,
     });
 
-    return el('div', { children: [toolbar, headerContainer, tableContainer, pagerContainer] });
+    const scrollContainer = el('div', { className: 'grid-scroll-x', children: [headerContainer, tableContainer] });
+    return el('div', { children: [toolbar, scrollContainer, pagerContainer] });
   }
 
   // renderBody() constructs the header/table/pager subtree, and the pager's

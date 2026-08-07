@@ -351,4 +351,23 @@ export function renderSidebar(container: HTMLElement): void {
   setRerenderHook(rerender);
   window.addEventListener('hashchange', rerender);
   rerender();
+
+  // Off-canvas drawer on narrow screens (see the max-width media query in
+  // style.css): toggle button opens/closes it, backdrop click or picking a
+  // tab closes it again.
+  const toggleBtn = document.getElementById('sidebar-toggle-btn');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const closeDrawer = () => {
+    container.classList.remove('app-sidenav-open');
+    backdrop?.classList.remove('visible');
+  };
+  const openDrawer = () => {
+    container.classList.add('app-sidenav-open');
+    backdrop?.classList.add('visible');
+  };
+  toggleBtn?.addEventListener('click', () => {
+    container.classList.contains('app-sidenav-open') ? closeDrawer() : openDrawer();
+  });
+  backdrop?.addEventListener('click', closeDrawer);
+  window.addEventListener('hashchange', closeDrawer);
 }

@@ -76,7 +76,7 @@ export function createPager() {
 
     container.appendChild(
       el('div', {
-        className: 'full-row row-layout-space-between-center',
+        className: 'full-row row-layout-space-between-center pager-row',
         children: [
           el('div', { className: 'row-layout-start page-number-background', children: leftGroupChildren }),
           el('div', { className: 'row-layout', children: sizeButtons }),
