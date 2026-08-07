@@ -17,8 +17,16 @@ export interface SettingsGroup {
 
 export const httpMethods: string[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
+// The demo API only speaks plain HTTP; an HTTPS deploy (e.g. Netlify) can't
+// call it directly (browsers block that as mixed content), so it goes
+// through a same-origin proxy there instead (see netlify.toml).
+const DEFAULT_FETCH_URL =
+  location.protocol === 'https:'
+    ? '/api/universities/search?country=United+States'
+    : 'http://universities.hipolabs.com/search?country=United+States';
+
 export const gridConfig: Record<string, any> = {
-  fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
+  fetchUrl: DEFAULT_FETCH_URL,
   apiMethod: 'GET',
   apiHeadersRaw: '',
   apiHeaders: {},

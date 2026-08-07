@@ -5,6 +5,18 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# The demo grid's default data source (universities.hipolabs.com) only
+# serves plain HTTP, which every browser blocks as mixed content when
+# called from this HTTPS site. Proxying it through the same origin keeps
+# the browser's connection on HTTPS throughout -- Netlify's edge fetches
+# the HTTP backend server-side, where mixed-content rules don't apply.
+# Must come before the catch-all "/*" redirect below (first match wins).
+[[redirects]]
+  from = "/api/universities/*"
+  to = "http://universities.hipolabs.com/:splat"
+  status = 200
+  force = true
+
 # Routing between frameworks is done client-side via location.hash
 # (#/react, #/angular, ...), which never reaches the server, so this isn't
 # needed for the tab switcher itself. It's kept as a standard SPA fallback:
