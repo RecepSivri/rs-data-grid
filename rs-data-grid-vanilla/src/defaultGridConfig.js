@@ -2,7 +2,7 @@
 // single-spa root-config that would normally supply gridConfig via props.
 // Byte-identical values to the other three apps' defaultGridConfig.
 export const defaultGridConfig = {
-  theme: 'dark',
+  theme: 'light',
   fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeaders: {},

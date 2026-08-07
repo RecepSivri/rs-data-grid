@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 <template>
   <v-dialog :model-value="open" max-width="480" @update:model-value="value => !value && emit('cancel')">
-    <v-card :data-rg-theme="theme ?? 'dark'">
+    <v-card :data-rg-theme="theme ?? 'light'">
       <v-card-title>{{ title || 'Confirm' }}</v-card-title>
       <v-card-text>
         <p class="confirm-message">{{ message }}</p>

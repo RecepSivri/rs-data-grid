@@ -12,7 +12,7 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-export const ConfirmDialog = ({ open, title, message, theme = 'dark', container, onConfirm, onCancel }: ConfirmDialogProps) => {
+export const ConfirmDialog = ({ open, title, message, theme = 'light', container, onConfirm, onCancel }: ConfirmDialogProps) => {
   const muiTheme = useMemo(() => createTheme({ palette: { mode: theme } }), [theme]);
 
   return (

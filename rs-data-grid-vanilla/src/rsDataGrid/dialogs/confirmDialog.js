@@ -65,7 +65,7 @@ export function requestConfirm(title, message, theme) {
   titleEl.textContent = title || 'Confirm';
   messageEl.textContent = message;
   dialogEl.returnValue = '';
-  dialogEl.setAttribute('data-rg-theme', theme ?? 'dark');
+  dialogEl.setAttribute('data-rg-theme', theme ?? 'light');
   return new Promise(resolve => {
     pendingResolve = resolve;
     dialogEl.showModal();

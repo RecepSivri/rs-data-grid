@@ -18,7 +18,7 @@ export interface SettingsGroup {
 export const httpMethods: string[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
 export const gridConfig: Record<string, any> = {
-  theme: 'dark',
+  theme: 'light',
   fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeadersRaw: '',

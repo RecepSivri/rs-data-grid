@@ -331,7 +331,7 @@ export function createGrid() {
       clear(containerEl);
       const wrapper = el('div', {
         className: props.tableBorder ? 'border-area-small' : '',
-        attrs: { 'data-rg-theme': props.theme ?? 'dark' },
+        attrs: { 'data-rg-theme': props.theme ?? 'light' },
         children: [renderBody(props)],
       });
       containerEl.appendChild(wrapper);

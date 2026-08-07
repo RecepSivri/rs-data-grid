@@ -37,7 +37,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   loadError = this.store.error;
   globalSearch = this.store.globalSearch;
 
-  @Input() theme: 'dark' | 'light' = 'dark';
+  @Input() theme: 'dark' | 'light' = 'light';
   @Input() headerColumnLines: boolean = true;
   @Input() fetchUrl: string = '';
   @Input() fetchMethod: string = 'GET';

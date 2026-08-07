@@ -47,7 +47,7 @@ const props = withDefaults(
     remoteModeParams?: RemoteModeParams;
   }>(),
   {
-    theme: 'dark',
+    theme: 'light',
     headerColumnLines: true,
     fetchUrl: '',
     fetchMethod: 'GET',

@@ -101,7 +101,7 @@ export function requestEditRow({ row, columns, theme }) {
   titleEl.textContent = row ? 'Edit row' : 'Add row';
   renderFields();
   dialogEl.returnValue = '';
-  dialogEl.setAttribute('data-rg-theme', theme ?? 'dark');
+  dialogEl.setAttribute('data-rg-theme', theme ?? 'light');
   return new Promise(resolve => {
     pendingResolve = resolve;
     dialogEl.showModal();

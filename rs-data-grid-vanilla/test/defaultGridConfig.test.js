@@ -4,7 +4,7 @@ import { defaultGridConfig } from '../src/defaultGridConfig.js';
 describe('defaultGridConfig', () => {
   it('has the expected shape and values', () => {
     expect(defaultGridConfig).toEqual({
-      theme: 'dark',
+      theme: 'light',
       fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
       apiMethod: 'GET',
       apiHeaders: {},

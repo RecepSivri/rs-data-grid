@@ -199,8 +199,8 @@ function renderTabs(): void {
 window.addEventListener('hashchange', renderTabs);
 renderTabs();
 
-// Dark is the default everywhere (shell + every grid); the toggle switches
-// to light and remembers the choice across reloads. The topbar and sidebar
+// Light is the default everywhere (shell + every grid); the toggle switches
+// to dark and remembers the choice across reloads. The topbar and sidebar
 // re-skin themselves directly (below); the currently mounted grid picks up
 // the change through the same gridConfig -> customProps -> update()
 // pipeline as every other sidebar setting.
@@ -222,7 +222,7 @@ function applyTheme(theme: 'dark' | 'light'): void {
 }
 
 const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-const initialTheme: 'dark' | 'light' = storedTheme === 'light' ? 'light' : 'dark';
+const initialTheme: 'dark' | 'light' = storedTheme === 'dark' ? 'dark' : 'light';
 gridConfig.theme = initialTheme;
 applyTheme(initialTheme);
 

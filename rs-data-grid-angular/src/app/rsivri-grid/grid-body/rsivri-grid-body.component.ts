@@ -15,7 +15,7 @@ import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
 export class RsivriGridBodyComponent implements OnChanges {
   private readonly dialog = inject(MatDialog);
 
-  @Input() theme: 'dark' | 'light' = 'dark';
+  @Input() theme: 'dark' | 'light' = 'light';
   @Input() columns: IColumn[] = [];
   @Input() data: any[] = [];
   @Input() bodyRowLines: boolean = true;

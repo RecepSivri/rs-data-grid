@@ -61,7 +61,7 @@ const titleCase = (value: string): string =>
 
 export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, ref) => {
   const {
-    theme = 'dark',
+    theme = 'light',
     headerColumnLines = true,
     fetchUrl = '',
     fetchMethod = 'GET',

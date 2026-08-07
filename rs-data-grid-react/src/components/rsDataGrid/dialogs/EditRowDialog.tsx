@@ -17,7 +17,7 @@ interface EditField {
   key: string;
 }
 
-export const EditRowDialog = ({ open, row, columns, theme = 'dark', container, onSave, onCancel }: EditRowDialogProps) => {
+export const EditRowDialog = ({ open, row, columns, theme = 'light', container, onSave, onCancel }: EditRowDialogProps) => {
   const [fields, setFields] = useState<EditField[]>([]);
   const [editableRow, setEditableRow] = useState<Record<string, string>>({});
   const muiTheme = useMemo(() => createTheme({ palette: { mode: theme } }), [theme]);

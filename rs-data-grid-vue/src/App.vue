@@ -11,7 +11,7 @@ defineOptions({ inheritAttrs: false });
 // Used only when this app is run standalone (`npm run dev`), outside the
 // single-spa root-config that would normally supply gridConfig via props.
 const defaultGridConfig: Record<string, any> = {
-  theme: 'dark',
+  theme: 'light',
   fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeaders: {},
