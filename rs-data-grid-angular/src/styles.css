@@ -76,5 +76,41 @@ app-root{
 }
 
 .border-right{
-  border-right: 1px solid #cccccc;
+  border-right: 1px solid var(--rg-border, #cccccc);
+}
+
+/* Angular Material's Dialog portals through the CDK overlay, straight to
+   document.body -- outside the grid's own [data-rg-theme] element, so the
+   --rg-* custom properties never reach it via normal CSS inheritance. The
+   grid passes a panelClass ('rg-dialog-dark'/'rg-dialog-light') on open()
+   instead; defining --rg-* again here (scoped to that class) lets both
+   Material's own MDC surface AND the dialog components' own scoped CSS
+   (confirm-dialog.component.css etc, which use the same var(--rg-*, ...)
+   pattern as the rest of the grid) pick the right colors back up -- view
+   encapsulation only scopes selectors, not custom-property inheritance. */
+.rg-dialog-dark{
+  --rg-bg: #232629;
+  --rg-text: #e8e9ea;
+  --rg-text-secondary: #c7cacd;
+  --rg-border: #45494e;
+  --rg-border-focus: #8a8d90;
+}
+
+.rg-dialog-light{
+  --rg-bg: #ffffff;
+  --rg-text: #333333;
+  --rg-text-secondary: #555555;
+  --rg-border: #cccccc;
+  --rg-border-focus: #777777;
+}
+
+.rg-dialog-dark .mdc-dialog__surface,
+.rg-dialog-light .mdc-dialog__surface{
+  background-color: var(--rg-bg) !important;
+  color: var(--rg-text) !important;
+}
+
+.rg-dialog-dark .mat-mdc-dialog-title,
+.rg-dialog-dark .mat-mdc-dialog-content{
+  color: var(--rg-text) !important;
 }

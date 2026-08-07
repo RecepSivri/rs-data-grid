@@ -9,6 +9,7 @@
   border: none;
   padding: 0;
   font-family: inherit;
+  color: var(--rg-text, #333333);
   margin-right: 10px;
   margin-top: 6px;
   cursor: pointer;
@@ -16,9 +17,9 @@
 }
 
 .page-selected{
-  background-color: #f5f5f5;
+  background-color: var(--rg-bg-alt, #f5f5f5);
   border-radius: 5px;
-  border: 1px solid #f5f5f5;
+  border: 1px solid var(--rg-bg-alt, #f5f5f5);
   padding: 3px;
   margin-top: 2px;
 }
@@ -31,20 +32,21 @@
   padding-left: 8px;
   padding-right: 8px;
   font-size: 20px;
+  color: var(--rg-text, #333333);
   white-space: nowrap;
   cursor: pointer;
-  border-right: 1px solid #cccccc;
+  border-right: 1px solid var(--rg-border, #cccccc);
   min-width: 30px;
 }
 
 .page-number-background{
-  background-color: #ffffff;
-  border-top: 1px solid #cccccc;
-  border-bottom: 1px solid #cccccc;
-  border-left: 1px solid #cccccc;
+  background-color: var(--rg-bg, #ffffff);
+  border-top: 1px solid var(--rg-border, #cccccc);
+  border-bottom: 1px solid var(--rg-border, #cccccc);
+  border-left: 1px solid var(--rg-border, #cccccc);
   margin-top:5px;
 }
 
 .page-numbers-selected{
-  background-color: #f5f5f5;
+  background-color: var(--rg-bg-alt, #f5f5f5);
 }

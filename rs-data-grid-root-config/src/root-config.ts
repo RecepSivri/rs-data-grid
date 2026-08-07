@@ -1,5 +1,5 @@
 import { mountRootParcel } from 'single-spa';
-import { getCustomProps, setUpdateHook } from './grid-settings';
+import { getCustomProps, setUpdateHook, gridConfig, setSetting } from './grid-settings';
 import { renderSidebar } from './sidebar';
 
 interface TabDef {
@@ -198,3 +198,30 @@ function renderTabs(): void {
 
 window.addEventListener('hashchange', renderTabs);
 renderTabs();
+
+// Dark is the default everywhere (shell + every grid); the toggle switches
+// to light and remembers the choice across reloads. The topbar re-skins
+// itself directly (below); the currently mounted grid picks up the change
+// through the same gridConfig -> customProps -> update() pipeline as every
+// other sidebar setting.
+const THEME_STORAGE_KEY = 'rs-data-grid-theme';
+
+function applyTheme(theme: 'dark' | 'light'): void {
+  const topbar = document.querySelector('.app-topbar');
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  topbar?.setAttribute('data-theme', theme);
+  toggleBtn?.setAttribute('data-theme', theme);
+  toggleBtn?.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+}
+
+const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+const initialTheme: 'dark' | 'light' = storedTheme === 'light' ? 'light' : 'dark';
+gridConfig.theme = initialTheme;
+applyTheme(initialTheme);
+
+document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+  const nextTheme: 'dark' | 'light' = gridConfig.theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  applyTheme(nextTheme);
+  setSetting('theme', nextTheme);
+});

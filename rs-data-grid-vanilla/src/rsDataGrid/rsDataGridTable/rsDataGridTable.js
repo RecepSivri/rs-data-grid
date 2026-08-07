@@ -146,7 +146,7 @@ export function createTable() {
             className: 'actions-cell row-layout-center-center',
             children: [
               el('button', {
-                className: 'row-action-button',
+                className: 'row-action-button row-action-delete',
                 attrs: { type: 'button', title: 'Delete row', 'aria-label': 'Delete row' },
                 html: DELETE_ICON,
                 on: { click: () => onRowDelete(item) },
@@ -210,7 +210,7 @@ export function createTable() {
                 on: { click: event => onEditClick(item, event, props) },
               }),
               el('button', {
-                className: 'row-action-button',
+                className: 'row-action-button row-action-delete',
                 attrs: { type: 'button', title: 'Delete row', 'aria-label': 'Delete row' },
                 html: DELETE_ICON,
                 on: { click: () => onRowDelete(item) },
@@ -252,7 +252,7 @@ export function createTable() {
           className: 'actions-cell row-layout-center-center',
           children: [
             el('button', {
-              className: 'row-action-button',
+              className: 'row-action-button row-action-delete',
               attrs: { type: 'button', title: 'Remove row', 'aria-label': 'Remove row' },
               html: DELETE_ICON,
               on: { click: () => { batchNewDrafts = batchNewDrafts.filter((_, idx) => idx !== i); renderCurrent(); } },

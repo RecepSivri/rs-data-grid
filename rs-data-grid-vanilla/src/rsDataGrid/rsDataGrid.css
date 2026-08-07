@@ -1,3 +1,52 @@
+/* Theme tokens. Every color elsewhere in the grid's CSS references one of
+   these (with the current light-mode value as a var() fallback, so nothing
+   breaks if the [data-rg-theme] attribute is ever missing). Dark reuses the
+   same palette already used by the root-config sidebar, for visual
+   consistency between the shell and whichever grid is mounted. */
+[data-rg-theme='dark'] {
+  --rg-bg: #1c1e21;
+  --rg-bg-alt: #232629;
+  --rg-bg-hover: #2b2e33;
+  --rg-bg-selected: #34383d;
+  --rg-bg-selected-hover: #3a3d43;
+  --rg-border: #45494e;
+  --rg-border-strong: #6b6f74;
+  --rg-border-subtle: #34383d;
+  --rg-border-focus: #8a8d90;
+  --rg-text: #e8e9ea;
+  --rg-text-secondary: #c7cacd;
+  --rg-text-muted: #9a9ea3;
+  --rg-icon-muted: #7c8085;
+  --rg-accent-success: #3ddc84;
+  --rg-accent-success-bg: rgba(61, 220, 132, 0.14);
+  --rg-accent-error: #ff6b6b;
+  --rg-accent-error-bg: rgba(255, 107, 107, 0.14);
+  --rg-accent-error-border: rgba(255, 107, 107, 0.4);
+  --rg-shadow: rgba(0, 0, 0, 0.5);
+}
+
+[data-rg-theme='light'] {
+  --rg-bg: #ffffff;
+  --rg-bg-alt: #f5f5f5;
+  --rg-bg-hover: #f5f5f5;
+  --rg-bg-selected: #f0f0f0;
+  --rg-bg-selected-hover: #e9e9e9;
+  --rg-border: #cccccc;
+  --rg-border-strong: #999999;
+  --rg-border-subtle: #dddddd;
+  --rg-border-focus: #777777;
+  --rg-text: #333333;
+  --rg-text-secondary: #555555;
+  --rg-text-muted: #777777;
+  --rg-icon-muted: #aaaaaa;
+  --rg-accent-success: #1f7a3d;
+  --rg-accent-success-bg: #eaf5ee;
+  --rg-accent-error: #b3261e;
+  --rg-accent-error-bg: #fdf3f2;
+  --rg-accent-error-border: #e3b6b3;
+  --rg-shadow: rgba(0, 0, 0, 0.18);
+}
+
 .border-area-small {
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
@@ -12,22 +61,23 @@
   box-sizing: border-box;
   font-family: Arial;
   font-size: 14px;
-  border: 1px solid #cccccc;
+  color: var(--rg-text, #333333);
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
 }
 
 .grid-state-loading {
-  color: #777777;
+  color: var(--rg-text-muted, #777777);
 }
 
 .grid-state-error {
-  color: #b3261e;
-  background: #fdf3f2;
-  border-color: #e3b6b3;
+  color: var(--rg-accent-error, #b3261e);
+  background: var(--rg-accent-error-bg, #fdf3f2);
+  border-color: var(--rg-accent-error-border, #e3b6b3);
 }
 
 .grid-state-empty {
-  color: #777777;
+  color: var(--rg-text-muted, #777777);
 }
 
 .grid-state-icon {
@@ -56,24 +106,26 @@
   height: 30px;
   box-sizing: border-box;
   padding: 0;
-  background: #ffffff;
-  border: 1px solid #cccccc;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
   cursor: pointer;
 }
 
 .export-button:hover {
-  background: #f5f5f5;
-  border-color: #999999;
+  background: var(--rg-bg-hover, #f5f5f5);
+  border-color: var(--rg-border-strong, #999999);
 }
 
 .batch-save-button {
-  border-color: #1f7a3d;
+  color: var(--rg-accent-success, #1f7a3d);
+  border-color: var(--rg-accent-success, #1f7a3d);
 }
 
 .batch-save-button:hover {
-  background: #eaf5ee;
-  border-color: #1f7a3d;
+  background: var(--rg-accent-success-bg, #eaf5ee);
+  border-color: var(--rg-accent-success, #1f7a3d);
 }
 
 .global-search-wrapper {
@@ -88,7 +140,7 @@
   left: 8px;
   transform: translateY(-50%);
   font-size: 12px;
-  color: #999999;
+  color: var(--rg-text-muted, #999999);
   pointer-events: none;
 }
 
@@ -97,13 +149,14 @@
   box-sizing: border-box;
   font-family: Arial;
   font-size: 13px;
-  color: #333333;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
   padding: 6px 10px 6px 26px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
 }
 
 .global-search-input:focus {
   outline: none;
-  border-color: #777777;
+  border-color: var(--rg-border-focus, #777777);
 }

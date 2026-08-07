@@ -172,14 +172,14 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
         </div>
         <div v-if="showActions" class="actions-cell row-layout-center-center">
           <button type="button" class="row-action-button row-action-save" title="Save row" aria-label="Save row" @click="onSaveAddClick">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1f7a3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
               <path d="M17 21v-8H7v8" />
               <path d="M7 3v5h8" />
             </svg>
           </button>
           <button type="button" class="row-action-button" title="Cancel" aria-label="Cancel" @click="onCancelAddClick">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18" />
               <path d="M6 6l12 12" />
             </svg>
@@ -200,8 +200,8 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
             <input type="text" class="inline-edit-input" v-model="batchDrafts[i][column.dataField]" />
           </div>
           <div v-if="showActions" class="actions-cell row-layout-center-center">
-            <button type="button" class="row-action-button" title="Delete row" aria-label="Delete row" @click="emit('rowDelete', item)">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="button" class="row-action-button row-action-delete" title="Delete row" aria-label="Delete row" @click="emit('rowDelete', item)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18" />
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -222,14 +222,14 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
           </div>
           <div v-if="showActions" class="actions-cell row-layout-center-center">
             <button type="button" class="row-action-button row-action-save" title="Save row" aria-label="Save row" @click="onSaveEditClick">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1f7a3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                 <path d="M17 21v-8H7v8" />
                 <path d="M7 3v5h8" />
               </svg>
             </button>
             <button type="button" class="row-action-button" title="Cancel" aria-label="Cancel" @click="onCancelEditClick">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 6 6 18" />
                 <path d="M6 6l12 12" />
               </svg>
@@ -247,12 +247,12 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
           </div>
           <div v-if="showActions" class="actions-cell row-layout-center-center">
             <button type="button" class="row-action-button" title="Edit row" aria-label="Edit row" @click="onEditClick(item, $event)">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
               </svg>
             </button>
-            <button type="button" class="row-action-button" title="Delete row" aria-label="Delete row" @click="emit('rowDelete', item)">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="button" class="row-action-button row-action-delete" title="Delete row" aria-label="Delete row" @click="emit('rowDelete', item)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18" />
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -282,8 +282,8 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
             <input type="text" class="inline-edit-input" v-model="draft[column.dataField]" />
           </div>
           <div v-if="showActions" class="actions-cell row-layout-center-center">
-            <button type="button" class="row-action-button" title="Remove row" aria-label="Remove row" @click="removeBatchNewRow(i)">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="button" class="row-action-button row-action-delete" title="Remove row" aria-label="Remove row" @click="removeBatchNewRow(i)">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18" />
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />

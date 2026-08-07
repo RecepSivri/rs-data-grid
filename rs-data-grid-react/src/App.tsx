@@ -5,6 +5,7 @@ import { RsDataGrid, RsDataGridHandle } from './components/rsDataGrid/rsDataGrid
 // Used only when this app is run standalone (`npm run dev`), outside the
 // single-spa root-config that would normally supply gridConfig via props.
 const defaultGridConfig: Record<string, any> = {
+  theme: 'dark',
   fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeaders: {},
@@ -63,9 +64,10 @@ function App(props: AppProps) {
   }, [props.fetchNonce]);
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', margin: 0 }}>
+    <div style={{ width: '100%', minHeight: '100vh', margin: 0, background: gridConfig.theme === 'light' ? '#ffffff' : '#1c1e21' }}>
       <RsDataGrid
         ref={gridRef}
+        theme={gridConfig.theme}
         fetchUrl={gridConfig.fetchUrl}
         fetchMethod={gridConfig.apiMethod}
         fetchHeaders={gridConfig.apiHeaders}

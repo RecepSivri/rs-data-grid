@@ -1,5 +1,6 @@
-<div style="width: 100%; min-height: 100vh; margin: 0;">
+<div style="width: 100%; min-height: 100vh; margin: 0;" [style.background]="gridConfig()['theme'] === 'light' ? '#ffffff' : '#1c1e21'">
 <rsivri-grid #grid
+  [theme]="gridConfig()['theme']"
   [fetchUrl]="gridConfig()['fetchUrl']"
   [fetchMethod]="gridConfig()['apiMethod']"
   [fetchHeaders]="gridConfig()['apiHeaders']"

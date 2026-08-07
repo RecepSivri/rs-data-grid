@@ -11,6 +11,7 @@ defineOptions({ inheritAttrs: false });
 // Used only when this app is run standalone (`npm run dev`), outside the
 // single-spa root-config that would normally supply gridConfig via props.
 const defaultGridConfig: Record<string, any> = {
+  theme: 'dark',
   fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeaders: {},
@@ -68,9 +69,10 @@ watch(
 </script>
 
 <template>
-  <div style="width: 100%; min-height: 100vh; margin: 0">
+  <div style="width: 100%; min-height: 100vh; margin: 0" :style="{ background: config.theme === 'light' ? '#ffffff' : '#1c1e21' }">
     <RsDataGrid
       ref="gridRef"
+      :theme="config.theme"
       :fetch-url="config.fetchUrl"
       :fetch-method="config.apiMethod"
       :fetch-headers="config.apiHeaders"

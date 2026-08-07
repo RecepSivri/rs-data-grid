@@ -1,11 +1,11 @@
 .row-style{
   box-sizing: border-box;
-  border-left: 1px solid #cccccc;
-  border-right: 1px solid #cccccc;
+  border-left: 1px solid var(--rg-border, #cccccc);
+  border-right: 1px solid var(--rg-border, #cccccc);
 }
 
 .row-style-bottom{
-  border-bottom: 1px solid #cccccc;
+  border-bottom: 1px solid var(--rg-border, #cccccc);
 }
 
 .section-style{
@@ -19,12 +19,13 @@
   min-width: 110px;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--rg-text, #333333);
 }
 
 .index-cell{
   box-sizing: border-box;
   flex: 0 0 50px;
-  color: #777777;
+  color: var(--rg-text-muted, #777777);
 }
 
 .section-style.index-cell{
@@ -37,7 +38,7 @@
 }
 
 .row-background{
-  background-color: #f5f5f5;
+  background-color: var(--rg-bg-alt, #f5f5f5);
 }
 
 .actions-cell{
@@ -58,24 +59,30 @@
   height: 26px;
   box-sizing: border-box;
   padding: 0;
-  background: #ffffff;
-  border: 1px solid #cccccc;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
   cursor: pointer;
 }
 
 .row-action-button:hover{
-  background: #f5f5f5;
-  border-color: #999999;
+  background: var(--rg-bg-hover, #f5f5f5);
+  border-color: var(--rg-border-strong, #999999);
 }
 
 .row-action-save{
-  border-color: #1f7a3d;
+  color: var(--rg-accent-success, #1f7a3d);
+  border-color: var(--rg-accent-success, #1f7a3d);
 }
 
 .row-action-save:hover{
-  background: #eaf5ee;
-  border-color: #1f7a3d;
+  background: var(--rg-accent-success-bg, #eaf5ee);
+  border-color: var(--rg-accent-success, #1f7a3d);
+}
+
+.row-action-delete{
+  color: var(--rg-accent-error, #b3261e);
 }
 
 .inline-edit-input{
@@ -83,12 +90,14 @@
   box-sizing: border-box;
   font-family: Arial;
   font-size: 13px;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
   padding: 4px 6px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
 }
 
 .inline-edit-input:focus{
   outline: none;
-  border-color: #777777;
+  border-color: var(--rg-border-focus, #777777);
 }

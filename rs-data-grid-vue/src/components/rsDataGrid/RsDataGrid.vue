@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { useTheme } from 'vuetify';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -13,6 +14,7 @@ import EditRowDialog from './dialogs/EditRowDialog.vue';
 
 const props = withDefaults(
   defineProps<{
+    theme?: 'dark' | 'light';
     headerColumnLines?: boolean;
     fetchUrl?: string;
     fetchMethod?: string;
@@ -45,6 +47,7 @@ const props = withDefaults(
     remoteModeParams?: RemoteModeParams;
   }>(),
   {
+    theme: 'dark',
     headerColumnLines: true,
     fetchUrl: '',
     fetchMethod: 'GET',
@@ -86,6 +89,18 @@ const emit = defineEmits<{
 }>();
 
 const titleCase = (value: string): string => value.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+
+// Vuetify's own dialog chrome (v-card background, v-btn colors) responds to
+// its global theme name, not to our --rg-* custom properties -- this is
+// Vuetify's actual supported mechanism for runtime dark/light switching.
+const vuetifyTheme = useTheme();
+watch(
+  () => props.theme,
+  theme => {
+    vuetifyTheme.global.name.value = theme === 'light' ? 'light' : 'dark';
+  },
+  { immediate: true }
+);
 
 const store = useDataGridStore();
 const tableRef = ref<InstanceType<typeof RsDataGridTable> | null>(null);
@@ -266,7 +281,7 @@ const bodyRows = computed(() => getDisplayedRows());
 </script>
 
 <template>
-  <div :class="{ 'border-area-small': tableBorder }">
+  <div :class="{ 'border-area-small': tableBorder }" :data-rg-theme="theme">
     <template v-if="store.isLoading">
       <slot name="loading"><div class="grid-state grid-state-loading">Loading...</div></slot>
     </template>
@@ -284,13 +299,13 @@ const bodyRows = computed(() => getDisplayedRows());
     <template v-else>
       <div v-if="showSearch || exportExcel || exportPDF || showAdd || gridMode === 'batch'" class="grid-toolbar">
         <button v-if="showAdd" type="button" class="export-button" title="Add row" aria-label="Add row" @click="onAddRowClick">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
         </button>
         <button v-if="gridMode === 'batch'" type="button" class="export-button batch-save-button" title="Save batch changes" aria-label="Save batch changes" @click="onSaveBatchClick">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1f7a3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
             <path d="M17 21v-8H7v8" />
             <path d="M7 3v5h8" />
@@ -360,11 +375,12 @@ const bodyRows = computed(() => getDisplayedRows());
       </div>
       <RsDataGridPager :pagination="pagination" :paging-sizes="pagingSizes" :page-list-size="pageListSize" :current-paging-size="currentPagingSize" :store="store" />
     </template>
-    <EditRowDialog :open="editDialog.open" :row="editDialog.row" :columns="editDialog.columns" @save="onEditDialogSave" @cancel="onEditDialogCancel" />
+    <EditRowDialog :open="editDialog.open" :row="editDialog.row" :columns="editDialog.columns" :theme="theme" @save="onEditDialogSave" @cancel="onEditDialogCancel" />
     <ConfirmDialog
       :open="confirmState.open"
       :title="confirmState.title"
       :message="confirmState.message"
+      :theme="theme"
       @confirm="resolveConfirm(true)"
       @cancel="resolveConfirm(false)"
     />

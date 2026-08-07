@@ -1,7 +1,7 @@
 .confirm-message {
   font-family: Arial;
   font-size: 14px;
-  color: #333333;
+  color: var(--rg-text, #333333);
   margin: 0;
 }
 
@@ -23,7 +23,7 @@
 .edit-label {
   font-family: Arial;
   font-size: 13px;
-  color: #555555;
+  color: var(--rg-text-secondary, #555555);
   flex: 1 1 auto;
   text-transform: capitalize;
 }
@@ -33,24 +33,28 @@
   box-sizing: border-box;
   font-family: Arial;
   font-size: 13px;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
   padding: 5px 8px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
 }
 
 .edit-input:focus {
   outline: none;
-  border-color: #777777;
+  border-color: var(--rg-border-focus, #777777);
 }
 
 /* Native <dialog> chrome, not present in the MUI-based React version --
    MUI's Dialog provides this styling for free; we recreate the equivalent
    visual weight here since <dialog>/::backdrop ship unstyled by default. */
 .rs-dialog {
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
   border: none;
   border-radius: 6px;
   padding: 20px 24px 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 8px 28px var(--rg-shadow, rgba(0, 0, 0, 0.28));
   min-width: 280px;
   max-width: 90vw;
   font-family: Arial;
@@ -63,7 +67,7 @@
 .rs-dialog-title {
   font-size: 16px;
   font-weight: bold;
-  color: #222222;
+  color: var(--rg-text, #222222);
   margin: 0 0 12px;
 }
 
@@ -79,13 +83,14 @@
   font-size: 13px;
   padding: 7px 16px;
   border-radius: 4px;
-  border: 1px solid #cccccc;
-  background: #ffffff;
+  color: var(--rg-text, #333333);
+  border: 1px solid var(--rg-border, #cccccc);
+  background: var(--rg-bg, #ffffff);
   cursor: pointer;
 }
 
 .rs-dialog-button:hover {
-  background: #f5f5f5;
+  background: var(--rg-bg-hover, #f5f5f5);
 }
 
 .rs-dialog-button-primary {
@@ -100,12 +105,11 @@
 }
 
 .rs-dialog-button-danger {
-  background: #b3261e;
-  border-color: #b3261e;
+  background: var(--rg-accent-error, #b3261e);
+  border-color: var(--rg-accent-error, #b3261e);
   color: #ffffff;
 }
 
 .rs-dialog-button-danger:hover {
-  background: #96201a;
-  border-color: #96201a;
+  filter: brightness(0.88);
 }

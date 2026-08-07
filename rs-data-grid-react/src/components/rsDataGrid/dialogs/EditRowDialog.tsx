@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, ThemeProvider, createTheme } from '@mui/material';
 import { IColumn } from '../models/rsDataGrid.models';
 import './dialogs.scss';
 
@@ -7,6 +7,8 @@ export interface EditRowDialogProps {
   open: boolean;
   row?: any;
   columns?: IColumn[];
+  theme?: 'dark' | 'light';
+  container?: Element | null;
   onSave: (result: Record<string, any>) => void;
   onCancel: () => void;
 }
@@ -15,9 +17,10 @@ interface EditField {
   key: string;
 }
 
-export const EditRowDialog = ({ open, row, columns, onSave, onCancel }: EditRowDialogProps) => {
+export const EditRowDialog = ({ open, row, columns, theme = 'dark', container, onSave, onCancel }: EditRowDialogProps) => {
   const [fields, setFields] = useState<EditField[]>([]);
   const [editableRow, setEditableRow] = useState<Record<string, string>>({});
+  const muiTheme = useMemo(() => createTheme({ palette: { mode: theme } }), [theme]);
 
   useEffect(() => {
     if (!open) {
@@ -50,29 +53,31 @@ export const EditRowDialog = ({ open, row, columns, onSave, onCancel }: EditRowD
   };
 
   return (
-    <Dialog open={open} onClose={onCancel}>
-      <DialogTitle>{row ? 'Edit row' : 'Add row'}</DialogTitle>
-      <DialogContent>
-        <div className="edit-form">
-          {fields.map(field => (
-            <div className="edit-row" key={field.key}>
-              <label className="edit-label">{field.key}</label>
-              <input
-                type="text"
-                className="edit-input"
-                value={editableRow[field.key] ?? ''}
-                onChange={e => setEditableRow({ ...editableRow, [field.key]: e.target.value })}
-              />
-            </div>
-          ))}
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onCancel}>Cancel</Button>
-        <Button variant="contained" color="primary" onClick={handleSave}>
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ThemeProvider theme={muiTheme}>
+      <Dialog open={open} onClose={onCancel} container={container}>
+        <DialogTitle>{row ? 'Edit row' : 'Add row'}</DialogTitle>
+        <DialogContent>
+          <div className="edit-form">
+            {fields.map(field => (
+              <div className="edit-row" key={field.key}>
+                <label className="edit-label">{field.key}</label>
+                <input
+                  type="text"
+                  className="edit-input"
+                  value={editableRow[field.key] ?? ''}
+                  onChange={e => setEditableRow({ ...editableRow, [field.key]: e.target.value })}
+                />
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onCancel}>Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleSave}>
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </ThemeProvider>
   );
 };

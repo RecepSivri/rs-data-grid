@@ -197,7 +197,7 @@ export function createTable() {
     if (showActions) {
       cells.push(
         el('div', { className: 'actions-cell row-layout-center-center', children: [
-          el('button', { className: 'row-action-button row-action-remove-new', attrs: { type: 'button', title: 'Remove row', 'aria-label': 'Remove row' }, html: DELETE_ICON }),
+          el('button', { className: 'row-action-button row-action-delete row-action-remove-new', attrs: { type: 'button', title: 'Remove row', 'aria-label': 'Remove row' }, html: DELETE_ICON }),
         ] })
       );
     }

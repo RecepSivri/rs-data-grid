@@ -10,6 +10,7 @@ const noop = () => {};
 function toGridProps(props) {
   const gridConfig = props.gridConfig ?? defaultGridConfig;
   return {
+    theme: gridConfig.theme,
     fetchUrl: gridConfig.fetchUrl,
     fetchMethod: gridConfig.apiMethod,
     fetchHeaders: gridConfig.apiHeaders,
@@ -70,12 +71,16 @@ export function createApp() {
     wrapperEl.style.margin = '0';
     container.appendChild(wrapperEl);
     lastFetchNonce = props.fetchNonce;
-    grid.render(wrapperEl, toGridProps(props));
+    const gridProps = toGridProps(props);
+    wrapperEl.style.background = gridProps.theme === 'light' ? '#ffffff' : '#1c1e21';
+    grid.render(wrapperEl, gridProps);
   }
 
   function update(props) {
     handleFetchNonce(props);
-    grid.render(wrapperEl, toGridProps(props));
+    const gridProps = toGridProps(props);
+    wrapperEl.style.background = gridProps.theme === 'light' ? '#ffffff' : '#1c1e21';
+    grid.render(wrapperEl, gridProps);
   }
 
   function unmount() {

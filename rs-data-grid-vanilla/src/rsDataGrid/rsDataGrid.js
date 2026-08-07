@@ -118,7 +118,7 @@ export function createGrid() {
       table.addBatchRow();
       return;
     }
-    const result = await requestEditRow({ columns });
+    const result = await requestEditRow({ columns, theme: props.theme });
     if (result) {
       store.addRow(result);
       props.onRowAdd?.(result);
@@ -126,7 +126,7 @@ export function createGrid() {
   }
 
   async function onRowEditRequest(row) {
-    const result = await requestEditRow({ row });
+    const result = await requestEditRow({ row, theme: lastProps.theme });
     if (result) {
       store.updateRow(row, result);
       lastProps.onRowEdit?.(result);
@@ -134,7 +134,7 @@ export function createGrid() {
   }
 
   async function onRowDeleteRequest(row) {
-    const confirmed = await requestConfirm('Confirm delete', 'Are you sure you want to delete this row?');
+    const confirmed = await requestConfirm('Confirm delete', 'Are you sure you want to delete this row?', lastProps.theme);
     if (confirmed) {
       store.removeRow(row);
       lastProps.onRowDelete?.(row);
@@ -284,7 +284,7 @@ export function createGrid() {
       onBatchRowSave,
       onBatchRowAdd,
       onBatchCommit,
-      onRequestConfirm: requestConfirm,
+      onRequestConfirm: (title, message) => requestConfirm(title, message, props.theme),
     });
 
     pager.render(pagerContainer, {
@@ -328,7 +328,11 @@ export function createGrid() {
     const props = lastProps;
     withFocusPreserved(containerEl, () => {
       clear(containerEl);
-      const wrapper = el('div', { className: props.tableBorder ? 'border-area-small' : '', children: [renderBody(props)] });
+      const wrapper = el('div', {
+        className: props.tableBorder ? 'border-area-small' : '',
+        attrs: { 'data-rg-theme': props.theme ?? 'dark' },
+        children: [renderBody(props)],
+      });
       containerEl.appendChild(wrapper);
     });
     isRendering = false;

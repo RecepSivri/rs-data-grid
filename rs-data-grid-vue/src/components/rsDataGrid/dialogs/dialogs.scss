@@ -1,7 +1,33 @@
+/* Vuetify's <v-dialog> teleports to document.body by default, outside the
+   grid's own [data-rg-theme] element -- these scoped styles get Vue's
+   data-v-xxx attribute added to *this* component's own elements though
+   (including whichever one gets [data-rg-theme] set below), so redefining
+   the same tokens here (rather than relying on inheriting them from
+   RsDataGrid.scss, which is scoped to a different component and wouldn't
+   reach here) keeps this dialog's own content correctly themed. Vuetify's
+   own chrome (v-card background, v-btn colors) is handled separately via
+   useTheme() in RsDataGrid.vue, which is Vuetify's actual supported
+   mechanism for runtime dark/light switching. */
+[data-rg-theme='dark']{
+  --rg-bg: #232629;
+  --rg-text: #e8e9ea;
+  --rg-text-secondary: #c7cacd;
+  --rg-border: #45494e;
+  --rg-border-focus: #8a8d90;
+}
+
+[data-rg-theme='light']{
+  --rg-bg: #ffffff;
+  --rg-text: #333333;
+  --rg-text-secondary: #555555;
+  --rg-border: #cccccc;
+  --rg-border-focus: #777777;
+}
+
 .confirm-message{
   font-family: Arial;
   font-size: 14px;
-  color: #333333;
+  color: var(--rg-text, #333333);
   margin: 0;
 }
 
@@ -23,7 +49,7 @@
 .edit-label{
   font-family: Arial;
   font-size: 13px;
-  color: #555555;
+  color: var(--rg-text-secondary, #555555);
   flex: 1 1 auto;
   text-transform: capitalize;
 }
@@ -33,12 +59,14 @@
   box-sizing: border-box;
   font-family: Arial;
   font-size: 13px;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
   padding: 5px 8px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
 }
 
 .edit-input:focus{
   outline: none;
-  border-color: #777777;
+  border-color: var(--rg-border-focus, #777777);
 }

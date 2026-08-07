@@ -1,7 +1,7 @@
 .confirm-message{
   font-family: Arial;
   font-size: 14px;
-  color: #333333;
+  color: var(--rg-text, #333333);
   margin: 0;
 }
 
@@ -23,7 +23,7 @@
 .edit-label{
   font-family: Arial;
   font-size: 13px;
-  color: #555555;
+  color: var(--rg-text-secondary, #555555);
   flex: 1 1 auto;
   text-transform: capitalize;
 }
@@ -33,12 +33,14 @@
   box-sizing: border-box;
   font-family: Arial;
   font-size: 13px;
+  color: var(--rg-text, #333333);
+  background: var(--rg-bg, #ffffff);
   padding: 5px 8px;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--rg-border, #cccccc);
   border-radius: 4px;
 }
 
 .edit-input:focus{
   outline: none;
-  border-color: #777777;
+  border-color: var(--rg-border-focus, #777777);
 }

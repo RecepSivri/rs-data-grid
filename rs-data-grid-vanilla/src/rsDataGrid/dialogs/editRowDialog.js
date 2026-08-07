@@ -84,10 +84,10 @@ function renderFields() {
 }
 
 /**
- * @param {{ row?: any, columns?: Array<{caption: string, dataField: string}> }} opts
+ * @param {{ row?: any, columns?: Array<{caption: string, dataField: string}>, theme?: 'dark' | 'light' }} opts
  * @returns {Promise<Record<string, any>|null>} resolves the merged row on Save, null on Cancel/dismiss
  */
-export function requestEditRow({ row, columns }) {
+export function requestEditRow({ row, columns, theme }) {
   ensureDialog();
   currentRow = row;
   fields = [];
@@ -106,6 +106,7 @@ export function requestEditRow({ row, columns }) {
   titleEl.textContent = row ? 'Edit row' : 'Add row';
   renderFields();
   dialogEl.returnValue = '';
+  dialogEl.setAttribute('data-rg-theme', theme ?? 'dark');
   return new Promise(resolve => {
     pendingResolve = resolve;
     dialogEl.showModal();

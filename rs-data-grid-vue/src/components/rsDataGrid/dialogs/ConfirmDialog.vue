@@ -3,6 +3,7 @@ defineProps<{
   open: boolean;
   title?: string;
   message: string;
+  theme?: 'dark' | 'light';
 }>();
 
 const emit = defineEmits<{
@@ -13,7 +14,7 @@ const emit = defineEmits<{
 
 <template>
   <v-dialog :model-value="open" max-width="480" @update:model-value="value => !value && emit('cancel')">
-    <v-card>
+    <v-card :data-rg-theme="theme ?? 'dark'">
       <v-card-title>{{ title || 'Confirm' }}</v-card-title>
       <v-card-text>
         <p class="confirm-message">{{ message }}</p>

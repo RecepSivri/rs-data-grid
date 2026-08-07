@@ -288,7 +288,7 @@ describe('rsDataGrid.js (createGrid orchestrator)', () => {
       grid.render(container, baseProps({ onRowDelete }));
       container.querySelectorAll('button[aria-label="Delete row"]')[0].click();
       await flush();
-      expect(mockRequestConfirm).toHaveBeenCalledWith('Confirm delete', 'Are you sure you want to delete this row?');
+      expect(mockRequestConfirm).toHaveBeenCalledWith('Confirm delete', 'Are you sure you want to delete this row?', undefined);
       expect(onRowDelete).toHaveBeenCalledWith({ name: 'Alice', age: 30 });
       expect(container.querySelectorAll('.row-style').length).toBe(1);
     });

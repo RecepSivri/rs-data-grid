@@ -37,6 +37,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   loadError = this.store.error;
   globalSearch = this.store.globalSearch;
 
+  @Input() theme: 'dark' | 'light' = 'dark';
   @Input() headerColumnLines: boolean = true;
   @Input() fetchUrl: string = '';
   @Input() fetchMethod: string = 'GET';
@@ -104,8 +105,12 @@ export class RsivriGridComponent implements OnInit, OnChanges {
     this.store.setGlobalSearch((event.target as HTMLInputElement).value);
   }
 
+  private get dialogPanelClass(): string {
+    return this.theme === 'light' ? 'rg-dialog-light' : 'rg-dialog-dark';
+  }
+
   onRowEdit(row: any): void {
-    this.dialog.open(EditRowDialogComponent, { data: { row } }).afterClosed().subscribe(updatedRow => {
+    this.dialog.open(EditRowDialogComponent, { data: { row }, panelClass: this.dialogPanelClass }).afterClosed().subscribe(updatedRow => {
       if (updatedRow) {
         this.store.updateRow(row, updatedRow);
         this.rowEdit.emit(updatedRow);
@@ -122,7 +127,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
       this.bodyRef?.addBatchRow();
       return;
     }
-    this.dialog.open(EditRowDialogComponent, { data: { columns: this.columns } }).afterClosed().subscribe(newRow => {
+    this.dialog.open(EditRowDialogComponent, { data: { columns: this.columns }, panelClass: this.dialogPanelClass }).afterClosed().subscribe(newRow => {
       if (newRow) {
         this.store.addRow(newRow);
         this.rowAdd.emit(newRow);
@@ -132,7 +137,8 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
   onRowDelete(row: any): void {
     this.dialog.open(ConfirmDialogComponent, {
-      data: { title: 'Confirm delete', message: 'Are you sure you want to delete this row?' }
+      data: { title: 'Confirm delete', message: 'Are you sure you want to delete this row?' },
+      panelClass: this.dialogPanelClass
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.store.removeRow(row);

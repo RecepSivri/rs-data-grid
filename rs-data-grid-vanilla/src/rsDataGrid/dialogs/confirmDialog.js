@@ -57,13 +57,15 @@ function ensureDialog() {
 /**
  * @param {string} title
  * @param {string} message
+ * @param {'dark' | 'light'} [theme]
  * @returns {Promise<boolean>}
  */
-export function requestConfirm(title, message) {
+export function requestConfirm(title, message, theme) {
   ensureDialog();
   titleEl.textContent = title || 'Confirm';
   messageEl.textContent = message;
   dialogEl.returnValue = '';
+  dialogEl.setAttribute('data-rg-theme', theme ?? 'dark');
   return new Promise(resolve => {
     pendingResolve = resolve;
     dialogEl.showModal();

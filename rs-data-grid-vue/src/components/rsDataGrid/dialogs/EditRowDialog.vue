@@ -6,6 +6,7 @@ const props = defineProps<{
   open: boolean;
   row?: any;
   columns?: IColumn[];
+  theme?: 'dark' | 'light';
 }>();
 
 const emit = defineEmits<{
@@ -55,7 +56,7 @@ const handleSave = () => {
 
 <template>
   <v-dialog :model-value="open" max-width="480" @update:model-value="value => !value && emit('cancel')">
-    <v-card>
+    <v-card :data-rg-theme="theme ?? 'dark'">
       <v-card-title>{{ row ? 'Edit row' : 'Add row' }}</v-card-title>
       <v-card-text>
         <div class="edit-form">

@@ -12,6 +12,7 @@ import { ConfirmDialog } from './dialogs/ConfirmDialog';
 import { EditRowDialog } from './dialogs/EditRowDialog';
 
 export interface RsDataGridProps {
+  theme?: 'dark' | 'light';
   headerColumnLines?: boolean;
   fetchUrl?: string;
   fetchMethod?: string;
@@ -60,6 +61,7 @@ const titleCase = (value: string): string =>
 
 export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, ref) => {
   const {
+    theme = 'dark',
     headerColumnLines = true,
     fetchUrl = '',
     fetchMethod = 'GET',
@@ -101,6 +103,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
 
   const store = useDataGridStore();
   const tableRef = useRef<RsDataGridTableHandle>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const [editDialog, setEditDialog] = useState<{ open: boolean; row?: any; columns?: IColumn[] }>({ open: false });
   const [confirmState, setConfirmState] = useState<{
@@ -278,7 +281,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   const bodyRows = getDisplayedRows();
 
   return (
-    <div className={tableBorder ? 'border-area-small' : ''}>
+    <div ref={rootRef} className={tableBorder ? 'border-area-small' : ''} data-rg-theme={theme}>
       {store.isLoading ? (
         loadingTemplate ?? <div className="grid-state grid-state-loading">Loading...</div>
       ) : store.error ? (
@@ -298,7 +301,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
             <div className="grid-toolbar">
               {showAdd && (
                 <button type="button" className="export-button" title="Add row" aria-label="Add row" onClick={onAddRowClick}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#333333" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
                     <path d="M12 5v14" />
                     <path d="M5 12h14" />
                   </svg>
@@ -312,7 +315,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
                   aria-label="Save batch changes"
                   onClick={onSaveBatchClick}
                 >
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1f7a3d" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                     <path d="M17 21v-8H7v8" />
                     <path d="M7 3v5h8" />
@@ -393,11 +396,21 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
           <RsDataGridPager pagination={pagination} pagingSizes={pagingSizes} pageListSize={pageListSize} currentPagingSize={currentPagingSize} store={store} />
         </>
       )}
-      <EditRowDialog open={editDialog.open} row={editDialog.row} columns={editDialog.columns} onSave={onEditDialogSave} onCancel={onEditDialogCancel} />
+      <EditRowDialog
+        open={editDialog.open}
+        row={editDialog.row}
+        columns={editDialog.columns}
+        theme={theme}
+        container={rootRef.current}
+        onSave={onEditDialogSave}
+        onCancel={onEditDialogCancel}
+      />
       <ConfirmDialog
         open={confirmState.open}
         title={confirmState.title}
         message={confirmState.message}
+        theme={theme}
+        container={rootRef.current}
         onConfirm={() => resolveConfirm(true)}
         onCancel={() => resolveConfirm(false)}
       />

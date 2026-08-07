@@ -12,6 +12,27 @@ body {
   display: flex;
   align-items: center;
   background: #1c1e21;
+  transition: background 0.2s ease;
+}
+
+/* The sidebar keeps its own fixed dark identity regardless of theme; only
+   the topbar (and, via [data-rg-theme] on whichever grid is mounted, the
+   grid content) switches. */
+.app-topbar[data-theme='light'] {
+  background: #f2f2f3;
+}
+
+.app-topbar[data-theme='light'] .sidebar-toggle-btn span {
+  background: #333333;
+}
+
+.app-topbar[data-theme='light'] .theme-switch-label {
+  color: #6b6f74;
+}
+
+.app-topbar[data-theme='light'] .theme-switch {
+  border-color: #cccccc;
+  background: #ffffff;
 }
 
 #app-tabs {
@@ -52,6 +73,70 @@ body {
 
 .sidebar-backdrop {
   display: none;
+}
+
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0 14px;
+}
+
+.theme-switch-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #9a9ea3;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 52px;
+  height: 26px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  border: 1.5px solid #3a3d43;
+  background: #24272b;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.theme-switch:hover {
+  border-color: #6b6f74;
+}
+
+.theme-switch-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: #7c8085;
+  position: relative;
+  z-index: 1;
+}
+
+.theme-switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e8e9ea;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.theme-switch[data-theme='light'] .theme-switch-knob {
+  transform: translateX(26px);
+  background: #f0db4f;
 }
 
 .app-tab {

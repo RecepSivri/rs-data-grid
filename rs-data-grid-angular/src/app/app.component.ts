@@ -6,6 +6,7 @@ import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 // Used only when this app is run standalone (`ng serve`), outside the
 // single-spa root-config that would normally supply gridConfig via props.
 const defaultGridConfig: Record<string, any> = {
+  theme: 'dark',
   fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeaders: {},

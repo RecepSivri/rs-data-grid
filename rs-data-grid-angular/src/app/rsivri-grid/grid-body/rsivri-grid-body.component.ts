@@ -15,6 +15,7 @@ import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
 export class RsivriGridBodyComponent implements OnChanges {
   private readonly dialog = inject(MatDialog);
 
+  @Input() theme: 'dark' | 'light' = 'dark';
   @Input() columns: IColumn[] = [];
   @Input() data: any[] = [];
   @Input() bodyRowLines: boolean = true;
@@ -113,9 +114,14 @@ export class RsivriGridBodyComponent implements OnChanges {
     }
   }
 
+  private get dialogPanelClass(): string {
+    return this.theme === 'light' ? 'rg-dialog-light' : 'rg-dialog-dark';
+  }
+
   onSaveEditClick(): void {
     this.dialog.open(ConfirmDialogComponent, {
-      data: { title: 'Confirm save', message: 'Are you sure you want to save the changes to this row?' }
+      data: { title: 'Confirm save', message: 'Are you sure you want to save the changes to this row?' },
+      panelClass: this.dialogPanelClass
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         const updated = { ...this.editingRow, ...this.editDraft };
@@ -139,7 +145,8 @@ export class RsivriGridBodyComponent implements OnChanges {
 
   onSaveAddClick(): void {
     this.dialog.open(ConfirmDialogComponent, {
-      data: { title: 'Confirm add', message: 'Are you sure you want to add this row?' }
+      data: { title: 'Confirm add', message: 'Are you sure you want to add this row?' },
+      panelClass: this.dialogPanelClass
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.batchRowAdd.emit({ ...this.addDraft });
