@@ -27,6 +27,10 @@
   color: #777777;
 }
 
+.section-style.index-cell{
+  min-width: 50px;
+}
+
 .border-area-small{
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;

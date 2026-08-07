@@ -22,12 +22,22 @@
   box-sizing: border-box;
 }
 
+.content-style.actions-header-cell,
+.filter-cell.actions-header-cell {
+  min-width: 80px;
+}
+
 .index-header-cell {
   flex: 0 0 50px;
   box-sizing: border-box;
   align-self: stretch;
   justify-content: center;
   text-align: center;
+}
+
+.content-style.index-header-cell,
+.filter-cell.index-header-cell {
+  min-width: 50px;
 }
 
 .sort-toggle {
@@ -85,6 +95,7 @@
 .filter-cell {
   padding: 4px 0;
   box-sizing: border-box;
+  min-width: 110px;
 }
 
 .filter-dropdown {
