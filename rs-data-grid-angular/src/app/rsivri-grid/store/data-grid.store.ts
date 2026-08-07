@@ -2,6 +2,17 @@ import { Injectable, computed, effect, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { AppState } from './data-grid.state';
 
+// Any http:// fetchUrl (the demo default or a custom one typed into the
+// sidebar) gets blocked as mixed content when this page itself is loaded
+// over HTTPS. Routing it through a same-origin proxy (see netlify.toml)
+// keeps the browser's connection on HTTPS regardless of the target.
+function toSameOriginIfInsecure(url: string): string {
+  if (typeof location !== 'undefined' && location.protocol === 'https:' && /^http:\/\//i.test(url)) {
+    return `/api/http-proxy/${url.slice('http://'.length)}`;
+  }
+  return url;
+}
+
 const initialState: AppState = {
   pager: {
     pageSize: 10,
@@ -188,7 +199,7 @@ export class DataGridStore {
       return undefined;
     }
     if (!cfg.remote) {
-      return { url: cfg.baseUrl, method: cfg.method, headers: cfg.headers };
+      return { url: toSameOriginIfInsecure(cfg.baseUrl), method: cfg.method, headers: cfg.headers };
     }
     const url = new URL(cfg.baseUrl);
     url.searchParams.set('page', String(this.pageNumber()));
@@ -207,7 +218,7 @@ export class DataGridStore {
     if (search !== '') {
       url.searchParams.set('search', search);
     }
-    return { url: url.href, method: cfg.method, headers: cfg.headers };
+    return { url: toSameOriginIfInsecure(url.href), method: cfg.method, headers: cfg.headers };
   });
 
   constructor() {

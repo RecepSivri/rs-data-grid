@@ -5,16 +5,8 @@ import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 
 // Used only when this app is run standalone (`ng serve`), outside the
 // single-spa root-config that would normally supply gridConfig via props.
-// The demo API only speaks plain HTTP; an HTTPS deploy can't call it
-// directly (browsers block that as mixed content), so it goes through a
-// same-origin proxy there instead (see netlify.toml).
-const DEFAULT_FETCH_URL =
-  location.protocol === 'https:'
-    ? '/api/universities/search?country=United+States'
-    : 'http://universities.hipolabs.com/search?country=United+States';
-
 const defaultGridConfig: Record<string, any> = {
-  fetchUrl: DEFAULT_FETCH_URL,
+  fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
   apiMethod: 'GET',
   apiHeaders: {},
   authToken: '',

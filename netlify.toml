@@ -5,15 +5,19 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# The demo grid's default data source (universities.hipolabs.com) only
-# serves plain HTTP, which every browser blocks as mixed content when
-# called from this HTTPS site. Proxying it through the same origin keeps
-# the browser's connection on HTTPS throughout -- Netlify's edge fetches
-# the HTTP backend server-side, where mixed-content rules don't apply.
+# Generic HTTP proxy: any plain-http:// fetchUrl the grid is configured
+# with (the demo default, or a custom one typed into the sidebar) gets
+# blocked as mixed content when called directly from this HTTPS site.
+# Each app rewrites such URLs to /api/http-proxy/<host>/<path...> before
+# fetching (see toSameOriginIfInsecure in each store); Netlify's edge then
+# fetches the real http:// target server-side, where mixed-content rules
+# don't apply, and returns it over the browser's original HTTPS connection.
 # Must come before the catch-all "/*" redirect below (first match wins).
+# Note: this makes the site proxy arbitrary http:// URLs on request -- an
+# accepted tradeoff so any user-typed fetchUrl works, not just the demo one.
 [[redirects]]
-  from = "/api/universities/*"
-  to = "http://universities.hipolabs.com/:splat"
+  from = "/api/http-proxy/*"
+  to = "http://:splat"
   status = 200
   force = true
 
