@@ -7,6 +7,53 @@ body {
   overflow: hidden;
 }
 
+/* Shell theme tokens (sidebar + topbar). Separate from each mounted grid's
+   own --rg-* tokens (those live in each app's own bundle) -- this is
+   root-config's own UI chrome, switched by the same toggle. */
+[data-theme='dark'] {
+  --shell-bg-sidenav: #262a2e;
+  --shell-bg-deep: #1b1e21;
+  --shell-bg-panel: #2b2f34;
+  --shell-bg-panel-hover: rgba(255, 255, 255, 0.06);
+  --shell-bg-panel-open-title: #34383d;
+  --shell-bg-panel-body: #2f3338;
+  --shell-bg-radio: #1f2226;
+  --shell-border: #45494e;
+  --shell-border-input: #44494e;
+  --shell-border-strong: #8a8d90;
+  --shell-border-subtle: rgba(255, 255, 255, 0.08);
+  --shell-text: #f2f2f3;
+  --shell-text-body: #e8e9ea;
+  --shell-text-secondary: #c7cacd;
+  --shell-text-muted: #b0b3b6;
+  --shell-text-muted2: #9a9ea3;
+  --shell-placeholder: #797d81;
+  --shell-switch-track-off: #55595e;
+  --shell-sidenav-border: transparent;
+}
+
+[data-theme='light'] {
+  --shell-bg-sidenav: #ffffff;
+  --shell-bg-deep: #f0f0f1;
+  --shell-bg-panel: #ffffff;
+  --shell-bg-panel-hover: rgba(0, 0, 0, 0.04);
+  --shell-bg-panel-open-title: #eef0f2;
+  --shell-bg-panel-body: #fafbfc;
+  --shell-bg-radio: #f5f5f5;
+  --shell-border: #dddddd;
+  --shell-border-input: #cccccc;
+  --shell-border-strong: #999999;
+  --shell-border-subtle: rgba(0, 0, 0, 0.08);
+  --shell-text: #1a1a1a;
+  --shell-text-body: #333333;
+  --shell-text-secondary: #555555;
+  --shell-text-muted: #6b6f74;
+  --shell-text-muted2: #6b6f74;
+  --shell-placeholder: #999999;
+  --shell-switch-track-off: #c7cacd;
+  --shell-sidenav-border: #dddddd;
+}
+
 .app-topbar {
   flex: 0 0 auto;
   display: flex;
@@ -15,9 +62,6 @@ body {
   transition: background 0.2s ease;
 }
 
-/* The sidebar keeps its own fixed dark identity regardless of theme; only
-   the topbar (and, via [data-rg-theme] on whichever grid is mounted, the
-   grid content) switches. */
 .app-topbar[data-theme='light'] {
   background: #f2f2f3;
 }
@@ -215,13 +259,14 @@ body {
   min-width: 260px;
   flex: 0 0 auto;
   margin: 0 15px 0 0;
-  background: #262a2e;
-  border: 1px solid #dddddd;
+  background: var(--shell-bg-sidenav, #262a2e);
+  border: 1px solid var(--shell-sidenav-border, transparent);
   border-left: none;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  transition: background 0.2s ease;
 }
 
 .sidenav-title {
@@ -229,10 +274,10 @@ body {
   font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: #f2f2f3;
-  background: #1b1e21;
+  color: var(--shell-text, #f2f2f3);
+  background: var(--shell-bg-deep, #1b1e21);
   padding: 16px;
-  border-bottom: 1px solid #45484c;
+  border-bottom: 1px solid var(--shell-border, #45484c);
   flex: 0 0 auto;
 }
 
@@ -252,21 +297,21 @@ body {
      below, its content is silently clipped instead of pushing .app-sidenav's
      scrollHeight out -- i.e. "content missing" with no way to scroll to it. */
   flex-shrink: 0;
-  background: #2b2f34;
-  border: 1px solid #45494e;
+  background: var(--shell-bg-panel, #2b2f34);
+  border: 1px solid var(--shell-border, #45494e);
   border-radius: 8px;
   overflow: hidden;
 }
 
 .settings-panel[open] {
-  border-color: #8a8d90;
+  border-color: var(--shell-border-strong, #8a8d90);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .settings-panel[open] > .panel-title {
-  border-left-color: #8a8d90;
-  background: #34383d;
-  border-bottom: 1px solid #45494e;
+  border-left-color: var(--shell-border-strong, #8a8d90);
+  background: var(--shell-bg-panel-open-title, #34383d);
+  border-bottom: 1px solid var(--shell-border, #45494e);
 }
 
 .panel-title {
@@ -279,7 +324,7 @@ body {
   font-size: 13.5px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: #f2f2f3;
+  color: var(--shell-text, #f2f2f3);
   cursor: pointer;
   list-style: none;
 }
@@ -294,8 +339,8 @@ body {
   width: 8px;
   height: 8px;
   flex: 0 0 auto;
-  border-right: 2px solid #b0b3b6;
-  border-bottom: 2px solid #b0b3b6;
+  border-right: 2px solid var(--shell-text-muted, #b0b3b6);
+  border-bottom: 2px solid var(--shell-text-muted, #b0b3b6);
   transform: rotate(45deg);
   transition: transform 0.15s ease;
 }
@@ -305,11 +350,11 @@ body {
 }
 
 .panel-title:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--shell-bg-panel-hover, rgba(255, 255, 255, 0.06));
 }
 
 .panel-title-muted {
-  color: #b0b3b6;
+  color: var(--shell-text-muted, #b0b3b6);
   font-weight: normal;
   font-size: 0.85em;
   margin-left: 4px;
@@ -317,15 +362,15 @@ body {
 }
 
 .settings-panel-body {
-  background: #2f3338;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--shell-bg-panel-body, #2f3338);
+  border-top: 1px solid var(--shell-border-subtle, rgba(255, 255, 255, 0.08));
   padding: 12px 16px;
 }
 
 .data-source-tabs {
   display: flex;
   gap: 2px;
-  background: #1b1e21;
+  background: var(--shell-bg-deep, #1b1e21);
   margin: -12px -16px 8px;
   padding: 0 12px;
 }
@@ -334,16 +379,16 @@ body {
   padding: 10px 8px;
   border: none;
   background: transparent;
-  color: #b0b3b6;
+  color: var(--shell-text-muted, #b0b3b6);
   font-size: 13px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
 }
 
 .tab-btn-active {
-  color: #f2f2f3;
+  color: var(--shell-text, #f2f2f3);
   font-weight: 700;
-  border-bottom-color: #8a8d90;
+  border-bottom-color: var(--shell-border-strong, #8a8d90);
 }
 
 .settings-tab-content {
@@ -378,9 +423,9 @@ body {
   gap: 8px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1.5px solid #45494e;
-  background: #1f2226;
-  color: #c7cacd;
+  border: 1.5px solid var(--shell-border, #45494e);
+  background: var(--shell-bg-radio, #1f2226);
+  color: var(--shell-text-secondary, #c7cacd);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -388,13 +433,13 @@ body {
 }
 
 .settings-radio-option:hover {
-  border-color: #7c8085;
+  border-color: var(--shell-text-muted2, #7c8085);
 }
 
 .settings-radio-option:has(input:checked) {
   border-color: #4ade80;
   background: rgba(74, 222, 128, 0.12);
-  color: #ffffff;
+  color: var(--shell-text, #ffffff);
   box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
 }
 
@@ -406,7 +451,7 @@ body {
   margin: 0;
   flex: 0 0 auto;
   border-radius: 50%;
-  border: 2px solid #6b6f74;
+  border: 2px solid var(--shell-text-muted2, #6b6f74);
   background: transparent;
   cursor: pointer;
   display: grid;
@@ -435,7 +480,7 @@ body {
 
 .settings-label {
   font-size: 12px;
-  color: #c7cacd;
+  color: var(--shell-text-secondary, #c7cacd);
   flex: 1 1 auto;
 }
 
@@ -445,20 +490,20 @@ body {
   font-family: Arial;
   font-size: 12px;
   padding: 4px 6px;
-  background: #1b1e21;
-  color: #e8e9ea;
-  border: 1px solid #44494e;
+  background: var(--shell-bg-deep, #1b1e21);
+  color: var(--shell-text-body, #e8e9ea);
+  border: 1px solid var(--shell-border-input, #44494e);
   border-radius: 4px;
 }
 
 .settings-input::placeholder,
 .settings-textarea::placeholder {
-  color: #797d81;
+  color: var(--shell-placeholder, #797d81);
 }
 
 .settings-input:focus {
   outline: none;
-  border-color: #8a8d90;
+  border-color: var(--shell-border-strong, #8a8d90);
 }
 
 .switch {
@@ -480,7 +525,7 @@ body {
 .switch-track {
   position: absolute;
   inset: 0;
-  background: #55595e;
+  background: var(--shell-switch-track-off, #55595e);
   border-radius: 999px;
   transition: background-color 0.15s ease;
 }
@@ -508,7 +553,7 @@ body {
 }
 
 .switch input:focus-visible + .switch-track {
-  outline: 2px solid #8a8d90;
+  outline: 2px solid var(--shell-border-strong, #8a8d90);
   outline-offset: 2px;
 }
 
@@ -519,16 +564,16 @@ body {
   font-family: monospace;
   font-size: 11px;
   padding: 6px;
-  background: #1b1e21;
-  color: #e8e9ea;
-  border: 1px solid #44494e;
+  background: var(--shell-bg-deep, #1b1e21);
+  color: var(--shell-text-body, #e8e9ea);
+  border: 1px solid var(--shell-border-input, #44494e);
   border-radius: 4px;
   resize: vertical;
 }
 
 .settings-textarea:focus {
   outline: none;
-  border-color: #8a8d90;
+  border-color: var(--shell-border-strong, #8a8d90);
 }
 
 .settings-select {
@@ -577,8 +622,8 @@ body {
 .settings-panel-body pre {
   margin: 0;
   padding: 10px;
-  background: #1b1e21;
-  border: 1px solid #44494e;
+  background: var(--shell-bg-deep, #1b1e21);
+  border: 1px solid var(--shell-border-input, #44494e);
   border-radius: 4px;
   overflow-x: auto;
 }
@@ -587,14 +632,14 @@ body {
   font-family: 'SFMono-Regular', Consolas, monospace;
   font-size: 11px;
   line-height: 1.5;
-  color: #e8e9ea;
+  color: var(--shell-text-body, #e8e9ea);
   white-space: pre;
 }
 
 .settings-error {
   font-size: 11px;
   font-weight: 700;
-  color: #f2f2f3;
+  color: var(--shell-text, #f2f2f3);
   margin-top: -4px;
   margin-bottom: 4px;
 }
@@ -620,7 +665,7 @@ body {
     max-width: 320px;
     min-width: 0;
     margin: 0;
-    border-left: 1px solid #dddddd;
+    border-left: 1px solid var(--shell-sidenav-border, #dddddd);
     box-shadow: 4px 0 16px rgba(0, 0, 0, 0.35);
     transform: translateX(-100%);
     transition: transform 0.2s ease;
