@@ -485,7 +485,8 @@ describe('renderTabs', () => {
     buttons.forEach((btn, i) => {
       const def = TAB_DEFS[i];
       const expectedActive = def.hash === TAB_DEFS[2].hash;
-      expect(btn.className).toBe('app-tab' + (expectedActive ? ' app-tab-active' : ''));
+      const brandSlug = def.hash.slice(2);
+      expect(btn.className).toBe(`app-tab app-tab-${brandSlug}` + (expectedActive ? ' app-tab-active' : ''));
 
       const iconSpan = btn.querySelector('.app-tab-icon')!;
       expect(iconSpan.innerHTML).toContain('<svg');

@@ -177,7 +177,8 @@ function renderTabs(): void {
   container.innerHTML = '';
   for (const tab of tabs) {
     const button = document.createElement('button');
-    button.className = 'app-tab' + (location.hash === tab.hash ? ' app-tab-active' : '');
+    const brandSlug = tab.hash.slice(2); // '#/react' -> 'react', matches ICONS keys and .app-tab-<slug> CSS
+    button.className = `app-tab app-tab-${brandSlug}` + (location.hash === tab.hash ? ' app-tab-active' : '');
     button.addEventListener('click', () => {
       location.hash = tab.hash;
     });

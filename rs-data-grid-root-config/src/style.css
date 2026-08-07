@@ -1,12 +1,17 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #app-tabs {
+  flex: 0 0 auto;
   display: flex;
-  gap: 4px;
-  padding: 8px 8px 0;
+  gap: 10px;
+  padding: 10px 12px;
   background: #1c1e21;
 }
 
@@ -14,13 +19,15 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px 6px 0 0;
-  background: #2b2e33;
-  color: #ccc;
+  padding: 9px 18px;
+  border: 1.5px solid #3a3d43;
+  border-radius: 999px;
+  background: #24272b;
+  color: #c7cacd;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, color 0.15s, background 0.15s;
 }
 
 .app-tab-icon {
@@ -37,27 +44,46 @@ body {
 }
 
 .app-tab:hover {
-  background: #3a3d43;
+  color: #ffffff;
+  background: #2b2e33;
 }
 
 .app-tab-active {
-  background: #ffffff;
-  color: #111;
-  font-weight: bold;
+  background: #16181a;
+  color: #ffffff;
 }
+
+/* Per-framework brand color, matching each tab's icon (see ICONS in
+   root-config.ts): a subtle tinted border always, full brand color plus a
+   glow ring on whichever tab is active. */
+.app-tab-react { border-color: rgba(97, 218, 251, 0.5); }
+.app-tab-angular { border-color: rgba(221, 0, 49, 0.5); }
+.app-tab-vue { border-color: rgba(65, 184, 131, 0.5); }
+.app-tab-vanilla { border-color: rgba(240, 219, 79, 0.5); }
+.app-tab-jquery { border-color: rgba(8, 104, 172, 0.5); }
+
+.app-tab-react.app-tab-active { border-color: #61dafb; box-shadow: 0 0 0 3px rgba(97, 218, 251, 0.18), 0 0 14px rgba(97, 218, 251, 0.35); }
+.app-tab-angular.app-tab-active { border-color: #dd0031; box-shadow: 0 0 0 3px rgba(221, 0, 49, 0.18), 0 0 14px rgba(221, 0, 49, 0.35); }
+.app-tab-vue.app-tab-active { border-color: #41b883; box-shadow: 0 0 0 3px rgba(65, 184, 131, 0.18), 0 0 14px rgba(65, 184, 131, 0.35); }
+.app-tab-vanilla.app-tab-active { border-color: #f0db4f; box-shadow: 0 0 0 3px rgba(240, 219, 79, 0.18), 0 0 14px rgba(240, 219, 79, 0.35); }
+.app-tab-jquery.app-tab-active { border-color: #0868ac; box-shadow: 0 0 0 3px rgba(8, 104, 172, 0.18), 0 0 14px rgba(8, 104, 172, 0.35); }
 
 .app-shell {
   display: flex;
   flex-direction: row;
   width: 100%;
-  min-height: calc(100vh - 46px);
+  flex: 1 1 auto;
+  min-height: 0;
   margin: 0;
+  overflow: hidden;
 }
 
 #single-spa-application {
   flex: 1 1 auto;
   min-width: 0;
+  min-height: 0;
   padding: 0;
+  overflow-y: auto;
 }
 
 .app-sidenav {
@@ -70,7 +96,6 @@ body {
   border-left: none;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
   overflow-y: auto;
-  max-height: calc(100vh - 46px);
   display: flex;
   flex-direction: column;
 }
@@ -218,17 +243,70 @@ body {
 .settings-radio-group {
   display: flex;
   flex-direction: row;
-  gap: 16px;
-  margin-top: 4px;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
 }
 
 .settings-radio-option {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: #e8e9ea;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #45494e;
+  background: #1f2226;
+  color: #c7cacd;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.settings-radio-option:hover {
+  border-color: #7c8085;
+}
+
+.settings-radio-option:has(input:checked) {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
+}
+
+.settings-radio-option input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 2px solid #6b6f74;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: border-color 0.15s;
+}
+
+.settings-radio-option input[type='radio']::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  transform: scale(0);
+  transition: transform 0.12s ease-out;
+  box-shadow: 0 0 6px 1px rgba(74, 222, 128, 0.9);
+}
+
+.settings-radio-option input[type='radio']:checked {
+  border-color: #4ade80;
+}
+
+.settings-radio-option input[type='radio']:checked::before {
+  transform: scale(1);
 }
 
 .settings-label {
