@@ -19,7 +19,7 @@ export const httpMethods: string[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', '
 
 export const gridConfig: Record<string, any> = {
   theme: 'light',
-  fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
+  fetchUrl: 'https://gist.githubusercontent.com/Strift/1524ab5e2015e50bbcb215fb4d950a38/raw/movies-lite.json',
   apiMethod: 'GET',
   apiHeadersRaw: '',
   apiHeaders: {},

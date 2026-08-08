@@ -127,6 +127,9 @@ const onCancelAddClick = () => {
 
 const cellBorderRight = (j: number) => props.bodyColumnLines && (j < props.columns.length - 1 || props.showActions);
 
+const IMAGE_URL_PATTERN = /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i;
+const isImageUrl = (value: unknown): value is string => typeof value === 'string' && IMAGE_URL_PATTERN.test(value);
+
 const rowClass = (item: any, i: number) => ({
   'row-style': props.tableBorder,
   'row-style-bottom': (props.tableBorder && i === props.data.length - 1) || (props.bodyRowLines && i !== props.data.length - 1),
@@ -298,7 +301,8 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
             class="full-row section-style row-layout-center-center"
             :class="{ 'border-right': cellBorderRight(j) }"
           >
-            {{ item[column.dataField] }}
+            <img v-if="isImageUrl(item[column.dataField])" class="cell-thumbnail" :src="item[column.dataField]" alt="" />
+            <template v-else>{{ item[column.dataField] }}</template>
           </div>
           <div v-if="showActions" class="actions-cell row-layout-center-center">
             <button type="button" class="row-action-button" title="Edit row" aria-label="Edit row" @click="onEditClick(item, $event)">

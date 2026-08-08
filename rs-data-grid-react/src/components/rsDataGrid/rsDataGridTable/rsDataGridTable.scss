@@ -123,6 +123,15 @@
   border-color: var(--rg-accent-success, #1f7a3d);
 }
 
+.cell-thumbnail{
+  display: block;
+  height: 40px;
+  width: auto;
+  max-width: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
 .inline-edit-input{
   width: 100%;
   box-sizing: border-box;

@@ -4,6 +4,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { IColumn } from '../../../core/models/IColumn';
 import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
 
+const IMAGE_URL_PATTERN = /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i;
+
 @Component({
   selector: 'rsivri-grid-body',
   standalone: true,
@@ -194,5 +196,9 @@ export class RsivriGridBodyComponent implements OnChanges {
 
   onCancelAddClick(): void {
     this.isAddingRow = false;
+  }
+
+  isImageUrl(value: any): boolean {
+    return typeof value === 'string' && IMAGE_URL_PATTERN.test(value);
   }
 }

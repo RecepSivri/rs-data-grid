@@ -7,6 +7,12 @@ import { el, clear } from '../domUtil.js';
 import { SAVE_ICON, CANCEL_ICON, EDIT_ICON, DELETE_ICON, DRAG_HANDLE_ICON } from '../icons.js';
 import './rsDataGridTable.css';
 
+const IMAGE_URL_PATTERN = /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i;
+
+function isImageUrl(value) {
+  return typeof value === 'string' && IMAGE_URL_PATTERN.test(value);
+}
+
 function toDraft(row, columns) {
   const draft = {};
   for (const column of columns) {
@@ -221,8 +227,13 @@ export function createTable() {
       }
     } else {
       columns.forEach((column, j) => {
+        const value = item[column.dataField];
         rowChildren.push(
-          el('div', { className: cellClass(j, columns, showActions, bodyColumnLines), text: item[column.dataField] === null || item[column.dataField] === undefined ? '' : String(item[column.dataField]) })
+          el('div', {
+            className: cellClass(j, columns, showActions, bodyColumnLines),
+            children: isImageUrl(value) ? [el('img', { className: 'cell-thumbnail', attrs: { src: value, alt: '' } })] : undefined,
+            text: isImageUrl(value) ? undefined : value === null || value === undefined ? '' : String(value),
+          })
         );
       });
       if (showActions) {

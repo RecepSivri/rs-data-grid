@@ -7,7 +7,7 @@ import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 // single-spa root-config that would normally supply gridConfig via props.
 const defaultGridConfig: Record<string, any> = {
   theme: 'light',
-  fetchUrl: 'http://universities.hipolabs.com/search?country=United+States',
+  fetchUrl: 'https://gist.githubusercontent.com/Strift/1524ab5e2015e50bbcb215fb4d950a38/raw/movies-lite.json',
   apiMethod: 'GET',
   apiHeaders: {},
   authToken: '',

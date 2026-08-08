@@ -30,6 +30,10 @@ export interface RsDataGridTableHandle {
   saveBatch: () => void;
 }
 
+const IMAGE_URL_PATTERN = /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i;
+
+const isImageUrl = (value: unknown): value is string => typeof value === 'string' && IMAGE_URL_PATTERN.test(value);
+
 const SaveIcon = () => (
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
@@ -353,7 +357,11 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
                 <>
                   {columns.map((column, j) => (
                     <div key={column.dataField} className={cellClass(j)}>
-                      {item[column.dataField]}
+                      {isImageUrl(item[column.dataField]) ? (
+                        <img className="cell-thumbnail" src={item[column.dataField]} alt="" />
+                      ) : (
+                        item[column.dataField]
+                      )}
                     </div>
                   ))}
                   {showActions && (
