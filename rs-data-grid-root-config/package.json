@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "highlight.js": "^11.11.1",
     "single-spa": "^6.0.3"
   },
   "devDependencies": {

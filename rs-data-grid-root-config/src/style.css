@@ -275,12 +275,98 @@ body[data-theme='light'] {
   overflow: hidden;
 }
 
+.content-pane {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 #single-spa-application {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
   padding: 0;
   overflow-y: auto;
+}
+
+#single-spa-application.content-hidden {
+  display: none;
+}
+
+.view-mode-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 10px 4px;
+}
+
+.view-mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 1.5px solid var(--shell-border, #45494e);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--shell-text-secondary, #c7cacd);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.view-mode-tab:hover {
+  color: var(--shell-text, #f2f2f3);
+  background: var(--shell-bg-panel-hover, rgba(255, 255, 255, 0.06));
+}
+
+.view-mode-tab-active {
+  border-color: #61dafb;
+  color: var(--shell-text, #f2f2f3);
+  background: var(--shell-bg-panel, #2b2f34);
+}
+
+/* The code viewer is intentionally always dark, independent of the shell's
+   own light/dark toggle -- a code panel reads better with permanent
+   contrast, the same way most docs/demo sites treat code blocks. */
+.code-viewer {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: none;
+  flex-direction: column;
+  background: #282c34;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.code-viewer.code-viewer-active {
+  display: flex;
+}
+
+.code-viewer-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.code-block {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 16px 20px;
+  overflow: auto;
+}
+
+.code-block code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+  tab-size: 2;
 }
 
 .app-sidenav {

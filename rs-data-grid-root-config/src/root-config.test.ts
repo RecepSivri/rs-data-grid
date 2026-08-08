@@ -101,7 +101,9 @@ async function importRootConfig(hash: string): Promise<typeof import('./root-con
   document.body.innerHTML = `
     <div id="app-tabs"></div>
     <div id="app-sidebar"></div>
+    <div id="view-mode-tabs"></div>
     <div id="single-spa-application"></div>
+    <div id="code-viewer"></div>
   `;
   rootConfigMod = await import('./root-config');
   return rootConfigMod;

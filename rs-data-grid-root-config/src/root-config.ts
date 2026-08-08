@@ -1,6 +1,7 @@
 import { mountRootParcel } from 'single-spa';
 import { getCustomProps, setUpdateHook, gridConfig, setSetting } from './grid-settings';
 import { renderSidebar } from './sidebar';
+import { renderCodeViewer } from './code-viewer';
 
 interface TabDef {
   name: string;
@@ -161,6 +162,9 @@ function switchToActiveTab(): void {
 
 setUpdateHook(() => {
   activeParcel?.update?.(getCustomProps())?.catch(err => console.error('Failed to push settings update', err));
+  if (viewMode === 'code') {
+    renderCodeViewer(document.getElementById('code-viewer')!, currentTab().hash);
+  }
 });
 
 if (!tabs.some(tab => tab.hash === location.hash)) {
@@ -198,6 +202,48 @@ function renderTabs(): void {
 
 window.addEventListener('hashchange', renderTabs);
 renderTabs();
+
+// Demo/Code tab strip, rendered above the mounted grid. "Demo" shows the
+// live, sidebar-driven parcel exactly as before (it stays mounted the whole
+// time -- switching to Code just hides it, so nothing remounts or loses
+// state when switching back). "Code" shows that framework's own top-level
+// grid component source, read-only and highlighted.
+type ViewMode = 'demo' | 'code';
+let viewMode: ViewMode = 'demo';
+
+function applyViewMode(): void {
+  const demoEl = document.getElementById('single-spa-application')!;
+  const codeEl = document.getElementById('code-viewer')!;
+  demoEl.classList.toggle('content-hidden', viewMode === 'code');
+  codeEl.classList.toggle('code-viewer-active', viewMode === 'code');
+  if (viewMode === 'code') {
+    renderCodeViewer(codeEl, currentTab().hash);
+  }
+}
+
+function renderViewModeTabs(): void {
+  const container = document.getElementById('view-mode-tabs')!;
+  container.innerHTML = '';
+  (['demo', 'code'] as ViewMode[]).forEach(mode => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'view-mode-tab' + (viewMode === mode ? ' view-mode-tab-active' : '');
+    button.textContent = mode === 'demo' ? 'Demo' : 'Code';
+    button.addEventListener('click', () => {
+      if (viewMode === mode) {
+        return;
+      }
+      viewMode = mode;
+      renderViewModeTabs();
+      applyViewMode();
+    });
+    container.appendChild(button);
+  });
+}
+
+window.addEventListener('hashchange', applyViewMode);
+renderViewModeTabs();
+applyViewMode();
 
 // Light is the default everywhere (shell + every grid); the toggle switches
 // to dark and remembers the choice across reloads. The topbar and sidebar
