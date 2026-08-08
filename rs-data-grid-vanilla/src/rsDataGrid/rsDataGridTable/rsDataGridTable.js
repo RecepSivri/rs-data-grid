@@ -4,7 +4,7 @@
 // are separate plain objects, mutated directly by input handlers WITHOUT
 // calling render() -- this is what keeps focus stable while typing.
 import { el, clear } from '../domUtil.js';
-import { SAVE_ICON, CANCEL_ICON, EDIT_ICON, DELETE_ICON } from '../icons.js';
+import { SAVE_ICON, CANCEL_ICON, EDIT_ICON, DELETE_ICON, DRAG_HANDLE_ICON } from '../icons.js';
 import './rsDataGridTable.css';
 
 function toDraft(row, columns) {
@@ -24,6 +24,8 @@ export function createTable() {
   let batchDrafts = [];
   let batchNewDrafts = [];
   let batchDraftRowRefs = [];
+  let draggedRow = null;
+  let dragOverRow = null;
 
   let containerEl = null;
   let lastProps = null;
@@ -60,9 +62,13 @@ export function createTable() {
   }
 
   function buildAddRow(props) {
-    const { columns, tableBorder, showActions, showIndex, bodyColumnLines } = props;
+    const { columns, tableBorder, showActions, showIndex, dragDropRows, bodyColumnLines } = props;
     const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+    const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
     const cells = [];
+    if (dragDropRows) {
+      cells.push(el('div', { className: dragCellClass }));
+    }
     if (showIndex) {
       cells.push(el('div', { className: indexCellClass }));
     }
@@ -109,17 +115,38 @@ export function createTable() {
   }
 
   function buildDataRow(item, i, props) {
-    const { columns, data, bodyRowLines, bodyColumnLines, tableBorder, borderRadiusBottom, diagonalRow, showActions, showIndex, indexOffset, gridMode, onRowDelete } = props;
+    const { columns, data, bodyRowLines, bodyColumnLines, tableBorder, borderRadiusBottom, diagonalRow, showActions, showIndex, dragDropRows, indexOffset, gridMode, onRowDelete, onRowMove } = props;
     const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+    const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
     const isEditingThis = item === editingRow;
     const rowClass =
       'full-row' +
       (tableBorder ? ' row-style' : '') +
       ((tableBorder && i === data.length - 1) || (bodyRowLines && i !== data.length - 1) ? ' row-style-bottom' : '') +
       (borderRadiusBottom && i === data.length - 1 ? ' border-area-small' : '') +
-      (i % 2 === 1 && diagonalRow ? ' row-background' : '');
+      (i % 2 === 1 && diagonalRow ? ' row-background' : '') +
+      (draggedRow === item ? ' row-dragging' : '') +
+      (dragDropRows && dragOverRow === item ? ' row-drag-over' : '');
 
     const rowChildren = [];
+    if (dragDropRows) {
+      rowChildren.push(
+        el('div', {
+          className: dragCellClass,
+          children: [
+            el('span', {
+              className: 'drag-handle',
+              attrs: { draggable: 'true', 'aria-label': 'Reorder row' },
+              html: DRAG_HANDLE_ICON,
+              on: {
+                dragstart: event => { draggedRow = item; if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'; },
+                dragend: () => { draggedRow = null; dragOverRow = null; renderCurrent(); },
+              },
+            }),
+          ],
+        })
+      );
+    }
     if (showIndex) {
       rowChildren.push(el('div', { className: indexCellClass, text: String(indexOffset + i + 1) }));
     }
@@ -221,13 +248,32 @@ export function createTable() {
       }
     }
 
-    return el('div', { className: rowClass, children: [el('div', { className: 'full-row row-layout', children: rowChildren })] });
+    return el('div', {
+      className: rowClass,
+      on: dragDropRows
+        ? {
+            dragover: event => { event.preventDefault(); dragOverRow = item; renderCurrent(); },
+            dragleave: () => { if (dragOverRow === item) { dragOverRow = null; renderCurrent(); } },
+            drop: event => {
+              event.preventDefault();
+              if (draggedRow) onRowMove(draggedRow, item);
+              dragOverRow = null;
+              draggedRow = null;
+            },
+          }
+        : undefined,
+      children: [el('div', { className: 'full-row row-layout', children: rowChildren })],
+    });
   }
 
   function buildBatchNewRow(draft, i, props) {
-    const { columns, tableBorder, showActions, showIndex, bodyColumnLines } = props;
+    const { columns, tableBorder, showActions, showIndex, dragDropRows, bodyColumnLines } = props;
     const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+    const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
     const cells = [];
+    if (dragDropRows) {
+      cells.push(el('div', { className: dragCellClass }));
+    }
     if (showIndex) {
       cells.push(el('div', { className: indexCellClass }));
     }

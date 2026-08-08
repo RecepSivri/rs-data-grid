@@ -37,6 +37,44 @@
   min-width: 50px;
 }
 
+.drag-cell {
+  box-sizing: border-box;
+  flex: 0 0 30px;
+}
+
+.section-style.drag-cell {
+  min-width: 30px;
+}
+
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  color: var(--rg-icon-muted, #aaaaaa);
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+
+.drag-handle:hover {
+  color: var(--rg-text-muted, #777777);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.row-dragging {
+  opacity: 0.5;
+}
+
+.row-drag-over {
+  background: var(--rg-bg-hover, #f5f5f5);
+}
+
 .row-background {
   background-color: var(--rg-bg-alt, #f5f5f5);
 }

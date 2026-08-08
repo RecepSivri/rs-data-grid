@@ -5,11 +5,14 @@
 import { el, clear } from '../domUtil.js';
 import { applyFilters } from '../store/dataGridStore.js';
 import { titleCase } from '../titleCase.js';
+import { DRAG_HANDLE_ICON } from '../icons.js';
 import './rsDataGridHeader.css';
 
 export function createHeader() {
   let openDataField = null;
   let selectedValues = {};
+  let draggedField = null;
+  let dragOverField = null;
   let containerEl = null;
   let lastProps = null;
   let listenerAttached = false;
@@ -59,19 +62,36 @@ export function createHeader() {
   }
 
   function buildCaptionRow(props) {
-    const { columns, headerColumnLines, tableBorder, borderRadiusTop, showSort, showActions, showIndex, sort, onSortToggle } = props;
+    const { columns, headerColumnLines, tableBorder, borderRadiusTop, showSort, showActions, showIndex, dragDropRows, dragDropColumns, sort, onSortToggle, onColumnMove } = props;
     const sortDirection = dataField => (sort.field === dataField ? sort.direction : null);
 
     const rowClass =
       'full-row row-layout-space-between-center' + (tableBorder ? ' border-header' : '') + (borderRadiusTop ? ' border-area-small' : '');
 
     const children = [];
+    if (dragDropRows) {
+      children.push(el('div', { className: 'drag-header-cell content-style row-layout-center-center' + (headerColumnLines ? ' border-right' : '') }));
+    }
     if (showIndex) {
       children.push(el('div', { className: 'index-header-cell content-style row-layout-center-center' + (headerColumnLines ? ' border-right' : ''), text: '#' }));
     }
     columns.forEach((column, i) => {
       const direction = sortDirection(column.dataField);
-      const cellChildren = [el('span', { className: 'header-caption', text: titleCase(column.caption) })];
+      const cellChildren = [];
+      if (dragDropColumns) {
+        cellChildren.push(
+          el('span', {
+            className: 'drag-handle',
+            attrs: { draggable: 'true', 'aria-label': 'Reorder ' + column.caption },
+            html: DRAG_HANDLE_ICON,
+            on: {
+              dragstart: event => { draggedField = column.dataField; if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'; },
+              dragend: () => { draggedField = null; dragOverField = null; renderCurrent(); },
+            },
+          })
+        );
+      }
+      cellChildren.push(el('span', { className: 'header-caption', text: titleCase(column.caption) }));
       if (showSort) {
         const iconText = direction === 'desc' ? '▼' : direction === 'asc' ? '▲' : '⇅';
         cellChildren.push(
@@ -85,7 +105,22 @@ export function createHeader() {
       }
       children.push(
         el('div', {
-          className: 'full-row content-style row-layout-center-center' + (headerColumnLines && (i < columns.length - 1 || showActions) ? ' border-right' : ''),
+          className:
+            'full-row content-style row-layout-center-center' +
+            (headerColumnLines && (i < columns.length - 1 || showActions) ? ' border-right' : '') +
+            (dragDropColumns && dragOverField === column.dataField ? ' column-drag-over' : ''),
+          on: dragDropColumns
+            ? {
+                dragover: event => { event.preventDefault(); dragOverField = column.dataField; renderCurrent(); },
+                dragleave: () => { if (dragOverField === column.dataField) { dragOverField = null; renderCurrent(); } },
+                drop: event => {
+                  event.preventDefault();
+                  if (draggedField) onColumnMove(draggedField, column.dataField);
+                  dragOverField = null;
+                  draggedField = null;
+                },
+              }
+            : undefined,
           children: cellChildren,
         })
       );
@@ -97,12 +132,15 @@ export function createHeader() {
   }
 
   function buildFilterRow(props) {
-    const { columns, data, bodyColumnLines, tableBorder, showActions, showIndex, onFilterChange } = props;
+    const { columns, data, bodyColumnLines, tableBorder, showActions, showIndex, dragDropRows, onFilterChange } = props;
     if (columns.length === 0) {
       return null;
     }
     const rowClass = 'full-row filter-row row-layout-space-between-center' + (tableBorder ? ' filter-row-border' : '');
     const children = [];
+    if (dragDropRows) {
+      children.push(el('div', { className: 'drag-header-cell filter-cell row-layout-center-center' + (bodyColumnLines ? ' border-right' : '') }));
+    }
     if (showIndex) {
       children.push(el('div', { className: 'index-header-cell filter-cell row-layout-center-center' + (bodyColumnLines ? ' border-right' : '') }));
     }

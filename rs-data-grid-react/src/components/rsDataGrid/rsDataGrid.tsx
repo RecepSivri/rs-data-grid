@@ -26,6 +26,8 @@ export interface RsDataGridProps {
   borderRadiusTop?: boolean;
   borderRadiusBottom?: boolean;
   diagonalRow?: boolean;
+  dragDropRows?: boolean;
+  dragDropColumns?: boolean;
   pagination?: boolean;
   showFilter?: boolean;
   showSort?: boolean;
@@ -75,6 +77,8 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     borderRadiusTop = false,
     borderRadiusBottom = false,
     diagonalRow = false,
+    dragDropRows = false,
+    dragDropColumns = false,
     pagination = false,
     showFilter = false,
     showSort = false,
@@ -124,13 +128,66 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     setConfirmState(s => ({ ...s, open: false }));
   };
 
-  const effectiveColumns = useMemo<IColumn[]>(() => {
+  const baseColumns = useMemo<IColumn[]>(() => {
     if (columns.length > 0) {
       return columns;
     }
     const result = Object.keys(Object.assign({}, ...store.rawData));
     return result.map(item => ({ caption: item, dataField: item }));
   }, [columns, store.rawData]);
+
+  // Drag-reordered column order persists across data mutations (which
+  // recompute baseColumns from scratch) by keeping only the dataField order,
+  // not the columns themselves -- fields no longer present are dropped, new
+  // fields land at the end.
+  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+
+  const effectiveColumns = useMemo<IColumn[]>(() => {
+    if (columnOrder.length === 0) {
+      return baseColumns;
+    }
+    const byField = new Map(baseColumns.map(column => [column.dataField, column]));
+    const ordered: IColumn[] = [];
+    for (const field of columnOrder) {
+      const column = byField.get(field);
+      if (column) {
+        ordered.push(column);
+        byField.delete(field);
+      }
+    }
+    for (const column of baseColumns) {
+      if (byField.has(column.dataField)) {
+        ordered.push(column);
+      }
+    }
+    return ordered;
+  }, [baseColumns, columnOrder]);
+
+  const onColumnMove = useCallback(
+    (fromField: string, toField: string) => {
+      const order = effectiveColumns.map(column => column.dataField);
+      const fromIndex = order.indexOf(fromField);
+      const toIndexOriginal = order.indexOf(toField);
+      if (fromIndex === -1 || toIndexOriginal === -1 || fromField === toField) {
+        return;
+      }
+      order.splice(fromIndex, 1);
+      let insertAt = order.indexOf(toField);
+      if (fromIndex < toIndexOriginal) {
+        insertAt += 1;
+      }
+      order.splice(insertAt, 0, fromField);
+      setColumnOrder(order);
+    },
+    [effectiveColumns]
+  );
+
+  const onRowMove = useCallback(
+    (fromRow: any, toRow: any) => {
+      store.moveRow(fromRow, toRow);
+    },
+    [store]
+  );
 
   const buildRequestHeaders = useCallback((): Record<string, string> | undefined => {
     const headers: Record<string, string> = { ...(fetchHeaders ?? {}) };
@@ -368,9 +425,12 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
               showSort={showSort}
               showActions={showActions}
               showIndex={showIndex}
+              dragDropRows={dragDropRows}
+              dragDropColumns={dragDropColumns}
               sort={store.sort}
               onFilterChange={onFilterChange}
               onSortToggle={onSortToggle}
+              onColumnMove={onColumnMove}
             />
             <RsDataGridTable
               ref={tableRef}
@@ -383,10 +443,12 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
               diagonalRow={diagonalRow}
               showActions={showActions}
               showIndex={showIndex}
+              dragDropRows={dragDropRows}
               indexOffset={!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0}
               gridMode={gridMode}
               onRowEdit={onRowEditRequest}
               onRowDelete={onRowDeleteRequest}
+              onRowMove={onRowMove}
               onBatchRowSave={onBatchRowSave}
               onBatchRowAdd={onBatchRowAdd}
               onBatchCommit={onBatchCommit}

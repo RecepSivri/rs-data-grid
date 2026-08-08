@@ -22,6 +22,8 @@ const defaultGridConfig: Record<string, any> = {
   borderRadiusTop: true,
   borderRadiusBottom: false,
   diagonalRow: true,
+  dragDropColumns: false,
+  dragDropRows: false,
   pagination: true,
   pagingSizes: [10, 20, 50, 70, 100],
   showFilter: true,

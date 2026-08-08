@@ -150,6 +150,32 @@ export const applySort = (data, sort) => {
 };
 
 /**
+ * @param {any[]} data
+ * @param {any} fromItem
+ * @param {any} toItem
+ * @returns {any[]}
+ */
+export const moveItem = (data, fromItem, toItem) => {
+  const fromIndex = data.indexOf(fromItem);
+  const toIndexOriginal = data.indexOf(toItem);
+  if (fromIndex === -1 || toIndexOriginal === -1 || fromItem === toItem) {
+    return data;
+  }
+  const next = data.slice();
+  next.splice(fromIndex, 1);
+  let insertAt = next.indexOf(toItem);
+  // Dragging forward (fromIndex < toIndexOriginal): land AFTER the target,
+  // not before it -- "insert before" is a no-op when the dragged item is
+  // already the target's immediate predecessor, since removing it shifts
+  // the target left into the exact slot being inserted into.
+  if (fromIndex < toIndexOriginal) {
+    insertAt += 1;
+  }
+  next.splice(insertAt, 0, fromItem);
+  return next;
+};
+
+/**
  * @param {number} pageListSize
  * @param {number} pageLimit
  * @returns {number[]}

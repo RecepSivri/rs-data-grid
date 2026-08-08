@@ -9,7 +9,7 @@
 // mode's many dynamically-created inputs.
 import $ from 'jquery';
 import { el, clear } from '../domUtil.js';
-import { SAVE_ICON, CANCEL_ICON, EDIT_ICON, DELETE_ICON } from '../icons.js';
+import { SAVE_ICON, CANCEL_ICON, EDIT_ICON, DELETE_ICON, DRAG_HANDLE_ICON } from '../icons.js';
 import './rsDataGridTable.css';
 
 function toDraft(row, columns) {
@@ -29,6 +29,8 @@ export function createTable() {
   let batchDrafts = [];
   let batchNewDrafts = [];
   let batchDraftRowRefs = [];
+  let draggedRow = null;
+  let dragOverRow = null;
 
   let $container = null;
   let lastProps = null;
@@ -57,9 +59,13 @@ export function createTable() {
   }
 
   function buildAddRow(props) {
-    const { columns, tableBorder, showActions, showIndex, bodyColumnLines } = props;
+    const { columns, tableBorder, showActions, showIndex, dragDropRows, bodyColumnLines } = props;
     const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+    const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
     const cells = [];
+    if (dragDropRows) {
+      cells.push(el('div', { className: dragCellClass }));
+    }
     if (showIndex) {
       cells.push(el('div', { className: indexCellClass }));
     }
@@ -95,17 +101,34 @@ export function createTable() {
   }
 
   function buildDataRow(item, i, props) {
-    const { columns, data, bodyRowLines, bodyColumnLines, tableBorder, borderRadiusBottom, diagonalRow, showActions, showIndex, indexOffset, gridMode } = props;
+    const { columns, data, bodyRowLines, bodyColumnLines, tableBorder, borderRadiusBottom, diagonalRow, showActions, showIndex, dragDropRows, indexOffset, gridMode } = props;
     const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+    const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
     const isEditingThis = item === editingRow;
     const rowClass =
       'full-row' +
       (tableBorder ? ' row-style' : '') +
       ((tableBorder && i === data.length - 1) || (bodyRowLines && i !== data.length - 1) ? ' row-style-bottom' : '') +
       (borderRadiusBottom && i === data.length - 1 ? ' border-area-small' : '') +
-      (i % 2 === 1 && diagonalRow ? ' row-background' : '');
+      (i % 2 === 1 && diagonalRow ? ' row-background' : '') +
+      (draggedRow === item ? ' row-dragging' : '') +
+      (dragDropRows && dragOverRow === item ? ' row-drag-over' : '');
 
     const rowChildren = [];
+    if (dragDropRows) {
+      rowChildren.push(
+        el('div', {
+          className: dragCellClass,
+          children: [
+            el('span', {
+              className: 'drag-handle',
+              attrs: { draggable: 'true', 'aria-label': 'Reorder row' },
+              html: DRAG_HANDLE_ICON,
+            }),
+          ],
+        })
+      );
+    }
     if (showIndex) {
       rowChildren.push(el('div', { className: indexCellClass, text: String(indexOffset + i + 1) }));
     }
@@ -174,9 +197,13 @@ export function createTable() {
   }
 
   function buildBatchNewRow(draft, i, props) {
-    const { columns, tableBorder, showActions, showIndex, bodyColumnLines } = props;
+    const { columns, tableBorder, showActions, showIndex, dragDropRows, bodyColumnLines } = props;
     const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+    const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
     const cells = [];
+    if (dragDropRows) {
+      cells.push(el('div', { className: dragCellClass }));
+    }
     if (showIndex) {
       cells.push(el('div', { className: indexCellClass }));
     }
@@ -284,6 +311,56 @@ export function createTable() {
           batchNewDrafts[i][field] = value;
         }
       }
+    });
+
+    $c.on('dragstart', '.drag-cell .drag-handle', function (event) {
+      const i = Number($(this).closest('[data-row-index]').data('rowIndex'));
+      draggedRow = lastProps.data[i];
+      $(this).closest('[data-row-index]').addClass('row-dragging');
+      if (event.originalEvent && event.originalEvent.dataTransfer) {
+        event.originalEvent.dataTransfer.effectAllowed = 'move';
+      }
+    });
+    $c.on('dragend', '.drag-cell .drag-handle', function () {
+      draggedRow = null;
+      dragOverRow = null;
+      renderCurrent();
+    });
+    // dragover/dragleave fire continuously while hovering, so they toggle the
+    // highlight class directly instead of going through renderCurrent()'s
+    // full clear()+rebuild -- a synchronous DOM rebuild mid-dispatch of a
+    // jQuery-delegated drag event breaks the browser's native drag tracking
+    // and silently cancels the drop.
+    $c.on('dragover', '[data-row-index]', function (event) {
+      event.preventDefault();
+      const i = Number($(this).data('rowIndex'));
+      const row = lastProps.data[i];
+      if (dragOverRow !== row) {
+        if (dragOverRow) {
+          const prevIndex = lastProps.data.indexOf(dragOverRow);
+          $c.find('[data-row-index="' + prevIndex + '"]').removeClass('row-drag-over');
+        }
+        dragOverRow = row;
+        $(this).addClass('row-drag-over');
+      }
+    });
+    $c.on('dragleave', '[data-row-index]', function () {
+      const i = Number($(this).data('rowIndex'));
+      if (dragOverRow === lastProps.data[i]) {
+        dragOverRow = null;
+        $(this).removeClass('row-drag-over');
+      }
+    });
+    $c.on('drop', '[data-row-index]', function (event) {
+      event.preventDefault();
+      const i = Number($(this).data('rowIndex'));
+      const row = lastProps.data[i];
+      if (draggedRow) {
+        lastProps.onRowMove(draggedRow, row);
+      }
+      dragOverRow = null;
+      draggedRow = null;
+      renderCurrent();
     });
   }
 

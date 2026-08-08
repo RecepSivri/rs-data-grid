@@ -21,6 +21,8 @@ const defaultGridConfig: Record<string, any> = {
   borderRadiusTop: true,
   borderRadiusBottom: false,
   diagonalRow: true,
+  dragDropColumns: false,
+  dragDropRows: false,
   pagination: true,
   pagingSizes: [10, 20, 50, 70, 100],
   showFilter: true,
@@ -96,6 +98,8 @@ function App(props: AppProps) {
         borderRadiusTop={gridConfig.borderRadiusTop}
         borderRadiusBottom={gridConfig.borderRadiusBottom}
         diagonalRow={gridConfig.diagonalRow}
+        dragDropColumns={gridConfig.dragDropColumns}
+        dragDropRows={gridConfig.dragDropRows}
         pagination={gridConfig.pagination}
         pagingSizes={gridConfig.pagingSizes}
         currentPagingSize={gridConfig.currentPagingSize}

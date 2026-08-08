@@ -80,9 +80,12 @@
                           [showSort] = "this.showSort"
                           [showActions] = "this.showActions"
                           [showIndex] = "this.showIndex"
+                          [dragDropRows] = "this.dragDropRows"
+                          [dragDropColumns] = "this.dragDropColumns"
                           [sort] = "sort()"
                           (filterChange) = "onFilterChange($event)"
-                          (sortToggle) = "onSortToggle($event)">
+                          (sortToggle) = "onSortToggle($event)"
+                          (columnMove) = "onColumnMove($event)">
       </rsivri-grid-hedaer>
       <rsivri-grid-body [columns]="columns"
                         [data]="getPagedData()"
@@ -95,10 +98,12 @@
                         [currentPagingSize] = "currentPagingSize"
                         [showActions] = "this.showActions"
                         [showIndex] = "this.showIndex"
+                        [dragDropRows] = "this.dragDropRows"
                         [indexOffset] = "!remoteModeParams && pagination ? pageNumber() * pageSize() : 0"
                         [gridMode] = "this.gridMode"
                         (rowEdit) = "onRowEdit($event)"
                         (rowDelete) = "onRowDelete($event)"
+                        (rowMove) = "onRowMove($event)"
                         (batchRowSave) = "onBatchRowSave($event)"
                         (batchRowAdd) = "onBatchRowAdd($event)"
                         (batchCommit) = "onBatchCommit($event)"

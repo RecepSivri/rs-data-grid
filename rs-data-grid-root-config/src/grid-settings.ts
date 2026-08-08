@@ -35,6 +35,8 @@ export const gridConfig: Record<string, any> = {
   borderRadiusTop: true,
   borderRadiusBottom: false,
   diagonalRow: true,
+  dragDropColumns: false,
+  dragDropRows: false,
   pagination: true,
   pagingSizes: [10, 20, 50, 70, 100],
   showFilter: true,
@@ -81,6 +83,8 @@ export const settingsGroups: SettingsGroup[] = [
       { key: 'borderRadiusBottom', label: 'Border Radius Bottom', type: 'boolean' },
       { key: 'diagonalRow', label: 'Diagonal Row', type: 'boolean' },
       { key: 'showIndex', label: 'Show Index', type: 'boolean' },
+      { key: 'dragDropColumns', label: 'Drag/Drop Columns', type: 'boolean' },
+      { key: 'dragDropRows', label: 'Drag/Drop Rows', type: 'boolean' },
     ],
   },
   {

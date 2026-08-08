@@ -52,3 +52,8 @@ export const EXPORT_PDF_ICON = `
   <rect x="2" y="2" width="32" height="32" rx="5" fill="#e2483d"/>
   <text x="18" y="23" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">PDF</text>
 </svg>`;
+
+export const DRAG_HANDLE_ICON = `
+<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+  <circle cx="8" cy="7" r="1.8"/><circle cx="16" cy="7" r="1.8"/><circle cx="8" cy="17" r="1.8"/><circle cx="16" cy="17" r="1.8"/>
+</svg>`;

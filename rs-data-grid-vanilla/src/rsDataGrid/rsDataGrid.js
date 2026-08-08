@@ -90,7 +90,7 @@ export function createGrid() {
     }
   }
 
-  function effectiveColumns(props) {
+  function baseColumns(props) {
     const columns = props.columns ?? [];
     if (columns.length > 0) {
       return columns;
@@ -98,6 +98,55 @@ export function createGrid() {
     const rawData = store.getSnapshot().rawData;
     const result = Object.keys(Object.assign({}, ...rawData));
     return result.map(item => ({ caption: item, dataField: item }));
+  }
+
+  // Drag-reordered column order persists across data mutations (which
+  // recompute baseColumns from scratch) by keeping only the dataField order,
+  // not the columns themselves -- fields no longer present are dropped, new
+  // fields land at the end.
+  let columnOrder = [];
+
+  function effectiveColumns(props) {
+    const base = baseColumns(props);
+    if (columnOrder.length === 0) {
+      return base;
+    }
+    const byField = new Map(base.map(column => [column.dataField, column]));
+    const ordered = [];
+    for (const field of columnOrder) {
+      const column = byField.get(field);
+      if (column) {
+        ordered.push(column);
+        byField.delete(field);
+      }
+    }
+    for (const column of base) {
+      if (byField.has(column.dataField)) {
+        ordered.push(column);
+      }
+    }
+    return ordered;
+  }
+
+  function onColumnMove(fromField, toField) {
+    const order = effectiveColumns(lastProps).map(column => column.dataField);
+    const fromIndex = order.indexOf(fromField);
+    const toIndexOriginal = order.indexOf(toField);
+    if (fromIndex === -1 || toIndexOriginal === -1 || fromField === toField) {
+      return;
+    }
+    order.splice(fromIndex, 1);
+    let insertAt = order.indexOf(toField);
+    if (fromIndex < toIndexOriginal) {
+      insertAt += 1;
+    }
+    order.splice(insertAt, 0, fromField);
+    columnOrder = order;
+    renderNow();
+  }
+
+  function onRowMove(fromRow, toRow) {
+    store.moveRow(fromRow, toRow);
   }
 
   function getDisplayedRows(props) {
@@ -262,9 +311,12 @@ export function createGrid() {
       showSort: props.showSort,
       showActions: props.showActions,
       showIndex: props.showIndex,
+      dragDropRows: props.dragDropRows,
+      dragDropColumns: props.dragDropColumns,
       sort: snapshot.sort,
       onFilterChange: event => store.setFilter(event.dataField, event.values),
       onSortToggle: dataField => store.toggleSort(dataField),
+      onColumnMove,
     });
 
     table.render(tableContainer, {
@@ -277,10 +329,12 @@ export function createGrid() {
       diagonalRow: props.diagonalRow,
       showActions: props.showActions,
       showIndex: props.showIndex,
+      dragDropRows: props.dragDropRows,
       indexOffset: !props.remoteModeParams && props.pagination ? snapshot.pageNumber * snapshot.pageSize : 0,
       gridMode: props.gridMode,
       onRowEdit: onRowEditRequest,
       onRowDelete: onRowDeleteRequest,
+      onRowMove,
       onBatchRowSave,
       onBatchRowAdd,
       onBatchCommit,
@@ -385,6 +439,8 @@ export function createGrid() {
       borderRadiusTop: false,
       borderRadiusBottom: false,
       diagonalRow: false,
+      dragDropRows: false,
+      dragDropColumns: false,
       pagination: false,
       showFilter: false,
       showSort: false,

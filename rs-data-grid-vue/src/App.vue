@@ -27,6 +27,8 @@ const defaultGridConfig: Record<string, any> = {
   borderRadiusTop: true,
   borderRadiusBottom: false,
   diagonalRow: true,
+  dragDropColumns: false,
+  dragDropRows: false,
   pagination: true,
   pagingSizes: [10, 20, 50, 70, 100],
   showFilter: true,
@@ -97,6 +99,8 @@ watch(
       :border-radius-top="config.borderRadiusTop"
       :border-radius-bottom="config.borderRadiusBottom"
       :diagonal-row="config.diagonalRow"
+      :drag-drop-columns="config.dragDropColumns"
+      :drag-drop-rows="config.dragDropRows"
       :pagination="config.pagination"
       :paging-sizes="config.pagingSizes"
       :current-paging-size="config.currentPagingSize"

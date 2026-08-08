@@ -12,10 +12,12 @@ export interface RsDataGridTableProps {
   diagonalRow: boolean;
   showActions: boolean;
   showIndex: boolean;
+  dragDropRows: boolean;
   indexOffset: number;
   gridMode: GridMode;
   onRowEdit: (row: any) => void;
   onRowDelete: (row: any) => void;
+  onRowMove: (fromRow: any, toRow: any) => void;
   onBatchRowSave: (payload: { original: any; updated: any }) => void;
   onBatchRowAdd: (row: any) => void;
   onBatchCommit: (payload: { added: any[]; updated: { original: any; updated: any }[] }) => void;
@@ -59,6 +61,15 @@ const DeleteIcon = () => (
   </svg>
 );
 
+const DragHandleIcon = () => (
+  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+    <circle cx="8" cy="7" r="1.8" />
+    <circle cx="16" cy="7" r="1.8" />
+    <circle cx="8" cy="17" r="1.8" />
+    <circle cx="16" cy="17" r="1.8" />
+  </svg>
+);
+
 export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTableProps>((props, ref) => {
   const {
     columns,
@@ -70,10 +81,12 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
     diagonalRow,
     showActions,
     showIndex,
+    dragDropRows,
     indexOffset,
     gridMode,
     onRowEdit,
     onRowDelete,
+    onRowMove,
     onBatchRowSave,
     onBatchRowAdd,
     onBatchCommit,
@@ -84,6 +97,8 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
   const [editDraft, setEditDraft] = useState<Record<string, string>>({});
   const [isAddingRow, setIsAddingRow] = useState(false);
   const [addDraft, setAddDraft] = useState<Record<string, string>>({});
+  const [draggedRow, setDraggedRow] = useState<any>(null);
+  const [dragOverRow, setDragOverRow] = useState<any>(null);
 
   const toDraft = (row: any): Record<string, string> => {
     const draft: Record<string, string> = {};
@@ -202,12 +217,14 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
     'full-row section-style row-layout-center-center' + (bodyColumnLines && (j < columns.length - 1 || showActions) ? ' border-right' : '');
 
   const indexCellClass = 'index-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
+  const dragCellClass = 'drag-cell section-style row-layout-center-center' + (bodyColumnLines ? ' border-right' : '');
 
   return (
     <div className="column-layout full-row">
       {isAddingRow && (
         <div className={'full-row' + (tableBorder ? ' row-style' : '') + ' row-style-bottom'}>
           <div className="full-row row-layout">
+            {dragDropRows && <div className={dragCellClass}></div>}
             {showIndex && <div className={indexCellClass}></div>}
             {columns.map((column, j) => (
               <div key={column.dataField} className={cellClass(j)}>
@@ -239,10 +256,55 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
           (tableBorder ? ' row-style' : '') +
           ((tableBorder && i === data.length - 1) || (bodyRowLines && i !== data.length - 1) ? ' row-style-bottom' : '') +
           (borderRadiusBottom && i === data.length - 1 ? ' border-area-small' : '') +
-          (i % 2 === 1 && diagonalRow ? ' row-background' : '');
+          (i % 2 === 1 && diagonalRow ? ' row-background' : '') +
+          (draggedRow === item ? ' row-dragging' : '') +
+          (dragDropRows && dragOverRow === item ? ' row-drag-over' : '');
         return (
-          <div key={i} className={rowClass}>
+          <div
+            key={i}
+            className={rowClass}
+            onDragOver={
+              dragDropRows
+                ? event => {
+                    event.preventDefault();
+                    setDragOverRow(item);
+                  }
+                : undefined
+            }
+            onDragLeave={dragDropRows ? () => setDragOverRow((row: any) => (row === item ? null : row)) : undefined}
+            onDrop={
+              dragDropRows
+                ? event => {
+                    event.preventDefault();
+                    if (draggedRow) {
+                      onRowMove(draggedRow, item);
+                    }
+                    setDragOverRow(null);
+                    setDraggedRow(null);
+                  }
+                : undefined
+            }
+          >
             <div className="full-row row-layout">
+              {dragDropRows && (
+                <div className={dragCellClass}>
+                  <span
+                    className="drag-handle"
+                    draggable
+                    onDragStart={event => {
+                      setDraggedRow(item);
+                      event.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragEnd={() => {
+                      setDraggedRow(null);
+                      setDragOverRow(null);
+                    }}
+                    aria-label="Reorder row"
+                  >
+                    <DragHandleIcon />
+                  </span>
+                </div>
+              )}
               {showIndex && <div className={indexCellClass}>{indexOffset + i + 1}</div>}
               {gridMode === 'batch' ? (
                 <>
@@ -314,6 +376,7 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
         batchNewDrafts.map((draft, i) => (
           <div key={'new-' + i} className={'full-row' + (tableBorder ? ' row-style' : '') + ' row-style-bottom'}>
             <div className="full-row row-layout">
+              {dragDropRows && <div className={dragCellClass}></div>}
               {showIndex && <div className={indexCellClass}></div>}
               {columns.map((column, j) => (
                 <div key={column.dataField} className={cellClass(j)}>

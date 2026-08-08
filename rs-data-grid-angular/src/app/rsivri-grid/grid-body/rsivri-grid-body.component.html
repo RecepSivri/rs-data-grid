@@ -2,6 +2,9 @@
   @if (isAddingRow) {
     <div class="full-row" [class.row-style]="tableBorder" [class.row-style-bottom]="true">
       <div class="full-row row-layout">
+        @if (dragDropRows) {
+          <div class="drag-cell section-style row-layout-center-center" [class.border-right]="bodyColumnLines"></div>
+        }
         @if (showIndex) {
           <div class="index-cell section-style row-layout-center-center" [class.border-right]="bodyColumnLines"></div>
         }
@@ -36,8 +39,24 @@
       [class.row-style]="tableBorder"
       [class.row-style-bottom]="(tableBorder && i === data.length - 1) || (bodyRowLines && i !== data.length - 1)"
       [class.border-area-small]="borderRadiusBottom && i === data.length - 1"
-      [class.row-background]="i % 2 == 1 && diagonalRow">
+      [class.row-background]="i % 2 == 1 && diagonalRow"
+      [class.row-dragging]="draggedRow === item"
+      [class.row-drag-over]="dragDropRows && dragOverRow === item"
+      (dragover)="dragDropRows && onRowDragOver(item, $event)"
+      (dragleave)="dragDropRows && onRowDragLeave(item)"
+      (drop)="dragDropRows && onRowDrop(item, $event)">
       <div class="full-row row-layout">
+        @if (dragDropRows) {
+          <div class="drag-cell section-style row-layout-center-center" [class.border-right]="bodyColumnLines">
+            <span class="drag-handle" draggable="true" aria-label="Reorder row"
+              (dragstart)="onRowDragStart(item, $event)"
+              (dragend)="onRowDragEnd()">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+                <circle cx="8" cy="7" r="1.8"/><circle cx="16" cy="7" r="1.8"/><circle cx="8" cy="17" r="1.8"/><circle cx="16" cy="17" r="1.8"/>
+              </svg>
+            </span>
+          </div>
+        }
         @if (showIndex) {
           <div class="index-cell section-style row-layout-center-center" [class.border-right]="bodyColumnLines">{{ indexOffset + i + 1 }}</div>
         }
@@ -118,6 +137,9 @@
     @for (draft of batchNewDrafts; track $index; let i = $index) {
       <div class="full-row" [class.row-style]="tableBorder" [class.row-style-bottom]="true">
         <div class="full-row row-layout">
+          @if (dragDropRows) {
+            <div class="drag-cell section-style row-layout-center-center" [class.border-right]="bodyColumnLines"></div>
+          }
           @if (showIndex) {
             <div class="index-cell section-style row-layout-center-center" [class.border-right]="bodyColumnLines"></div>
           }

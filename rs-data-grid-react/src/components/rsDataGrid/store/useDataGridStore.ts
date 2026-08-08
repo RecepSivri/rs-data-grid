@@ -7,6 +7,7 @@ import {
   applyGlobalSearch,
   applySort,
   initialState,
+  moveItem,
   resolveDataPath,
   returnLastPageList,
   returnPageList,
@@ -55,6 +56,10 @@ export const useDataGridStore = () => {
 
   const updateRow = useCallback((oldRow: any, newRow: any) => {
     setState(s => setDataWrapper(s, s.data.map(r => (r === oldRow ? newRow : r)), s.pager.remotePage, s.pager.remoteDataSize));
+  }, []);
+
+  const moveRow = useCallback((fromRow: any, toRow: any) => {
+    setState(s => setDataWrapper(s, moveItem(s.data, fromRow, toRow), s.pager.remotePage, s.pager.remoteDataSize));
   }, []);
 
   const fetchData = useCallback(
@@ -209,6 +214,7 @@ export const useDataGridStore = () => {
     addRow: addRowFn,
     removeRow,
     updateRow,
+    moveRow,
     fetchData,
     changePageSize,
     setFilter,

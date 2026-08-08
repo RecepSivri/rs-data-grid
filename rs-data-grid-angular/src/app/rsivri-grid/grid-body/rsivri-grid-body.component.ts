@@ -26,14 +26,51 @@ export class RsivriGridBodyComponent implements OnChanges {
   @Input() currentPagingSize: number = 10;
   @Input() showActions: boolean = false;
   @Input() showIndex: boolean = false;
+  @Input() dragDropRows: boolean = false;
   @Input() indexOffset: number = 0;
   @Input() gridMode: 'popup' | 'row' | 'batch' = 'popup';
 
   @Output() rowEdit = new EventEmitter<any>();
   @Output() rowDelete = new EventEmitter<any>();
+  @Output() rowMove = new EventEmitter<{ fromRow: any; toRow: any }>();
   @Output() batchRowSave = new EventEmitter<{ original: any; updated: any }>();
   @Output() batchRowAdd = new EventEmitter<any>();
   @Output() batchCommit = new EventEmitter<{ added: any[]; updated: { original: any; updated: any }[] }>();
+
+  draggedRow: any = null;
+  dragOverRow: any = null;
+
+  onRowDragStart(row: any, event: DragEvent): void {
+    this.draggedRow = row;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onRowDragEnd(): void {
+    this.draggedRow = null;
+    this.dragOverRow = null;
+  }
+
+  onRowDragOver(row: any, event: DragEvent): void {
+    event.preventDefault();
+    this.dragOverRow = row;
+  }
+
+  onRowDragLeave(row: any): void {
+    if (this.dragOverRow === row) {
+      this.dragOverRow = null;
+    }
+  }
+
+  onRowDrop(row: any, event: DragEvent): void {
+    event.preventDefault();
+    if (this.draggedRow) {
+      this.rowMove.emit({ fromRow: this.draggedRow, toRow: row });
+    }
+    this.dragOverRow = null;
+    this.draggedRow = null;
+  }
 
   editingRow: any = null;
   editDraft: Record<string, string> = {};

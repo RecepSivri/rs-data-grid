@@ -11,102 +11,9 @@ import {
   setRerenderHook,
   GridSetting,
 } from './grid-settings';
-import { getActiveTabLabel } from './root-config';
 
 const openPanels = new Set<string>();
 let activeDataTab: 'api' | 'json' = 'api';
-
-const snippets: Record<string, string> = {
-  React: `import { RsDataGrid } from './components/rsDataGrid/rsDataGrid';
-
-function App() {
-  return (
-    <RsDataGrid
-      fetchUrl="https://api.example.com/items"
-      fetchMethod="GET"
-      gridMode="popup"
-      showFilter
-      showSort
-      pagination
-      currentPagingSize={10}
-      onRowAdd={row => console.log('Added row:', row)}
-      onRowEdit={row => console.log('Edit row:', row)}
-      onRowDelete={row => console.log('Deleted row:', row)}
-      onBatchSave={payload => console.log('Batch save:', payload)}
-    />
-  );
-}`,
-  Angular: `<rsivri-grid
-  [fetchUrl]="'https://api.example.com/items'"
-  [fetchMethod]="'GET'"
-  [gridMode]="'popup'"
-  [showFilter]="true"
-  [showSort]="true"
-  [pagination]="true"
-  [currentPagingSize]="10"
-  (rowAdd)="onRowAdd($event)"
-  (rowEdit)="onRowEdit($event)"
-  (rowDelete)="onRowDelete($event)"
-  (batchSave)="onBatchSave($event)"
->
-</rsivri-grid>`,
-  Vue: `<script setup>
-import RsDataGrid from './components/rsDataGrid/RsDataGrid.vue';
-</script>
-
-<template>
-  <RsDataGrid
-    fetch-url="https://api.example.com/items"
-    fetch-method="GET"
-    grid-mode="popup"
-    :show-filter="true"
-    :show-sort="true"
-    :pagination="true"
-    :current-paging-size="10"
-    @row-add="onRowAdd"
-    @row-edit="onRowEdit"
-    @batch-save="onBatchSave"
-  />
-</template>`,
-  'Vanilla JS': `import * as rsDataGridVanilla from 'rs-data-grid-vanilla';
-
-const gridConfig = {
-  fetchUrl: 'https://api.example.com/items',
-  apiMethod: 'GET',
-  gridMode: 'popup',
-  showFilter: true,
-  showSort: true,
-  pagination: true,
-  currentPagingSize: 10,
-};
-
-await rsDataGridVanilla.mount({
-  domElement: document.getElementById('single-spa-application'),
-  gridConfig,
-  onRowAdd: row => console.log('Added row:', row),
-  onRowEdit: row => console.log('Edit row:', row),
-  onBatchSave: payload => console.log('Batch save:', payload),
-});`,
-  jQuery: `import * as rsDataGridJquery from 'rs-data-grid-jquery';
-
-const gridConfig = {
-  fetchUrl: 'https://api.example.com/items',
-  apiMethod: 'GET',
-  gridMode: 'batch',
-  showFilter: true,
-  showSort: true,
-  pagination: true,
-  currentPagingSize: 10,
-};
-
-// jQuery build delegates events on $('#single-spa-application')
-await rsDataGridJquery.mount({
-  domElement: document.getElementById('single-spa-application'),
-  gridConfig,
-  onRowAdd: row => console.log('Added row:', row),
-  onBatchSave: payload => console.log('Batch save:', payload),
-});`,
-};
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -308,28 +215,6 @@ function buildGroupPanel(title: string, settings: GridSetting[]): HTMLDetailsEle
   return panel;
 }
 
-function buildCodeSnippetPanel(): HTMLDetailsElement {
-  const panel = el('details', 'settings-panel');
-  panel.open = openPanels.has('Code Snippet');
-  panel.addEventListener('toggle', () => {
-    if (panel.open) openPanels.add('Code Snippet');
-    else openPanels.delete('Code Snippet');
-  });
-
-  const summary = el('summary', 'panel-title', 'Code Snippet');
-  panel.appendChild(summary);
-
-  const body = el('div', 'settings-panel-body');
-  const label = getActiveTabLabel();
-  const pre = el('pre');
-  const code = el('code', undefined, snippets[label] ?? '');
-  pre.appendChild(code);
-  body.appendChild(pre);
-
-  panel.appendChild(body);
-  return panel;
-}
-
 let containerRef: HTMLElement | null = null;
 
 function rerender(): void {
@@ -341,7 +226,6 @@ function rerender(): void {
   for (const group of settingsGroups) {
     accordion.appendChild(buildGroupPanel(group.title, group.settings));
   }
-  accordion.appendChild(buildCodeSnippetPanel());
   containerRef.appendChild(accordion);
 }
 

@@ -40,6 +40,44 @@
   min-width: 50px;
 }
 
+.drag-header-cell{
+  flex: 0 0 30px;
+  box-sizing: border-box;
+  align-self: stretch;
+  justify-content: center;
+}
+
+.content-style.drag-header-cell,
+.filter-cell.drag-header-cell{
+  min-width: 30px;
+}
+
+.drag-handle{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  color: var(--rg-icon-muted, #aaaaaa);
+  background: transparent;
+  border: none;
+  cursor: grab;
+}
+
+.drag-handle:hover{
+  color: var(--rg-text-muted, #777777);
+}
+
+.drag-handle:active{
+  cursor: grabbing;
+}
+
+.column-drag-over{
+  background: var(--rg-bg-hover, #f5f5f5);
+}
+
 .sort-toggle{
   flex: 0 0 auto;
   display: inline-flex;

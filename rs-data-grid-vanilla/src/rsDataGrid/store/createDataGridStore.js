@@ -18,6 +18,7 @@ import {
   applyFilters,
   applyGlobalSearch,
   applySort,
+  moveItem,
   returnPageList,
   returnPageStateRelatedPageNum,
   returnLastPageList,
@@ -75,6 +76,11 @@ export function createDataGridStore() {
       state.pager.remotePage,
       state.pager.remoteDataSize
     );
+    notify();
+  };
+
+  const moveRow = (fromRow, toRow) => {
+    applyDataWrapper(moveItem(state.data, fromRow, toRow), state.pager.remotePage, state.pager.remoteDataSize);
     notify();
   };
 
@@ -243,6 +249,7 @@ export function createDataGridStore() {
     addRow,
     removeRow,
     updateRow,
+    moveRow,
     fetchData,
     changePageSize,
     setFilter,

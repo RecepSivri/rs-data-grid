@@ -28,13 +28,50 @@ export class RsivriGridHeaderComponent {
   @Input() showSort: boolean = false;
   @Input() showActions: boolean = false;
   @Input() showIndex: boolean = false;
+  @Input() dragDropRows: boolean = false;
+  @Input() dragDropColumns: boolean = false;
   @Input() sort: SortState = { field: null, direction: null };
 
   @Output() filterChange = new EventEmitter<FilterChangeEvent>();
   @Output() sortToggle = new EventEmitter<string>();
+  @Output() columnMove = new EventEmitter<{ fromField: string; toField: string }>();
 
   openDataField: string | null = null;
   selectedValues: Record<string, string[]> = {};
+  draggedField: string | null = null;
+  dragOverField: string | null = null;
+
+  onColumnDragStart(dataField: string, event: DragEvent): void {
+    this.draggedField = dataField;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onColumnDragEnd(): void {
+    this.draggedField = null;
+    this.dragOverField = null;
+  }
+
+  onColumnDragOver(dataField: string, event: DragEvent): void {
+    event.preventDefault();
+    this.dragOverField = dataField;
+  }
+
+  onColumnDragLeave(dataField: string): void {
+    if (this.dragOverField === dataField) {
+      this.dragOverField = null;
+    }
+  }
+
+  onColumnDrop(dataField: string, event: DragEvent): void {
+    event.preventDefault();
+    if (this.draggedField) {
+      this.columnMove.emit({ fromField: this.draggedField, toField: dataField });
+    }
+    this.dragOverField = null;
+    this.draggedField = null;
+  }
 
   getOptions(dataField: string): string[] {
     const otherFilters = { ...this.selectedValues };

@@ -39,6 +39,8 @@ function toGridProps(props) {
     borderRadiusTop: gridConfig.borderRadiusTop,
     borderRadiusBottom: gridConfig.borderRadiusBottom,
     diagonalRow: gridConfig.diagonalRow,
+    dragDropColumns: gridConfig.dragDropColumns,
+    dragDropRows: gridConfig.dragDropRows,
     pagination: gridConfig.pagination,
     pagingSizes: gridConfig.pagingSizes,
     currentPagingSize: gridConfig.currentPagingSize,

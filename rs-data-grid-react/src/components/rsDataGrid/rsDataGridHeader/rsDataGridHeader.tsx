@@ -15,13 +15,25 @@ export interface RsDataGridHeaderProps {
   showSort: boolean;
   showActions: boolean;
   showIndex: boolean;
+  dragDropRows: boolean;
+  dragDropColumns: boolean;
   sort: SortState;
   onFilterChange: (event: FilterChangeEvent) => void;
   onSortToggle: (dataField: string) => void;
+  onColumnMove: (fromField: string, toField: string) => void;
 }
 
 const titleCase = (value: string): string =>
   value.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
+
+const DragHandleIcon = () => (
+  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+    <circle cx="8" cy="7" r="1.8" />
+    <circle cx="16" cy="7" r="1.8" />
+    <circle cx="8" cy="17" r="1.8" />
+    <circle cx="16" cy="17" r="1.8" />
+  </svg>
+);
 
 export const RsDataGridHeader = ({
   columns,
@@ -34,12 +46,17 @@ export const RsDataGridHeader = ({
   showSort,
   showActions,
   showIndex,
+  dragDropRows,
+  dragDropColumns,
   sort,
   onFilterChange,
   onSortToggle,
+  onColumnMove,
 }: RsDataGridHeaderProps) => {
   const [openDataField, setOpenDataField] = useState<string | null>(null);
   const [selectedValues, setSelectedValues] = useState<Record<string, string[]>>({});
+  const [draggedField, setDraggedField] = useState<string | null>(null);
+  const [dragOverField, setDragOverField] = useState<string | null>(null);
 
   useEffect(() => {
     const closeDropdown = () => setOpenDataField(null);
@@ -102,15 +119,55 @@ export const RsDataGridHeader = ({
           (borderRadiusTop ? ' border-area-small' : '')
         }
       >
+        {dragDropRows && <div className={'drag-header-cell content-style row-layout-center-center' + (headerColumnLines ? ' border-right' : '')}></div>}
         {showIndex && <div className={'index-header-cell content-style row-layout-center-center' + (headerColumnLines ? ' border-right' : '')}>#</div>}
         {columns.map((column, i) => (
           <div
             key={column.dataField}
             className={
               'full-row content-style row-layout-center-center' +
-              (headerColumnLines && (i < columns.length - 1 || showActions) ? ' border-right' : '')
+              (headerColumnLines && (i < columns.length - 1 || showActions) ? ' border-right' : '') +
+              (dragDropColumns && dragOverField === column.dataField ? ' column-drag-over' : '')
+            }
+            onDragOver={
+              dragDropColumns
+                ? event => {
+                    event.preventDefault();
+                    setDragOverField(column.dataField);
+                  }
+                : undefined
+            }
+            onDragLeave={dragDropColumns ? () => setDragOverField(field => (field === column.dataField ? null : field)) : undefined}
+            onDrop={
+              dragDropColumns
+                ? event => {
+                    event.preventDefault();
+                    if (draggedField) {
+                      onColumnMove(draggedField, column.dataField);
+                    }
+                    setDragOverField(null);
+                    setDraggedField(null);
+                  }
+                : undefined
             }
           >
+            {dragDropColumns && (
+              <span
+                className="drag-handle"
+                draggable
+                onDragStart={event => {
+                  setDraggedField(column.dataField);
+                  event.dataTransfer.effectAllowed = 'move';
+                }}
+                onDragEnd={() => {
+                  setDraggedField(null);
+                  setDragOverField(null);
+                }}
+                aria-label={'Reorder ' + column.caption}
+              >
+                <DragHandleIcon />
+              </span>
+            )}
             <span className="header-caption">{titleCase(column.caption)}</span>
             {showSort && (
               <button
@@ -130,6 +187,7 @@ export const RsDataGridHeader = ({
       </div>
       {showFilter && columns.length > 0 && (
         <div className={'full-row filter-row row-layout-space-between-center' + (tableBorder ? ' filter-row-border' : '')}>
+          {dragDropRows && <div className={'drag-header-cell filter-cell row-layout-center-center' + (bodyColumnLines ? ' border-right' : '')}></div>}
           {showIndex && <div className={'index-header-cell filter-cell row-layout-center-center' + (bodyColumnLines ? ' border-right' : '')}></div>}
           {columns.map((column, i) => (
             <div

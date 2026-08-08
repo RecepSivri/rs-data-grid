@@ -1,21 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// root-config.ts has heavy import-time side effects (single-spa mounting,
-// script injection, hashchange listeners) that are irrelevant to sidebar
-// rendering and are covered separately in root-config.test.ts. Mock it here
-// so sidebar.ts's `getActiveTabLabel` import is fully test-controlled.
-vi.mock('./root-config', () => ({
-  getActiveTabLabel: vi.fn(() => 'React'),
-}));
-
 let sidebarMod: typeof import('./sidebar');
 let gridSettingsMod: typeof import('./grid-settings');
-let rootConfigMod: typeof import('./root-config');
 
 async function freshImports() {
   vi.resetModules();
   gridSettingsMod = await import('./grid-settings');
-  rootConfigMod = await import('./root-config');
   sidebarMod = await import('./sidebar');
 }
 
@@ -375,40 +365,6 @@ describe('radio controls (Grid Mode)', () => {
     sidebarMod.renderSidebar(container);
     const panel = detailsFor(container, 'Grid Mode');
     expect(panel.querySelector('summary')?.textContent).toBe(`Grid Mode (${label})`);
-  });
-});
-
-describe('Code Snippet panel', () => {
-  it('shows the snippet matching the active tab label', () => {
-    vi.mocked(rootConfigMod.getActiveTabLabel).mockReturnValue('Angular');
-    const container = makeContainer();
-    sidebarMod.renderSidebar(container);
-    const panel = detailsFor(container, 'Code Snippet');
-    const code = panel.querySelector('pre > code');
-    expect(code?.textContent).toContain('rsivri-grid');
-  });
-
-  it('renders an empty snippet when the active tab label has no matching snippet', () => {
-    vi.mocked(rootConfigMod.getActiveTabLabel).mockReturnValue('Unknown Tab');
-    const container = makeContainer();
-    sidebarMod.renderSidebar(container);
-    const panel = detailsFor(container, 'Code Snippet');
-    const code = panel.querySelector('pre > code');
-    expect(code?.textContent).toBe('');
-  });
-
-  it('updates the snippet after a hashchange-triggered rerender', () => {
-    vi.mocked(rootConfigMod.getActiveTabLabel).mockReturnValue('React');
-    const container = makeContainer();
-    sidebarMod.renderSidebar(container);
-    let panel = detailsFor(container, 'Code Snippet');
-    expect(panel.querySelector('pre > code')?.textContent).toContain('RsDataGrid');
-
-    vi.mocked(rootConfigMod.getActiveTabLabel).mockReturnValue('Vue');
-    window.dispatchEvent(new Event('hashchange'));
-
-    panel = detailsFor(container, 'Code Snippet');
-    expect(panel.querySelector('pre > code')?.textContent).toContain('RsDataGrid.vue');
   });
 });
 

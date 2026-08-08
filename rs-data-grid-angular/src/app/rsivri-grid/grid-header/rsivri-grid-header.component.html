@@ -1,12 +1,28 @@
 <div class="full-row row-layout-space-between-center border-area-small'"
   [class.border-header]="tableBorder"
   [class.border-area-small]="borderRadiusTop">
+  @if (dragDropRows) {
+    <div class="drag-header-cell content-style row-layout-center-center" [class.border-right]="headerColumnLines"></div>
+  }
   @if (showIndex) {
     <div class="index-header-cell content-style row-layout-center-center" [class.border-right]="headerColumnLines">#</div>
   }
   @for (column of columns; track column.dataField; let i = $index) {
     <div class="full-row content-style row-layout-center-center"
-      [class.border-right]="headerColumnLines && (i < columns.length - 1 || showActions)">
+      [class.border-right]="headerColumnLines && (i < columns.length - 1 || showActions)"
+      [class.column-drag-over]="dragDropColumns && dragOverField === column.dataField"
+      (dragover)="dragDropColumns && onColumnDragOver(column.dataField, $event)"
+      (dragleave)="dragDropColumns && onColumnDragLeave(column.dataField)"
+      (drop)="dragDropColumns && onColumnDrop(column.dataField, $event)">
+      @if (dragDropColumns) {
+        <span class="drag-handle" draggable="true" [attr.aria-label]="'Reorder ' + column.caption"
+          (dragstart)="onColumnDragStart(column.dataField, $event)"
+          (dragend)="onColumnDragEnd()">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+            <circle cx="8" cy="7" r="1.8"/><circle cx="16" cy="7" r="1.8"/><circle cx="8" cy="17" r="1.8"/><circle cx="16" cy="17" r="1.8"/>
+          </svg>
+        </span>
+      }
       <span class="header-caption">{{ column.caption | titlecase }}</span>
       @if (showSort) {
         <button type="button" class="sort-toggle"
@@ -29,6 +45,9 @@
 @if (showFilter && columns.length > 0) {
   <div class="full-row filter-row row-layout-space-between-center"
     [class.filter-row-border]="tableBorder">
+    @if (dragDropRows) {
+      <div style="height: 35px;" class="drag-header-cell filter-cell row-layout-center-center" [class.border-right]="bodyColumnLines"></div>
+    }
     @if (showIndex) {
       <div style="height: 35px;" class="index-header-cell filter-cell row-layout-center-center" [class.border-right]="bodyColumnLines"></div>
     }

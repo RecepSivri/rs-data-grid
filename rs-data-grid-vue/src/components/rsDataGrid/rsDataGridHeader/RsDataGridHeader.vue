@@ -16,18 +16,49 @@ const props = defineProps<{
   showSort: boolean;
   showActions: boolean;
   showIndex: boolean;
+  dragDropRows: boolean;
+  dragDropColumns: boolean;
   sort: SortState;
 }>();
 
 const emit = defineEmits<{
   filterChange: [event: FilterChangeEvent];
   sortToggle: [dataField: string];
+  columnMove: [fromField: string, toField: string];
 }>();
 
 const titleCase = (value: string): string => value.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
 
 const openDataField = ref<string | null>(null);
 const selectedValues = reactive<Record<string, string[]>>({});
+const draggedField = ref<string | null>(null);
+const dragOverField = ref<string | null>(null);
+
+const onColumnDragStart = (dataField: string, event: DragEvent) => {
+  draggedField.value = dataField;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+  }
+};
+
+const onColumnDragEnd = () => {
+  draggedField.value = null;
+  dragOverField.value = null;
+};
+
+const onColumnDragOver = (dataField: string, event: DragEvent) => {
+  event.preventDefault();
+  dragOverField.value = dataField;
+};
+
+const onColumnDrop = (dataField: string, event: DragEvent) => {
+  event.preventDefault();
+  if (draggedField.value) {
+    emit('columnMove', draggedField.value, dataField);
+  }
+  dragOverField.value = null;
+  draggedField.value = null;
+};
 
 const closeDropdown = () => {
   openDataField.value = null;
@@ -96,6 +127,11 @@ const clearFilter = (dataField: string, event: MouseEvent) => {
       :class="{ 'border-header': tableBorder, 'border-area-small': borderRadiusTop }"
     >
       <div
+        v-if="dragDropRows"
+        class="drag-header-cell content-style row-layout-center-center"
+        :class="{ 'border-right': headerColumnLines }"
+      ></div>
+      <div
         v-if="showIndex"
         class="index-header-cell content-style row-layout-center-center"
         :class="{ 'border-right': headerColumnLines }"
@@ -104,8 +140,23 @@ const clearFilter = (dataField: string, event: MouseEvent) => {
         v-for="(column, i) in columns"
         :key="column.dataField"
         class="full-row content-style row-layout-center-center"
-        :class="{ 'border-right': headerColumnLines && (i < columns.length - 1 || showActions) }"
+        :class="{ 'border-right': headerColumnLines && (i < columns.length - 1 || showActions), 'column-drag-over': dragDropColumns && dragOverField === column.dataField }"
+        @dragover="dragDropColumns ? onColumnDragOver(column.dataField, $event) : undefined"
+        @dragleave="dragDropColumns ? (dragOverField = dragOverField === column.dataField ? null : dragOverField) : undefined"
+        @drop="dragDropColumns ? onColumnDrop(column.dataField, $event) : undefined"
       >
+        <span
+          v-if="dragDropColumns"
+          class="drag-handle"
+          draggable="true"
+          :aria-label="'Reorder ' + column.caption"
+          @dragstart="onColumnDragStart(column.dataField, $event)"
+          @dragend="onColumnDragEnd"
+        >
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+            <circle cx="8" cy="7" r="1.8" /><circle cx="16" cy="7" r="1.8" /><circle cx="8" cy="17" r="1.8" /><circle cx="16" cy="17" r="1.8" />
+          </svg>
+        </span>
         <span class="header-caption">{{ titleCase(column.caption) }}</span>
         <button
           v-if="showSort"
@@ -127,6 +178,11 @@ const clearFilter = (dataField: string, event: MouseEvent) => {
       class="full-row filter-row row-layout-space-between-center"
       :class="{ 'filter-row-border': tableBorder }"
     >
+      <div
+        v-if="dragDropRows"
+        class="drag-header-cell filter-cell row-layout-center-center"
+        :class="{ 'border-right': bodyColumnLines }"
+      ></div>
       <div
         v-if="showIndex"
         class="index-header-cell filter-cell row-layout-center-center"

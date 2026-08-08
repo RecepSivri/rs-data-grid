@@ -28,6 +28,8 @@ const props = withDefaults(
     borderRadiusTop?: boolean;
     borderRadiusBottom?: boolean;
     diagonalRow?: boolean;
+    dragDropRows?: boolean;
+    dragDropColumns?: boolean;
     pagination?: boolean;
     showFilter?: boolean;
     showSort?: boolean;
@@ -61,6 +63,8 @@ const props = withDefaults(
     borderRadiusTop: false,
     borderRadiusBottom: false,
     diagonalRow: false,
+    dragDropRows: false,
+    dragDropColumns: false,
     pagination: false,
     showFilter: false,
     showSort: false,
@@ -127,13 +131,60 @@ const resolveConfirm = (result: boolean) => {
   confirmState.open = false;
 };
 
-const effectiveColumns = computed<IColumn[]>(() => {
+const baseColumns = computed<IColumn[]>(() => {
   if (props.columns.length > 0) {
     return props.columns;
   }
   const result = Object.keys(Object.assign({}, ...store.rawData));
   return result.map(item => ({ caption: item, dataField: item }));
 });
+
+// Drag-reordered column order persists across data mutations (which
+// recompute baseColumns from scratch) by keeping only the dataField order,
+// not the columns themselves -- fields no longer present are dropped, new
+// fields land at the end.
+const columnOrder = ref<string[]>([]);
+
+const effectiveColumns = computed<IColumn[]>(() => {
+  if (columnOrder.value.length === 0) {
+    return baseColumns.value;
+  }
+  const byField = new Map(baseColumns.value.map(column => [column.dataField, column]));
+  const ordered: IColumn[] = [];
+  for (const field of columnOrder.value) {
+    const column = byField.get(field);
+    if (column) {
+      ordered.push(column);
+      byField.delete(field);
+    }
+  }
+  for (const column of baseColumns.value) {
+    if (byField.has(column.dataField)) {
+      ordered.push(column);
+    }
+  }
+  return ordered;
+});
+
+const onColumnMove = (fromField: string, toField: string) => {
+  const order = effectiveColumns.value.map(column => column.dataField);
+  const fromIndex = order.indexOf(fromField);
+  const toIndexOriginal = order.indexOf(toField);
+  if (fromIndex === -1 || toIndexOriginal === -1 || fromField === toField) {
+    return;
+  }
+  order.splice(fromIndex, 1);
+  let insertAt = order.indexOf(toField);
+  if (fromIndex < toIndexOriginal) {
+    insertAt += 1;
+  }
+  order.splice(insertAt, 0, fromField);
+  columnOrder.value = order;
+};
+
+const onRowMove = (fromRow: any, toRow: any) => {
+  store.moveRow(fromRow, toRow);
+};
 
 const buildRequestHeaders = (): Record<string, string> | undefined => {
   const headers: Record<string, string> = { ...(props.fetchHeaders ?? {}) };
@@ -348,9 +399,12 @@ const bodyRows = computed(() => getDisplayedRows());
           :show-sort="showSort"
           :show-actions="showActions"
           :show-index="showIndex"
+          :drag-drop-rows="dragDropRows"
+          :drag-drop-columns="dragDropColumns"
           :sort="store.sort"
           @filter-change="onFilterChange"
           @sort-toggle="onSortToggle"
+          @column-move="onColumnMove"
         />
         <RsDataGridTable
           ref="tableRef"
@@ -363,11 +417,13 @@ const bodyRows = computed(() => getDisplayedRows());
           :diagonal-row="diagonalRow"
           :show-actions="showActions"
           :show-index="showIndex"
+          :drag-drop-rows="dragDropRows"
           :index-offset="!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0"
           :grid-mode="gridMode"
           :on-request-confirm="requestConfirm"
           @row-edit="onRowEditRequest"
           @row-delete="onRowDeleteRequest"
+          @row-move="onRowMove"
           @batch-row-save="onBatchRowSave"
           @batch-row-add="onBatchRowAdd"
           @batch-commit="onBatchCommit"

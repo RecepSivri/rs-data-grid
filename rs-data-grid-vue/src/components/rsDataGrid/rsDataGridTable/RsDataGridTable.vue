@@ -12,6 +12,7 @@ const props = defineProps<{
   diagonalRow: boolean;
   showActions: boolean;
   showIndex: boolean;
+  dragDropRows: boolean;
   indexOffset: number;
   gridMode: GridMode;
   onRequestConfirm: (title: string, message: string) => Promise<boolean>;
@@ -20,10 +21,40 @@ const props = defineProps<{
 const emit = defineEmits<{
   rowEdit: [row: any];
   rowDelete: [row: any];
+  rowMove: [fromRow: any, toRow: any];
   batchRowSave: [payload: { original: any; updated: any }];
   batchRowAdd: [row: any];
   batchCommit: [payload: { added: any[]; updated: { original: any; updated: any }[] }];
 }>();
+
+const draggedRow = ref<any>(null);
+const dragOverRow = ref<any>(null);
+
+const onRowDragStart = (row: any, event: DragEvent) => {
+  draggedRow.value = row;
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+  }
+};
+
+const onRowDragEnd = () => {
+  draggedRow.value = null;
+  dragOverRow.value = null;
+};
+
+const onRowDragOver = (row: any, event: DragEvent) => {
+  event.preventDefault();
+  dragOverRow.value = row;
+};
+
+const onRowDrop = (row: any, event: DragEvent) => {
+  event.preventDefault();
+  if (draggedRow.value) {
+    emit('rowMove', draggedRow.value, row);
+  }
+  dragOverRow.value = null;
+  draggedRow.value = null;
+};
 
 const editingRow = ref<any>(null);
 const editDraft = reactive<Record<string, string>>({});
@@ -96,11 +127,13 @@ const onCancelAddClick = () => {
 
 const cellBorderRight = (j: number) => props.bodyColumnLines && (j < props.columns.length - 1 || props.showActions);
 
-const rowClass = (i: number) => ({
+const rowClass = (item: any, i: number) => ({
   'row-style': props.tableBorder,
   'row-style-bottom': (props.tableBorder && i === props.data.length - 1) || (props.bodyRowLines && i !== props.data.length - 1),
   'border-area-small': props.borderRadiusBottom && i === props.data.length - 1,
   'row-background': i % 2 === 1 && props.diagonalRow,
+  'row-dragging': draggedRow.value === item,
+  'row-drag-over': props.dragDropRows && dragOverRow.value === item,
 });
 
 // Batch mode: every cell is directly editable; changes accumulate locally until "Save batch" is clicked.
@@ -161,6 +194,7 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
   <div class="column-layout full-row">
     <div v-if="isAddingRow" class="full-row" :class="{ 'row-style': tableBorder, 'row-style-bottom': true }">
       <div class="full-row row-layout">
+        <div v-if="dragDropRows" class="drag-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }"></div>
         <div v-if="showIndex" class="index-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }"></div>
         <div
           v-for="(column, j) in columns"
@@ -187,8 +221,29 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
         </div>
       </div>
     </div>
-    <div v-for="(item, i) in data" :key="i" class="full-row" :class="rowClass(i)">
+    <div
+      v-for="(item, i) in data"
+      :key="i"
+      class="full-row"
+      :class="rowClass(item, i)"
+      @dragover="dragDropRows ? onRowDragOver(item, $event) : undefined"
+      @dragleave="dragDropRows ? (dragOverRow = dragOverRow === item ? null : dragOverRow) : undefined"
+      @drop="dragDropRows ? onRowDrop(item, $event) : undefined"
+    >
       <div class="full-row row-layout">
+        <div v-if="dragDropRows" class="drag-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }">
+          <span
+            class="drag-handle"
+            draggable="true"
+            aria-label="Reorder row"
+            @dragstart="onRowDragStart(item, $event)"
+            @dragend="onRowDragEnd"
+          >
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
+              <circle cx="8" cy="7" r="1.8" /><circle cx="16" cy="7" r="1.8" /><circle cx="8" cy="17" r="1.8" /><circle cx="16" cy="17" r="1.8" />
+            </svg>
+          </span>
+        </div>
         <div v-if="showIndex" class="index-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }">{{ indexOffset + i + 1 }}</div>
         <template v-if="gridMode === 'batch'">
           <div
@@ -272,6 +327,7 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
         :class="{ 'row-style': tableBorder, 'row-style-bottom': true }"
       >
         <div class="full-row row-layout">
+          <div v-if="dragDropRows" class="drag-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }"></div>
           <div v-if="showIndex" class="index-cell section-style row-layout-center-center" :class="{ 'border-right': bodyColumnLines }"></div>
           <div
             v-for="(column, j) in columns"
