@@ -1,0 +1,50 @@
+<h2 mat-dialog-title>Grid Settings</h2>
+<mat-dialog-content>
+  <div class="grid-settings-section">
+    <div class="grid-settings-hint">Pick which columns to show. Nothing selected shows every column.</div>
+    <mat-form-field appearance="outline" class="grid-settings-select">
+      <mat-label>Columns</mat-label>
+      <mat-select multiple [value]="selected" (selectionChange)="onSelectChange($event.value)">
+        <mat-select-trigger>
+          <div class="grid-settings-chip-row">
+            @for (field of selected; track field) {
+              <span class="grid-settings-trigger-chip">{{ captionFor(field) }}</span>
+            }
+          </div>
+        </mat-select-trigger>
+        @for (column of data.columns; track column.dataField) {
+          <mat-option [value]="column.dataField">{{ column.caption }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+  @if (selected.length > 0) {
+    <div class="grid-settings-section">
+      <div class="grid-settings-heading">Visible order</div>
+      <div class="grid-settings-hint">Drag to reorder.</div>
+      <mat-chip-set class="grid-settings-chip-row">
+        @for (field of selected; track field) {
+          <mat-chip
+            class="grid-settings-drag-chip"
+            [class.grid-settings-drag-chip-over]="dragOverField === field"
+            [draggable]="true"
+            (dragstart)="onDragStart(field, $event)"
+            (dragend)="onDragEnd()"
+            (dragover)="onDragOver(field, $event)"
+            (dragleave)="onDragLeave(field)"
+            (drop)="onDrop(field, $event)"
+          >
+            {{ captionFor(field) }}
+            <button type="button" class="grid-settings-chip-remove" aria-label="Remove" (click)="removeColumn(field)">&times;</button>
+          </mat-chip>
+        }
+      </mat-chip-set>
+    </div>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  @if (selected.length > 0) {
+    <button mat-button type="button" (click)="clearAll()">Clear</button>
+  }
+  <button mat-raised-button color="primary" type="button" (click)="onClose()">Close</button>
+</mat-dialog-actions>

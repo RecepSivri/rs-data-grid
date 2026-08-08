@@ -209,7 +209,16 @@ export const RsDataGridHeader = ({
                   onClick={e => toggleDropdown(column.dataField, e)}
                 >
                   <span className="filter-toggle-label">{titleCase(column.caption)}</span>
-                  {selectedCount(column.dataField) > 0 && <span className="filter-count">{selectedCount(column.dataField)}</span>}
+                  {selectedCount(column.dataField) > 0 && (
+                    <span
+                      className="filter-count"
+                      title="Clear filter"
+                      aria-label={'Clear filter for ' + column.caption}
+                      onClick={e => clearFilter(column.dataField, e)}
+                    >
+                      {selectedCount(column.dataField)}
+                    </span>
+                  )}
                   <span className={'filter-caret' + (isOpen(column.dataField) ? ' filter-caret-open' : '')}>&#9662;</span>
                 </button>
                 {isOpen(column.dataField) && (

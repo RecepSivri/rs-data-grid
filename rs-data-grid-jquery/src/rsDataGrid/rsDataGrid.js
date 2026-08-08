@@ -8,9 +8,10 @@ import { createTable } from './rsDataGridTable/rsDataGridTable.js';
 import { createPager } from './rsDataGridPager/rsDataGridPager.js';
 import { requestConfirm } from './dialogs/confirmDialog.js';
 import { requestEditRow } from './dialogs/editRowDialog.js';
+import { openGridSettings } from './dialogs/gridSettingsDialog.js';
 import { exportExcel, exportPdf } from './exporters.js';
 import { titleCase } from './titleCase.js';
-import { ADD_ICON, BATCH_SAVE_ICON, EXPORT_EXCEL_ICON, EXPORT_PDF_ICON } from './icons.js';
+import { ADD_ICON, BATCH_SAVE_ICON, EXPORT_EXCEL_ICON, EXPORT_PDF_ICON, GRID_SETTINGS_ICON } from './icons.js';
 import './rsDataGrid.css';
 import './global.css';
 
@@ -128,6 +129,35 @@ export function createGrid() {
     return ordered;
   }
 
+  // Grid Settings: which columns to show and in what order, separate from
+  // (and applied on top of) the drag-reorder-driven columnOrder above. Empty
+  // selection means "show everything" -- matches React/Vue/Angular exactly.
+  let selectedColumnFields = [];
+
+  function visibleColumnsFor(allColumns) {
+    if (selectedColumnFields.length === 0) {
+      return allColumns;
+    }
+    const byField = new Map(allColumns.map(column => [column.dataField, column]));
+    const ordered = [];
+    for (const field of selectedColumnFields) {
+      const column = byField.get(field);
+      if (column) {
+        ordered.push(column);
+      }
+    }
+    return ordered;
+  }
+
+  function onGridSettingsClick(props, allColumns) {
+    openGridSettings({
+      columns: allColumns,
+      selected: selectedColumnFields,
+      theme: props.theme,
+      onChange: next => { selectedColumnFields = next; renderNow(); },
+    });
+  }
+
   function onColumnMove(fromField, toField) {
     const order = effectiveColumns(lastProps).map(column => column.dataField);
     const fromIndex = order.indexOf(fromField);
@@ -210,9 +240,9 @@ export function createGrid() {
     lastProps.onBatchSave?.(payload);
   }
 
-  function buildToolbar(props, columns) {
-    const { showSearch, exportExcel: showExportExcel, exportPDF: showExportPdf, showAdd, gridMode } = props;
-    if (!(showSearch || showExportExcel || showExportPdf || showAdd || gridMode === 'batch')) {
+  function buildToolbar(props, columns, allColumns) {
+    const { showSearch, exportExcel: showExportExcel, exportPDF: showExportPdf, showAdd, showGridSettings, gridMode } = props;
+    if (!(showSearch || showExportExcel || showExportPdf || showAdd || showGridSettings || gridMode === 'batch')) {
       return null;
     }
     const children = [];
@@ -222,7 +252,18 @@ export function createGrid() {
           className: 'export-button',
           attrs: { type: 'button', title: 'Add row', 'aria-label': 'Add row' },
           html: ADD_ICON,
-          on: { click: () => onAddRowClick(props, columns) },
+          on: { click: () => onAddRowClick(props, allColumns) },
+        })
+      );
+    }
+    if (showGridSettings) {
+      children.push(
+        el('button', {
+          className: 'export-button grid-settings-button',
+          attrs: { type: 'button', title: 'Grid settings', 'aria-label': 'Grid settings' },
+          html: GRID_SETTINGS_ICON,
+          children: [selectedColumnFields.length > 0 ? el('span', { className: 'grid-settings-badge-dot' }) : null],
+          on: { click: () => onGridSettingsClick(props, allColumns) },
         })
       );
     }
@@ -288,15 +329,15 @@ export function createGrid() {
             children: [el('span', { className: 'grid-state-icon', html: '&#9888;' }), el('span', { text: snapshot.error.message || 'Something went wrong while loading data.' })],
           });
     }
-    if ((snapshot.data ?? []).length === 0) {
+    if ((snapshot.rawData ?? []).length === 0) {
       return props.emptyTemplate ?? el('div', { className: 'grid-state grid-state-empty', text: 'No data to display.' });
     }
 
-    const columns = effectiveColumns(props);
+    const allColumns = effectiveColumns(props);
+    const columns = visibleColumnsFor(allColumns);
     const bodyRows = getDisplayedRows(props);
-    const toolbar = buildToolbar(props, columns);
+    const toolbar = buildToolbar(props, columns, allColumns);
     const headerContainer = el('div');
-    const tableContainer = el('div');
     const pagerContainer = el('div');
 
     header.render(headerContainer, {
@@ -324,28 +365,35 @@ export function createGrid() {
       delegationRoot: containerEl,
     });
 
-    table.render(tableContainer, {
-      columns,
-      data: bodyRows,
-      bodyRowLines: props.bodyRowLines,
-      bodyColumnLines: props.bodyColumnLines,
-      tableBorder: props.tableBorder,
-      borderRadiusBottom: props.borderRadiusBottom,
-      diagonalRow: props.diagonalRow,
-      showActions: props.showActions,
-      showIndex: props.showIndex,
-      dragDropRows: props.dragDropRows,
-      indexOffset: !props.remoteModeParams && props.pagination ? snapshot.pageNumber * snapshot.pageSize : 0,
-      gridMode: props.gridMode,
-      onRowEdit: onRowEditRequest,
-      onRowDelete: onRowDeleteRequest,
-      onRowMove,
-      onBatchRowSave,
-      onBatchRowAdd,
-      onBatchCommit,
-      onRequestConfirm: (title, message) => requestConfirm(title, message, props.theme),
-      delegationRoot: containerEl,
-    });
+    let bodyEl;
+    if ((snapshot.data ?? []).length === 0) {
+      bodyEl = el('div', { className: 'grid-state grid-state-empty grid-state-empty-inline', text: 'No matching rows.' });
+    } else {
+      const tableContainer = el('div');
+      table.render(tableContainer, {
+        columns,
+        data: bodyRows,
+        bodyRowLines: props.bodyRowLines,
+        bodyColumnLines: props.bodyColumnLines,
+        tableBorder: props.tableBorder,
+        borderRadiusBottom: props.borderRadiusBottom,
+        diagonalRow: props.diagonalRow,
+        showActions: props.showActions,
+        showIndex: props.showIndex,
+        dragDropRows: props.dragDropRows,
+        indexOffset: !props.remoteModeParams && props.pagination ? snapshot.pageNumber * snapshot.pageSize : 0,
+        gridMode: props.gridMode,
+        onRowEdit: onRowEditRequest,
+        onRowDelete: onRowDeleteRequest,
+        onRowMove,
+        onBatchRowSave,
+        onBatchRowAdd,
+        onBatchCommit,
+        onRequestConfirm: (title, message) => requestConfirm(title, message, props.theme),
+        delegationRoot: containerEl,
+      });
+      bodyEl = tableContainer;
+    }
 
     pager.render(pagerContainer, {
       pagination: props.pagination,
@@ -355,7 +403,7 @@ export function createGrid() {
       store,
     });
 
-    const scrollContainer = el('div', { className: 'grid-scroll-x', children: [headerContainer, tableContainer] });
+    const scrollContainer = el('div', { className: 'grid-scroll-x', children: [headerContainer, bodyEl] });
     return el('div', { children: [toolbar, scrollContainer, pagerContainer] });
   }
 
@@ -448,6 +496,7 @@ export function createGrid() {
       showSearch: false,
       showActions: false,
       showAdd: false,
+      showGridSettings: true,
       showIndex: false,
       gridMode: 'popup',
       exportExcel: false,

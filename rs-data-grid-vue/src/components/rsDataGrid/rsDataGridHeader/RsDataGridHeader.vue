@@ -203,7 +203,13 @@ const clearFilter = (dataField: string, event: MouseEvent) => {
             @click="toggleDropdown(column.dataField, $event)"
           >
             <span class="filter-toggle-label">{{ titleCase(column.caption) }}</span>
-            <span v-if="selectedCount(column.dataField) > 0" class="filter-count">{{ selectedCount(column.dataField) }}</span>
+            <span
+              v-if="selectedCount(column.dataField) > 0"
+              class="filter-count"
+              title="Clear filter"
+              :aria-label="'Clear filter for ' + column.caption"
+              @click="clearFilter(column.dataField, $event)"
+            >{{ selectedCount(column.dataField) }}</span>
             <span class="filter-caret" :class="{ 'filter-caret-open': isOpen(column.dataField) }">&#9662;</span>
           </button>
           <div v-if="isOpen(column.dataField)" class="filter-panel">

@@ -75,6 +75,12 @@
   color: var(--rg-text-muted, #777777);
 }
 
+.grid-state-empty-inline{
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .grid-state-icon{
   font-size: 16px;
   line-height: 1;

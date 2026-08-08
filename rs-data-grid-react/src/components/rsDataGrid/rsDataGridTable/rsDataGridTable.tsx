@@ -356,7 +356,11 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
               ) : (
                 <>
                   {columns.map((column, j) => (
-                    <div key={column.dataField} className={cellClass(j)}>
+                    <div
+                      key={column.dataField}
+                      className={cellClass(j)}
+                      title={isImageUrl(item[column.dataField]) ? undefined : String(item[column.dataField] ?? '')}
+                    >
                       {isImageUrl(item[column.dataField]) ? (
                         <img className="cell-thumbnail" src={item[column.dataField]} alt="" />
                       ) : (

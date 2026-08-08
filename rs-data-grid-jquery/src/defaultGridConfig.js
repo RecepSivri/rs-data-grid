@@ -27,6 +27,7 @@ export const defaultGridConfig = {
   showSearch: true,
   showActions: true,
   showAdd: true,
+  showGridSettings: true,
   showIndex: false,
   exportExcel: true,
   exportPDF: true,

@@ -30,6 +30,7 @@ const defaultGridConfig: Record<string, any> = {
   showSearch: true,
   showActions: true,
   showAdd: true,
+  showGridSettings: true,
   showIndex: false,
   exportExcel: true,
   exportPDF: true,
@@ -84,6 +85,7 @@ function App(props: AppProps) {
         showSearch={gridConfig.showSearch}
         showActions={gridConfig.showActions}
         showAdd={gridConfig.showAdd}
+        showGridSettings={gridConfig.showGridSettings}
         showIndex={gridConfig.showIndex}
         gridMode={gridConfig.gridMode}
         exportExcel={gridConfig.exportExcel}

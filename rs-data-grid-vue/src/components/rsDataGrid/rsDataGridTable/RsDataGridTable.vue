@@ -300,6 +300,7 @@ defineExpose({ startAddingRow, addBatchRow, saveBatch });
             :key="column.dataField"
             class="full-row section-style row-layout-center-center"
             :class="{ 'border-right': cellBorderRight(j) }"
+            :title="isImageUrl(item[column.dataField]) ? undefined : item[column.dataField]"
           >
             <img v-if="isImageUrl(item[column.dataField])" class="cell-thumbnail" :src="item[column.dataField]" alt="" />
             <template v-else>{{ item[column.dataField] }}</template>

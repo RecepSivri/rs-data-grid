@@ -44,3 +44,42 @@
   outline: none;
   border-color: var(--rg-border-focus, #777777);
 }
+
+.grid-settings-section{
+  margin-bottom: 16px;
+}
+
+.grid-settings-section:last-child{
+  margin-bottom: 0;
+}
+
+.grid-settings-heading{
+  display: block;
+  font-weight: bold !important;
+}
+
+.grid-settings-hint{
+  display: block;
+  margin-bottom: 8px !important;
+  opacity: 0.7;
+}
+
+.grid-settings-chip-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.grid-settings-drag-chip{
+  cursor: grab;
+}
+
+.grid-settings-drag-chip:active{
+  cursor: grabbing;
+}
+
+.grid-settings-drag-chip-over{
+  outline: 2px dashed currentColor;
+  outline-offset: 2px;
+}

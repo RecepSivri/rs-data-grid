@@ -25,6 +25,7 @@ function toGridProps(props) {
     showSearch: gridConfig.showSearch,
     showActions: gridConfig.showActions,
     showAdd: gridConfig.showAdd,
+    showGridSettings: gridConfig.showGridSettings,
     showIndex: gridConfig.showIndex,
     gridMode: gridConfig.gridMode,
     exportExcel: gridConfig.exportExcel,

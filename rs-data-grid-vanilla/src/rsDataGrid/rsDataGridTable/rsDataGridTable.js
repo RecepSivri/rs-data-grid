@@ -231,6 +231,7 @@ export function createTable() {
         rowChildren.push(
           el('div', {
             className: cellClass(j, columns, showActions, bodyColumnLines),
+            attrs: isImageUrl(value) ? undefined : { title: value === null || value === undefined ? '' : String(value) },
             children: isImageUrl(value) ? [el('img', { className: 'cell-thumbnail', attrs: { src: value, alt: '' } })] : undefined,
             text: isImageUrl(value) ? undefined : value === null || value === undefined ? '' : String(value),
           })

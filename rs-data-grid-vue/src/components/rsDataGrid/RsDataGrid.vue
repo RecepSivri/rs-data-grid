@@ -11,6 +11,7 @@ import RsDataGridTable from './rsDataGridTable/RsDataGridTable.vue';
 import RsDataGridPager from './rsDataGridPager/RsDataGridPager.vue';
 import ConfirmDialog from './dialogs/ConfirmDialog.vue';
 import EditRowDialog from './dialogs/EditRowDialog.vue';
+import GridSettingsDialog from './dialogs/GridSettingsDialog.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -36,6 +37,7 @@ const props = withDefaults(
     showSearch?: boolean;
     showActions?: boolean;
     showAdd?: boolean;
+    showGridSettings?: boolean;
     showIndex?: boolean;
     gridMode?: GridMode;
     exportExcel?: boolean;
@@ -71,6 +73,7 @@ const props = withDefaults(
     showSearch: false,
     showActions: false,
     showAdd: false,
+    showGridSettings: true,
     showIndex: false,
     gridMode: 'popup',
     exportExcel: false,
@@ -181,6 +184,27 @@ const onColumnMove = (fromField: string, toField: string) => {
   order.splice(insertAt, 0, fromField);
   columnOrder.value = order;
 };
+
+// Column visibility + order picked from the toolbar's Grid Settings dialog.
+// Empty means "show every column" -- this layers on top of the drag-drop
+// columnOrder above rather than replacing it.
+const gridSettingsOpen = ref(false);
+const selectedColumnFields = ref<string[]>([]);
+
+const visibleColumns = computed<IColumn[]>(() => {
+  if (selectedColumnFields.value.length === 0) {
+    return effectiveColumns.value;
+  }
+  const byField = new Map(effectiveColumns.value.map(column => [column.dataField, column]));
+  const ordered: IColumn[] = [];
+  for (const field of selectedColumnFields.value) {
+    const column = byField.get(field);
+    if (column) {
+      ordered.push(column);
+    }
+  }
+  return ordered;
+});
 
 const onRowMove = (fromRow: any, toRow: any) => {
   store.moveRow(fromRow, toRow);
@@ -301,12 +325,12 @@ const getDisplayedRows = (): any[] => {
   return rows;
 };
 
-const getDisplayedCaptions = (): string[] => effectiveColumns.value.map(column => titleCase(column.caption));
+const getDisplayedCaptions = (): string[] => visibleColumns.value.map(column => titleCase(column.caption));
 
 const onExportExcelClick = () => {
   const rows = getDisplayedRows();
   const captions = getDisplayedCaptions();
-  const mapped = rows.map(row => Object.fromEntries(effectiveColumns.value.map((column, i) => [captions[i], row[column.dataField]])));
+  const mapped = rows.map(row => Object.fromEntries(visibleColumns.value.map((column, i) => [captions[i], row[column.dataField]])));
   const worksheet = XLSX.utils.json_to_sheet(mapped);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
@@ -318,7 +342,7 @@ const onExportPdfClick = () => {
   const doc = new jsPDF({ orientation: 'landscape' });
   autoTable(doc, {
     head: [getDisplayedCaptions()],
-    body: rows.map(row => effectiveColumns.value.map(column => String(row[column.dataField] ?? ''))),
+    body: rows.map(row => visibleColumns.value.map(column => String(row[column.dataField] ?? ''))),
     theme: 'grid',
     styles: { fontSize: 9, cellPadding: 3, overflow: 'linebreak' },
     headStyles: { fillColor: [119, 119, 119], textColor: 255, fontStyle: 'bold' },
@@ -344,16 +368,24 @@ const bodyRows = computed(() => getDisplayedRows());
         </div>
       </slot>
     </template>
-    <template v-else-if="data.length === 0">
+    <template v-else-if="store.rawData.length === 0">
       <slot name="empty"><div class="grid-state grid-state-empty">No data to display.</div></slot>
     </template>
     <template v-else>
-      <div v-if="showSearch || exportExcel || exportPDF || showAdd || gridMode === 'batch'" class="grid-toolbar">
+      <div v-if="showSearch || exportExcel || exportPDF || showAdd || showGridSettings || gridMode === 'batch'" class="grid-toolbar">
         <button v-if="showAdd" type="button" class="export-button" title="Add row" aria-label="Add row" @click="onAddRowClick">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
+        </button>
+        <button v-if="showGridSettings" type="button" class="export-button" title="Grid settings" aria-label="Grid settings" @click="gridSettingsOpen = true">
+          <v-badge color="primary" dot :model-value="selectedColumnFields.length > 0">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </v-badge>
         </button>
         <button v-if="gridMode === 'batch'" type="button" class="export-button batch-save-button" title="Save batch changes" aria-label="Save batch changes" @click="onSaveBatchClick">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -388,7 +420,7 @@ const bodyRows = computed(() => getDisplayedRows());
       </div>
       <div class="grid-scroll-x">
         <RsDataGridHeader
-          :columns="effectiveColumns"
+          :columns="visibleColumns"
           :data="store.rawData"
           :header-row-lines="headerRowLines"
           :header-column-lines="headerColumnLines"
@@ -406,9 +438,11 @@ const bodyRows = computed(() => getDisplayedRows());
           @sort-toggle="onSortToggle"
           @column-move="onColumnMove"
         />
+        <div v-if="data.length === 0" class="grid-state grid-state-empty grid-state-empty-inline">No matching rows.</div>
         <RsDataGridTable
+          v-else
           ref="tableRef"
-          :columns="effectiveColumns"
+          :columns="visibleColumns"
           :data="bodyRows"
           :body-row-lines="bodyRowLines"
           :body-column-lines="bodyColumnLines"
@@ -439,6 +473,14 @@ const bodyRows = computed(() => getDisplayedRows());
       :theme="theme"
       @confirm="resolveConfirm(true)"
       @cancel="resolveConfirm(false)"
+    />
+    <GridSettingsDialog
+      :open="gridSettingsOpen"
+      :columns="effectiveColumns"
+      :selected="selectedColumnFields"
+      :theme="theme"
+      @update:selected="value => (selectedColumnFields = value)"
+      @close="gridSettingsOpen = false"
     />
   </div>
 </template>

@@ -70,6 +70,12 @@
   color: var(--rg-text-muted, #777777);
 }
 
+.grid-state-empty-inline{
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .grid-state-icon{
   font-size: 16px;
   line-height: 1;
@@ -116,6 +122,22 @@
 .batch-save-button:hover{
   background: var(--rg-accent-success-bg, #eaf5ee);
   border-color: var(--rg-accent-success, #1f7a3d);
+}
+
+.grid-settings-button{
+  position: relative;
+}
+
+.grid-settings-badge-dot{
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rg-accent-primary, #1976d2);
+  box-sizing: border-box;
+  border: 1px solid var(--rg-bg, #ffffff);
 }
 
 .global-search-wrapper{

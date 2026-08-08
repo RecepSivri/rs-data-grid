@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Badge } from '@mui/material';
 import './rsDataGrid.scss';
 import { IColumn, GridMode, RemoteModeParams } from './models/rsDataGrid.models';
 import { useDataGridStore } from './store/useDataGridStore';
@@ -10,6 +11,7 @@ import { RsDataGridTable, RsDataGridTableHandle } from './rsDataGridTable/rsData
 import { RsDataGridPager } from './rsDataGridPager/rsDataGridPager';
 import { ConfirmDialog } from './dialogs/ConfirmDialog';
 import { EditRowDialog } from './dialogs/EditRowDialog';
+import { GridSettingsDialog } from './dialogs/GridSettingsDialog';
 
 export interface RsDataGridProps {
   theme?: 'dark' | 'light';
@@ -34,6 +36,7 @@ export interface RsDataGridProps {
   showSearch?: boolean;
   showActions?: boolean;
   showAdd?: boolean;
+  showGridSettings?: boolean;
   showIndex?: boolean;
   gridMode?: GridMode;
   exportExcel?: boolean;
@@ -85,6 +88,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     showSearch = false,
     showActions = false,
     showAdd = false,
+    showGridSettings = true,
     showIndex = false,
     gridMode = 'popup',
     exportExcel = false,
@@ -188,6 +192,20 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     },
     [store]
   );
+
+  // Column visibility + order picked from the toolbar's Grid Settings dialog.
+  // Empty means "show every column" -- this layers on top of the drag-drop
+  // columnOrder above rather than replacing it.
+  const [gridSettingsOpen, setGridSettingsOpen] = useState(false);
+  const [selectedColumnFields, setSelectedColumnFields] = useState<string[]>([]);
+
+  const visibleColumns = useMemo<IColumn[]>(() => {
+    if (selectedColumnFields.length === 0) {
+      return effectiveColumns;
+    }
+    const byField = new Map(effectiveColumns.map(column => [column.dataField, column]));
+    return selectedColumnFields.map(field => byField.get(field)).filter((column): column is IColumn => !!column);
+  }, [effectiveColumns, selectedColumnFields]);
 
   const buildRequestHeaders = useCallback((): Record<string, string> | undefined => {
     const headers: Record<string, string> = { ...(fetchHeaders ?? {}) };
@@ -308,12 +326,12 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     return rows;
   }, [store.data, remoteModeParams, pagination, store.pageNumber, store.pageSize]);
 
-  const getDisplayedCaptions = useCallback((): string[] => effectiveColumns.map(column => titleCase(column.caption)), [effectiveColumns]);
+  const getDisplayedCaptions = useCallback((): string[] => visibleColumns.map(column => titleCase(column.caption)), [visibleColumns]);
 
   const onExportExcelClick = () => {
     const rows = getDisplayedRows();
     const captions = getDisplayedCaptions();
-    const mapped = rows.map(row => Object.fromEntries(effectiveColumns.map((column, i) => [captions[i], row[column.dataField]])));
+    const mapped = rows.map(row => Object.fromEntries(visibleColumns.map((column, i) => [captions[i], row[column.dataField]])));
     const worksheet = XLSX.utils.json_to_sheet(mapped);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
@@ -325,7 +343,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     const doc = new jsPDF({ orientation: 'landscape' });
     autoTable(doc, {
       head: [getDisplayedCaptions()],
-      body: rows.map(row => effectiveColumns.map(column => String(row[column.dataField] ?? ''))),
+      body: rows.map(row => visibleColumns.map(column => String(row[column.dataField] ?? ''))),
       theme: 'grid',
       styles: { fontSize: 9, cellPadding: 3, overflow: 'linebreak' },
       headStyles: { fillColor: [119, 119, 119], textColor: 255, fontStyle: 'bold' },
@@ -350,11 +368,11 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
             <span>{store.error?.message || 'Something went wrong while loading data.'}</span>
           </div>
         )
-      ) : data.length === 0 ? (
+      ) : store.rawData.length === 0 ? (
         emptyTemplate ?? <div className="grid-state grid-state-empty">No data to display.</div>
       ) : (
         <>
-          {(showSearch || exportExcel || exportPDF || showAdd || gridMode === 'batch') && (
+          {(showSearch || exportExcel || exportPDF || showAdd || showGridSettings || gridMode === 'batch') && (
             <div className="grid-toolbar">
               {showAdd && (
                 <button type="button" className="export-button" title="Add row" aria-label="Add row" onClick={onAddRowClick}>
@@ -362,6 +380,22 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
                     <path d="M12 5v14" />
                     <path d="M5 12h14" />
                   </svg>
+                </button>
+              )}
+              {showGridSettings && (
+                <button
+                  type="button"
+                  className="export-button"
+                  title="Grid settings"
+                  aria-label="Grid settings"
+                  onClick={() => setGridSettingsOpen(true)}
+                >
+                  <Badge color="primary" variant="dot" invisible={selectedColumnFields.length === 0}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="3" />
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                  </Badge>
                 </button>
               )}
               {gridMode === 'batch' && (
@@ -414,7 +448,7 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
           )}
           <div className="grid-scroll-x">
             <RsDataGridHeader
-              columns={effectiveColumns}
+              columns={visibleColumns}
               data={store.rawData}
               headerRowLines={headerRowLines}
               headerColumnLines={headerColumnLines}
@@ -432,28 +466,32 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
               onSortToggle={onSortToggle}
               onColumnMove={onColumnMove}
             />
-            <RsDataGridTable
-              ref={tableRef}
-              columns={effectiveColumns}
-              data={bodyRows}
-              bodyRowLines={bodyRowLines}
-              bodyColumnLines={bodyColumnLines}
-              tableBorder={tableBorder}
-              borderRadiusBottom={borderRadiusBottom}
-              diagonalRow={diagonalRow}
-              showActions={showActions}
-              showIndex={showIndex}
-              dragDropRows={dragDropRows}
-              indexOffset={!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0}
-              gridMode={gridMode}
-              onRowEdit={onRowEditRequest}
-              onRowDelete={onRowDeleteRequest}
-              onRowMove={onRowMove}
-              onBatchRowSave={onBatchRowSave}
-              onBatchRowAdd={onBatchRowAdd}
-              onBatchCommit={onBatchCommit}
-              onRequestConfirm={requestConfirm}
-            />
+            {data.length === 0 ? (
+              <div className="grid-state grid-state-empty grid-state-empty-inline">No matching rows.</div>
+            ) : (
+              <RsDataGridTable
+                ref={tableRef}
+                columns={visibleColumns}
+                data={bodyRows}
+                bodyRowLines={bodyRowLines}
+                bodyColumnLines={bodyColumnLines}
+                tableBorder={tableBorder}
+                borderRadiusBottom={borderRadiusBottom}
+                diagonalRow={diagonalRow}
+                showActions={showActions}
+                showIndex={showIndex}
+                dragDropRows={dragDropRows}
+                indexOffset={!remoteModeParams && pagination ? store.pageNumber * store.pageSize : 0}
+                gridMode={gridMode}
+                onRowEdit={onRowEditRequest}
+                onRowDelete={onRowDeleteRequest}
+                onRowMove={onRowMove}
+                onBatchRowSave={onBatchRowSave}
+                onBatchRowAdd={onBatchRowAdd}
+                onBatchCommit={onBatchCommit}
+                onRequestConfirm={requestConfirm}
+              />
+            )}
           </div>
           <RsDataGridPager pagination={pagination} pagingSizes={pagingSizes} pageListSize={pageListSize} currentPagingSize={currentPagingSize} store={store} />
         </>
@@ -475,6 +513,15 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
         container={rootRef.current}
         onConfirm={() => resolveConfirm(true)}
         onCancel={() => resolveConfirm(false)}
+      />
+      <GridSettingsDialog
+        open={gridSettingsOpen}
+        columns={effectiveColumns}
+        selected={selectedColumnFields}
+        theme={theme}
+        container={rootRef.current}
+        onChange={setSelectedColumnFields}
+        onClose={() => setGridSettingsOpen(false)}
       />
     </div>
   );

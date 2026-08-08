@@ -194,6 +194,11 @@
   line-height: 1;
   padding: 2px 6px;
   border-radius: 8px;
+  cursor: pointer;
+}
+
+.filter-count:hover {
+  background: var(--rg-accent-error, #b3261e);
 }
 
 .filter-caret {

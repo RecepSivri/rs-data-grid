@@ -31,6 +31,7 @@ const defaultGridConfig: Record<string, any> = {
   showSearch: true,
   showActions: true,
   showAdd: true,
+  showGridSettings: true,
   showIndex: false,
   exportExcel: true,
   exportPDF: true,

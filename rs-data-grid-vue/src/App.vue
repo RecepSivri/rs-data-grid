@@ -36,6 +36,7 @@ const defaultGridConfig: Record<string, any> = {
   showSearch: true,
   showActions: true,
   showAdd: true,
+  showGridSettings: true,
   showIndex: false,
   exportExcel: true,
   exportPDF: true,
@@ -89,6 +90,7 @@ watch(
       :show-search="config.showSearch"
       :show-actions="config.showActions"
       :show-add="config.showAdd"
+      :show-grid-settings="config.showGridSettings"
       :show-index="config.showIndex"
       :grid-mode="config.gridMode"
       :export-excel="config.exportExcel"

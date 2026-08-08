@@ -107,7 +107,8 @@
         } @else {
           @for (column of columns; track column.dataField; let j = $index) {
             <div class="full-row section-style row-layout-start-center"
-              [class.border-right]="bodyColumnLines && (j < columns.length - 1 || showActions)">
+              [class.border-right]="bodyColumnLines && (j < columns.length - 1 || showActions)"
+              [title]="isImageUrl(item[column.dataField]) ? null : item[column.dataField]">
               @if (isImageUrl(item[column.dataField])) {
                 <img class="cell-thumbnail" [src]="item[column.dataField]" alt="" />
               } @else {

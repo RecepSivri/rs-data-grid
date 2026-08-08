@@ -13,8 +13,8 @@
   padding-left: 5px;
   padding-bottom: 5px;
   padding-top: 5px;
-  min-height: 50px;
-  max-height: 50px;
+  min-height: 66px;
+  max-height: 66px;
   white-space: nowrap;
   min-width: 110px;
   overflow: hidden;
@@ -125,7 +125,7 @@
 
 .cell-thumbnail{
   display: block;
-  height: 40px;
+  height: 54px;
   width: auto;
   max-width: 100%;
   object-fit: cover;

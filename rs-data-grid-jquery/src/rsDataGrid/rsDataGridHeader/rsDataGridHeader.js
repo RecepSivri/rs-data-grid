@@ -69,6 +69,14 @@ export function createHeader() {
       renderCurrent();
     });
 
+    $c.on('click', '.filter-count', function (event) {
+      event.stopPropagation();
+      const dataField = $(this).data('field');
+      selectedValues = { ...selectedValues, [dataField]: [] };
+      lastProps.onFilterChange({ dataField, values: [] });
+      renderCurrent();
+    });
+
     $c.on('click', '.filter-dropdown', function (event) {
       event.stopPropagation();
     });
@@ -222,7 +230,13 @@ export function createHeader() {
         attrs: { type: 'button', 'aria-label': 'Filter ' + column.caption, 'data-field': column.dataField },
         children: [
           el('span', { className: 'filter-toggle-label', text: titleCase(column.caption) }),
-          count > 0 ? el('span', { className: 'filter-count', text: String(count) }) : null,
+          count > 0
+            ? el('span', {
+                className: 'filter-count',
+                text: String(count),
+                attrs: { title: 'Clear filter', 'aria-label': 'Clear filter for ' + column.caption, 'data-field': column.dataField },
+              })
+            : null,
           el('span', { className: 'filter-caret' + (isOpen ? ' filter-caret-open' : ''), html: '&#9662;' }),
         ],
       });

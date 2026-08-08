@@ -62,7 +62,7 @@
             (click)="toggleDropdown(column.dataField, $event)">
             <span class="filter-toggle-label">{{ column.caption | titlecase }}</span>
             @if (selectedCount(column.dataField) > 0) {
-              <span class="filter-count">{{ selectedCount(column.dataField) }}</span>
+              <span class="filter-count" title="Clear filter" [attr.aria-label]="'Clear filter for ' + column.caption" (click)="clearFilter(column.dataField, $event)">{{ selectedCount(column.dataField) }}</span>
             }
             <span class="filter-caret" [class.filter-caret-open]="isOpen(column.dataField)">&#9662;</span>
           </button>

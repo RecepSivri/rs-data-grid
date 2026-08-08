@@ -176,7 +176,14 @@ export function createHeader() {
         },
         children: [
           el('span', { className: 'filter-toggle-label', text: titleCase(column.caption) }),
-          count > 0 ? el('span', { className: 'filter-count', text: String(count) }) : null,
+          count > 0
+            ? el('span', {
+                className: 'filter-count',
+                text: String(count),
+                attrs: { title: 'Clear filter', 'aria-label': 'Clear filter for ' + column.caption },
+                on: { click: event => { event.stopPropagation(); clearFilter(column.dataField, onFilterChange); } },
+              })
+            : null,
           el('span', { className: 'filter-caret' + (isOpen ? ' filter-caret-open' : ''), html: '&#9662;' }),
         ],
       });
