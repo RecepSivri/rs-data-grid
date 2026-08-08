@@ -111,8 +111,24 @@ export function createHeader() {
             (dragDropColumns && dragOverField === column.dataField ? ' column-drag-over' : ''),
           on: dragDropColumns
             ? {
-                dragover: event => { event.preventDefault(); dragOverField = column.dataField; renderCurrent(); },
-                dragleave: () => { if (dragOverField === column.dataField) { dragOverField = null; renderCurrent(); } },
+                // dragover/dragleave fire continuously while hovering, so they
+                // toggle the highlight class directly instead of going through
+                // renderCurrent()'s full clear()+rebuild -- a synchronous DOM
+                // rebuild mid-drag breaks the browser's native drag tracking
+                // and silently cancels the drop.
+                dragover: event => {
+                  event.preventDefault();
+                  if (dragOverField !== column.dataField) {
+                    dragOverField = column.dataField;
+                    event.currentTarget.classList.add('column-drag-over');
+                  }
+                },
+                dragleave: event => {
+                  if (dragOverField === column.dataField) {
+                    dragOverField = null;
+                    event.currentTarget.classList.remove('column-drag-over');
+                  }
+                },
                 drop: event => {
                   event.preventDefault();
                   if (draggedField) onColumnMove(draggedField, column.dataField);

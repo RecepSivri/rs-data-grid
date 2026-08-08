@@ -252,8 +252,24 @@ export function createTable() {
       className: rowClass,
       on: dragDropRows
         ? {
-            dragover: event => { event.preventDefault(); dragOverRow = item; renderCurrent(); },
-            dragleave: () => { if (dragOverRow === item) { dragOverRow = null; renderCurrent(); } },
+            // dragover/dragleave fire continuously while hovering, so they
+            // toggle the highlight class directly instead of going through
+            // renderCurrent()'s full clear()+rebuild -- a synchronous DOM
+            // rebuild mid-drag breaks the browser's native drag tracking and
+            // silently cancels the drop.
+            dragover: event => {
+              event.preventDefault();
+              if (dragOverRow !== item) {
+                dragOverRow = item;
+                event.currentTarget.classList.add('row-drag-over');
+              }
+            },
+            dragleave: event => {
+              if (dragOverRow === item) {
+                dragOverRow = null;
+                event.currentTarget.classList.remove('row-drag-over');
+              }
+            },
             drop: event => {
               event.preventDefault();
               if (draggedRow) onRowMove(draggedRow, item);
