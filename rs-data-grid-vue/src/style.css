@@ -77,5 +77,5 @@ html, body, #app {
 }
 
 .border-right{
-  border-right: 1px solid #cccccc;
+  border-right: 1px solid var(--rg-border, #cccccc);
 }

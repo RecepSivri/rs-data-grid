@@ -64,6 +64,32 @@ body[data-theme='light'] {
   --shell-sidenav-border: #dddddd;
 }
 
+/* Vuetify (mounted for the Vue tab) injects a document-wide, unscoped
+   `body { line-height: 1.5 }` plus a `*, ::before, ::after { box-sizing:
+   inherit }` reset (the latter inside a CSS @layer, but @layer only affects
+   priority between author rules -- it does NOT scope the selector match to
+   Vuetify's own mount point, so it still touches every element in the whole
+   document, including this shell's chrome). Since root-config never declares
+   its own box-sizing, `inherit` walks up to html/body -- which Vuetify does
+   NOT set to border-box globally -- landing on the UA default (content-box)
+   instead of the border-box that browsers normally give form controls like
+   our radio inputs for free. Net effect: things sized with an explicit
+   width/height + border (the settings radio buttons in particular) render
+   visibly bigger than intended, only on the Vue tab. Both properties are
+   pinned explicitly here, scoped to the shell's own containers (topbar +
+   sidenav) and never to body/html itself, so this can't affect the mounted
+   grid's own typography or box model. */
+.app-topbar,
+.app-sidenav,
+.app-topbar *,
+.app-sidenav *,
+.app-topbar *::before,
+.app-sidenav *::before,
+.app-topbar *::after,
+.app-sidenav *::after {
+  box-sizing: border-box;
+}
+
 .app-topbar {
   flex: 0 0 auto;
   display: flex;
@@ -72,13 +98,6 @@ body[data-theme='light'] {
   border-bottom: 1px solid #35383d;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   transition: background 0.2s ease, border-color 0.2s ease;
-  /* Some mounted grids (e.g. Vuetify, for the Vue tab) set an unscoped
-     `body { line-height: 1.5 }` reset that otherwise leaks into this shell
-     chrome -- inheriting isn't enough to fight it back (same specificity as
-     body itself, and whichever framework's <style> loads last wins), so it's
-     pinned explicitly here instead. Scoped to the shell's own containers
-     (topbar/sidenav), never to body itself, so it can't affect the mounted
-     grid's own typography. */
   line-height: normal;
 }
 
