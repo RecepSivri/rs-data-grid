@@ -14,7 +14,7 @@ import { EditRowDialogComponent } from './dialogs/edit-row-dialog.component';
 import { GridSettingsDialogComponent } from './dialogs/grid-settings-dialog.component';
 
 @Component({
-  selector: 'rsivri-grid',
+  selector: 'rs-grid',
   standalone: true,
   imports: [RsivriGridHeaderComponent, RsivriGridBodyComponent, RsivriGridPagerComponent, NgTemplateOutlet],
   providers: [DataGridStore],

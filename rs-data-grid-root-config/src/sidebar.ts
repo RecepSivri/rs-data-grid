@@ -26,6 +26,24 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+// One icon per accordion panel, drawn with stroke="currentColor" so each
+// picks up .panel-title's own (already theme-aware) text color for free --
+// no separate light/dark variants to keep in sync.
+const PANEL_ICONS: Record<string, string> = {
+  'Data Management': `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>`,
+  'Grid Mode': `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+  Appearance: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.4-.3-.4-.5-.9-.5-1.4 0-1.1.9-2 2-2h2.3c1.9 0 3.5-1.6 3.5-3.5C21 6.4 17.1 2 12 2z"/><circle cx="6.5" cy="11.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="9.5" cy="7.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="14.5" cy="7.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="17.5" cy="11.5" r="1.5" fill="currentColor" stroke="none"/></svg>`,
+  Pagination: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="5" height="10" rx="1"/><rect x="9.5" y="7" width="5" height="10" rx="1"/><rect x="17" y="7" width="5" height="10" rx="1"/></svg>`,
+  'Toolbar Features': `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor" stroke="none"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor" stroke="none"/></svg>`,
+};
+
+function panelIcon(title: string): HTMLSpanElement {
+  const icon = el('span', 'panel-title-icon');
+  icon.innerHTML = PANEL_ICONS[title] ?? '';
+  icon.setAttribute('aria-hidden', 'true');
+  return icon;
+}
+
 function buildDataManagementPanel(): HTMLDetailsElement {
   const panel = el('details', 'settings-panel');
   panel.open = openPanels.has('Data Management');
@@ -34,7 +52,9 @@ function buildDataManagementPanel(): HTMLDetailsElement {
     else openPanels.delete('Data Management');
   });
 
-  const summary = el('summary', 'panel-title', 'Data Management');
+  const summary = el('summary', 'panel-title');
+  summary.appendChild(panelIcon('Data Management'));
+  summary.appendChild(document.createTextNode('Data Management'));
   panel.appendChild(summary);
 
   const body = el('div', 'settings-panel-body');
@@ -194,6 +214,7 @@ function buildGroupPanel(title: string, settings: GridSetting[]): HTMLDetailsEle
   });
 
   const summary = el('summary', 'panel-title');
+  summary.appendChild(panelIcon(title));
   summary.appendChild(document.createTextNode(title));
   if (title === 'Grid Mode') {
     const modeLabel = gridConfig.gridMode === 'batch' ? 'Batch' : gridConfig.gridMode === 'row' ? 'Row' : 'Popup';

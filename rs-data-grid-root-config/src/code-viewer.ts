@@ -128,9 +128,9 @@ import { RsivriGridComponent } from '@rs-data-grid/angular';
   standalone: true,
   imports: [RsivriGridComponent],
   template: \`
-    <rsivri-grid
+    <rs-grid
 ${props}
-    ></rsivri-grid>
+    ></rs-grid>
   \`,
 })
 export class AppComponent {}
@@ -169,6 +169,34 @@ const GENERATORS: Record<string, { language: string; generate: (entries: Entry[]
   '#/jquery': { language: 'javascript', generate: jquerySnippet },
 };
 
+const COPY_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const CHECK_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function buildCopyButton(code: string): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'code-copy-button';
+  button.title = 'Copy code';
+  button.setAttribute('aria-label', 'Copy code');
+  button.innerHTML = COPY_ICON + '<span>Copy</span>';
+
+  let resetTimer: ReturnType<typeof setTimeout> | null = null;
+  button.addEventListener('click', () => {
+    navigator.clipboard.writeText(code).then(() => {
+      button.innerHTML = CHECK_ICON + '<span>Copied</span>';
+      button.classList.add('code-copy-button-done');
+      if (resetTimer) {
+        clearTimeout(resetTimer);
+      }
+      resetTimer = setTimeout(() => {
+        button.innerHTML = COPY_ICON + '<span>Copy</span>';
+        button.classList.remove('code-copy-button-done');
+      }, 1500);
+    });
+  });
+  return button;
+}
+
 export function renderCodeViewer(container: HTMLElement, tabHash: string): void {
   const generator = GENERATORS[tabHash];
   container.innerHTML = '';
@@ -180,6 +208,7 @@ export function renderCodeViewer(container: HTMLElement, tabHash: string): void 
 
   const wrapper = document.createElement('div');
   wrapper.className = 'code-viewer-inner';
+  wrapper.appendChild(buildCopyButton(code));
   const pre = document.createElement('pre');
   pre.className = 'code-block';
   const codeEl = document.createElement('code');

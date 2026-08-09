@@ -68,12 +68,24 @@ body[data-theme='light'] {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  background: #1c1e21;
-  transition: background 0.2s ease;
+  background: #26292d;
+  border-bottom: 1px solid #35383d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  /* Some mounted grids (e.g. Vuetify, for the Vue tab) set an unscoped
+     `body { line-height: 1.5 }` reset that otherwise leaks into this shell
+     chrome -- inheriting isn't enough to fight it back (same specificity as
+     body itself, and whichever framework's <style> loads last wins), so it's
+     pinned explicitly here instead. Scoped to the shell's own containers
+     (topbar/sidenav), never to body itself, so it can't affect the mounted
+     grid's own typography. */
+  line-height: normal;
 }
 
 .app-topbar[data-theme='light'] {
-  background: #f2f2f3;
+  background: #ffffff;
+  border-bottom-color: #e2e2e3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .app-topbar[data-theme='light'] .sidebar-toggle-btn span {
@@ -288,6 +300,9 @@ body[data-theme='light'] {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   padding: 0;
   overflow-y: auto;
 }
@@ -318,6 +333,19 @@ body[data-theme='light'] {
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
+.view-mode-tab-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+}
+
+.view-mode-tab-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .view-mode-tab:hover {
   color: var(--shell-text, #f2f2f3);
   background: var(--shell-bg-panel-hover, rgba(255, 255, 255, 0.06));
@@ -335,6 +363,9 @@ body[data-theme='light'] {
 .code-viewer {
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   display: none;
   flex-direction: column;
   background: #282c34;
@@ -347,10 +378,47 @@ body[data-theme='light'] {
 }
 
 .code-viewer-inner {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
   flex: 1 1 auto;
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9da5b4;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.code-copy-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e6e6e6;
+}
+
+.code-copy-button svg {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.code-copy-button-done {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
 }
 
 .code-block {
@@ -382,6 +450,9 @@ body[data-theme='light'] {
   display: flex;
   flex-direction: column;
   transition: background 0.2s ease;
+  /* See .app-topbar's own comment -- same leaked line-height fix, scoped to
+     the sidebar so it never touches the mounted grid's own typography. */
+  line-height: normal;
 }
 
 .sidenav-title {
@@ -466,6 +537,20 @@ body[data-theme='light'] {
 
 .panel-title:hover {
   background: var(--shell-bg-panel-hover, rgba(255, 255, 255, 0.06));
+}
+
+.panel-title-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  margin-right: 10px;
+}
+
+.panel-title-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .panel-title-muted {

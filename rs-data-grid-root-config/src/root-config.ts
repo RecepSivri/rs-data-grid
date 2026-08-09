@@ -221,6 +221,11 @@ function applyViewMode(): void {
   }
 }
 
+const VIEW_MODE_ICONS: Record<ViewMode, string> = {
+  demo: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>`,
+  code: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+};
+
 function renderViewModeTabs(): void {
   const container = document.getElementById('view-mode-tabs')!;
   container.innerHTML = '';
@@ -228,7 +233,16 @@ function renderViewModeTabs(): void {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'view-mode-tab' + (viewMode === mode ? ' view-mode-tab-active' : '');
-    button.textContent = mode === 'demo' ? 'Demo' : 'Code';
+
+    const icon = document.createElement('span');
+    icon.className = 'view-mode-tab-icon';
+    icon.innerHTML = VIEW_MODE_ICONS[mode];
+    icon.setAttribute('aria-hidden', 'true');
+
+    const label = document.createElement('span');
+    label.textContent = mode === 'demo' ? 'Demo' : 'Code';
+
+    button.append(icon, label);
     button.addEventListener('click', () => {
       if (viewMode === mode) {
         return;
