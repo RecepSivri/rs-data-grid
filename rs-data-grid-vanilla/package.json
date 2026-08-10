@@ -29,10 +29,13 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
+    "predev": "test -d dist-lib || npm run build:lib",
     "dev": "vite",
+    "prebuild": "test -d dist-lib || npm run build:lib",
     "build": "vite build",
     "preview": "vite preview",
     "build:lib": "vite build --config vite.lib.config.ts",
+    "prebuild:single-spa": "test -d dist-lib || npm run build:lib",
     "build:single-spa": "vite build --config vite.single-spa.config.ts",
     "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
     "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 3001 --strictPort",
