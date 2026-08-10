@@ -15,6 +15,14 @@ import { ADD_ICON, BATCH_SAVE_ICON, EXPORT_EXCEL_ICON, EXPORT_PDF_ICON, GRID_SET
 import './rsDataGrid.css';
 import './global.css';
 
+// defaultsFor() previously returned a fresh `[]` here on every render() call.
+// render() is a public API meant to be called repeatedly (e.g. on every
+// external prop update), and dataSourceRef comparison below is by reference
+// -- a fresh array each call made that check always true for callers who
+// never pass dataSource explicitly, refetching from the network on every
+// unrelated prop change. A single stable reference fixes it.
+const EMPTY_ARRAY = [];
+
 /**
  * Live-typing inputs (currently just the global search box) rebuild the
  * whole region they live in on every keystroke -- unlike edit/batch drafts,
@@ -502,7 +510,7 @@ export function createGrid() {
       exportPDF: false,
       pagingSizes: [],
       currentPagingSize: 10,
-      dataSource: [],
+      dataSource: EMPTY_ARRAY,
       pageListSize: 5,
     };
   }

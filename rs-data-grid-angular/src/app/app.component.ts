@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RsivriGridComponent } from './rsivri-grid/rsivri-grid.component';
+import { RsivriGridComponent } from 'rs-grid-angular';
 import { singleSpaPropsSubject } from '../single-spa/single-spa-props';
 
 // Used only when this app is run standalone (`ng serve`), outside the

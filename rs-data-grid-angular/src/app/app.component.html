@@ -1,5 +1,5 @@
 <div style="width: 100%; min-height: 100vh; margin: 0;" [style.background]="gridConfig()['theme'] === 'light' ? '#ffffff' : '#1c1e21'">
-<rs-grid #grid
+<rs-grid-angular #grid
   [theme]="gridConfig()['theme']"
   [fetchUrl]="gridConfig()['fetchUrl']"
   [fetchMethod]="gridConfig()['apiMethod']"
@@ -43,5 +43,5 @@
   <ng-template #errorTpl let-err>
     <div class="demo-error">Failed to load universities: {{ err?.message }}</div>
   </ng-template>
-</rs-grid>
+</rs-grid-angular>
 </div>

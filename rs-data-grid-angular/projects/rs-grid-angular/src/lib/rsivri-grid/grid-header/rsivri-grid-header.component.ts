@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
-import { IColumn } from '../../../core/models/IColumn';
+import { IColumn } from '../../models/IColumn';
 import { applyFilters, SortState } from '../store/data-grid.store';
 
 export interface FilterChangeEvent {

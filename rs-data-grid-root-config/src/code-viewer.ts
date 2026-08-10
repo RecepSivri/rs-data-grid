@@ -84,8 +84,8 @@ function reactSnippet(entries: Entry[]): string {
   const props = entries
     .map(([name, value]) => (typeof value === 'string' ? `      ${name}="${value}"` : `      ${name}={${jsLiteral(value)}}`))
     .join('\n');
-  return `// npm install @rs-data-grid/react
-import { RsDataGrid } from '@rs-data-grid/react';
+  return `// npm install rs-data-grid-react
+import { RsDataGrid } from 'rs-data-grid-react';
 
 export function App() {
   return (
@@ -100,13 +100,20 @@ ${props}
 function vueSnippet(entries: Entry[]): string {
   const props = entries
     .map(([name, value]) => {
-      const attr = toKebabCase(name);
+      // Vue resolves a kebab-case template attribute back to its declared
+      // prop by inserting a dash before EVERY uppercase letter (so
+      // `exportPDF` needs `export-p-d-f`, not the more readable
+      // `export-pdf` toKebabCase() produces elsewhere). Rather than emit
+      // that unreadable form, bind exportPDF by its original camelCase name
+      // -- Vue matches camelCase attribute names to props directly, and
+      // this mirrors the same workaround already used in App.vue.
+      const attr = name === 'exportPDF' ? name : toKebabCase(name);
       return typeof value === 'string' ? `    ${attr}="${value}"` : `    :${attr}="${jsLiteral(value)}"`;
     })
     .join('\n');
   return `<script setup lang="ts">
-// npm install @rs-data-grid/vue
-import { RsDataGrid } from '@rs-data-grid/vue';
+// npm install rs-data-grid-vue
+import { RsDataGrid } from 'rs-data-grid-vue';
 </script>
 
 <template>
@@ -119,18 +126,18 @@ ${props}
 
 function angularSnippet(entries: Entry[]): string {
   const props = entries.map(([name, value]) => `      [${name}]="${jsLiteral(value)}"`).join('\n');
-  return `// npm install @rs-data-grid/angular
+  return `// npm install rs-grid-angular
 import { Component } from '@angular/core';
-import { RsivriGridComponent } from '@rs-data-grid/angular';
+import { RsivriGridComponent } from 'rs-grid-angular';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RsivriGridComponent],
   template: \`
-    <rs-grid
+    <rs-grid-angular
 ${props}
-    ></rs-grid>
+    ></rs-grid-angular>
   \`,
 })
 export class AppComponent {}
@@ -139,8 +146,8 @@ export class AppComponent {}
 
 function vanillaSnippet(entries: Entry[]): string {
   const props = entries.map(([name, value]) => `  ${name}: ${jsLiteral(value)},`).join('\n');
-  return `// npm install @rs-data-grid/vanilla
-import { createGrid } from '@rs-data-grid/vanilla';
+  return `// npm install rs-data-grid-vanilla
+import { createGrid } from 'rs-data-grid-vanilla';
 
 const grid = createGrid();
 grid.render(document.getElementById('app'), {
@@ -151,8 +158,8 @@ ${props}
 
 function jquerySnippet(entries: Entry[]): string {
   const props = entries.map(([name, value]) => `  ${name}: ${jsLiteral(value)},`).join('\n');
-  return `// npm install @rs-data-grid/jquery
-import { createGrid } from '@rs-data-grid/jquery';
+  return `// npm install rs-data-grid-jquery
+import { createGrid } from 'rs-data-grid-jquery';
 
 const grid = createGrid();
 grid.render(document.getElementById('app'), {

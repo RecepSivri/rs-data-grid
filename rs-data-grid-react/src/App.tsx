@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import './App.scss';
-import { RsDataGrid, RsDataGridHandle } from './components/rsDataGrid/rsDataGrid';
+import { RsDataGrid, RsDataGridHandle } from 'rs-data-grid-react';
 
 // Used only when this app is run standalone (`npm run dev`), outside the
 // single-spa root-config that would normally supply gridConfig via props.

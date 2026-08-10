@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { IColumn } from '../../core/models/IColumn';
+import { IColumn } from '../models/IColumn';
 import { DataGridStore } from './store/data-grid.store';
 import { FilterChangeEvent, RsivriGridHeaderComponent } from './grid-header/rsivri-grid-header.component';
 import { RsivriGridBodyComponent } from './grid-body/rsivri-grid-body.component';
@@ -14,7 +14,7 @@ import { EditRowDialogComponent } from './dialogs/edit-row-dialog.component';
 import { GridSettingsDialogComponent } from './dialogs/grid-settings-dialog.component';
 
 @Component({
-  selector: 'rs-grid',
+  selector: 'rs-grid-angular',
   standalone: true,
   imports: [RsivriGridHeaderComponent, RsivriGridBodyComponent, RsivriGridPagerComponent, NgTemplateOutlet],
   providers: [DataGridStore],

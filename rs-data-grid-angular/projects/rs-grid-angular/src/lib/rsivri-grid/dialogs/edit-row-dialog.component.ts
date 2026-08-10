@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { IColumn } from '../../../core/models/IColumn';
+import { IColumn } from '../../models/IColumn';
 
 export interface EditRowDialogData {
   row?: any;

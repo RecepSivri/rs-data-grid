@@ -1,38 +1,40 @@
-# rs-data-grid-react
+# rs-data-grid-jquery
 
-A configurable data grid component for React — filtering, sorting, pagination,
-inline/popup/batch editing, drag-and-drop rows/columns, and Excel/PDF export.
+A configurable data grid component built with jQuery — filtering, sorting,
+pagination, inline/popup/batch editing, drag-and-drop rows/columns, and
+Excel/PDF export.
 
 ## Install
 
 ```bash
-npm install rs-data-grid-react
+npm install rs-data-grid-jquery
 ```
 
-`react` and `react-dom` (^18.2.0) are peer dependencies — install them in your
-app if you haven't already.
+`jquery` (^3.7.1) is a peer dependency — install it in your app if you
+haven't already.
 
 ## Usage
 
-```tsx
-import { RsDataGrid } from 'rs-data-grid-react';
+```js
+import { createGrid } from 'rs-data-grid-jquery';
 
-export function App() {
-  return (
-    <RsDataGrid
-      theme="light"
-      fetchUrl="https://api.example.com/items"
-      pagination={true}
-      showFilter={true}
-      showSort={true}
-      showSearch={true}
-      gridMode="popup"
-    />
-  );
-}
+const grid = createGrid();
+grid.render(document.getElementById('app'), {
+  theme: 'light',
+  fetchUrl: 'https://api.example.com/items',
+  pagination: true,
+  showFilter: true,
+  showSort: true,
+  showSearch: true,
+  gridMode: 'popup',
+});
 ```
 
 No separate CSS import is needed — styles are bundled with the component.
+
+Call `grid.render(container, props)` again with a new `props` object any
+time you want to update the grid (e.g. after a settings change) — it diffs
+against what's currently rendered. Call `grid.destroy()` to tear it down.
 
 ## Data
 
@@ -46,15 +48,13 @@ unless you pass an explicit `columns` array (`{ dataField, caption }[]`).
 | --- | --- | --- | --- |
 | `theme` | `'light' \| 'dark'` | `'light'` | Color theme |
 | `fetchUrl` / `dataSource` | `string` / `any[]` | — | Where the grid gets its rows |
-| `columns` | `IColumn[]` | inferred | Explicit column list |
+| `columns` | `{ dataField, caption }[]` | inferred | Explicit column list |
 | `gridMode` | `'popup' \| 'row' \| 'batch'` | `'popup'` | Add/edit interaction style |
 | `pagination` | `boolean` | `false` | Enable paging |
 | `showFilter` / `showSort` / `showSearch` | `boolean` | `false` | Toolbar/header features |
 | `dragDropRows` / `dragDropColumns` | `boolean` | `false` | Enable drag-to-reorder |
 | `exportExcel` / `exportPDF` | `boolean` | `false` | Toolbar export buttons |
 | `onRowAdd` / `onRowEdit` / `onRowDelete` / `onBatchSave` | `(row) => void` | — | CRUD callbacks |
-
-See `RsDataGridProps` in the shipped type declarations for the full list.
 
 ## License
 

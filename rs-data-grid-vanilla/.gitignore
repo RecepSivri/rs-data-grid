@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-single-spa
+dist-lib
 
 .DS_Store
 *.local

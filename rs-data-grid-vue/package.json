@@ -1,28 +1,53 @@
 {
   "name": "rs-data-grid-vue",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A configurable data grid component for Vue -- filtering, sorting, pagination, inline/popup/batch editing, drag-and-drop, and Excel/PDF export.",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vuetify",
+    "data-grid",
+    "table",
+    "grid"
+  ],
   "type": "module",
+  "main": "./dist-lib/rs-data-grid-vue.cjs",
+  "module": "./dist-lib/rs-data-grid-vue.js",
+  "types": "./dist-lib/rs-data-grid-vue.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-lib/rs-data-grid-vue.d.ts",
+      "import": "./dist-lib/rs-data-grid-vue.js",
+      "require": "./dist-lib/rs-data-grid-vue.cjs"
+    }
+  },
+  "files": [
+    "dist-lib"
+  ],
+  "peerDependencies": {
+    "vue": "^3.5.40",
+    "vuetify": "^4.1.7"
+  },
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "rs-data-grid-vue": "^0.1.0",
+    "xlsx": "^0.18.5"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "build:single-spa": "vite build --config vite.single-spa.config.ts",
     "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
     "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 5173 --strictPort",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
-  },
-  "dependencies": {
-    "@mdi/font": "^7.4.47",
-    "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
-    "single-spa-vue": "^3.0.1",
-    "vue": "^3.5.40",
-    "vuetify": "^4.1.7",
-    "xlsx": "^0.18.5"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build:lib"
   },
   "devDependencies": {
+    "@mdi/font": "^7.4.47",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-istanbul": "^4.1.10",
@@ -30,11 +55,15 @@
     "@vue/tsconfig": "^0.9.1",
     "jsdom": "^30.0.1",
     "sass": "^1.102.0",
+    "single-spa-vue": "^3.0.1",
     "typescript": "~6.0.2",
     "vite": "^8.2.0",
     "vite-plugin-css-injected-by-js": "^5.0.2",
+    "vite-plugin-dts": "^5.0.3",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^4.1.10",
-    "vue-tsc": "^3.3.8"
+    "vue": "^3.5.40",
+    "vue-tsc": "^3.3.8",
+    "vuetify": "^4.1.7"
   }
 }

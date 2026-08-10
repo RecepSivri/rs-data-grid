@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import RsDataGrid from './components/rsDataGrid/RsDataGrid.vue';
+import { RsDataGrid } from 'rs-data-grid-vue';
 
 // single-spa hands this component more than the props we declare below (its
 // own internal props like `singleSpa`/`mountParcel`). Without this, Vue's

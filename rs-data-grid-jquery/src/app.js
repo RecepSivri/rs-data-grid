@@ -2,7 +2,7 @@
 // shell's gridConfig object onto the grid component's props and watches
 // fetchNonce (skip-first, only react to genuine changes -- not every
 // unrelated settings push) to trigger a manual refetch.
-import { createGrid } from './rsDataGrid/rsDataGrid.js';
+import { createGrid } from 'rs-data-grid-jquery';
 import { defaultGridConfig } from './defaultGridConfig.js';
 
 const noop = () => {};

@@ -92,6 +92,32 @@
           }
         }
       }
+    },
+    "rs-grid-angular": {
+      "projectType": "library",
+      "root": "projects/rs-grid-angular",
+      "sourceRoot": "projects/rs-grid-angular/src",
+      "prefix": "rs",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/rs-grid-angular/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/rs-grid-angular/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/rs-grid-angular/tsconfig.spec.json"
+          }
+        }
+      }
     }
   }
 }

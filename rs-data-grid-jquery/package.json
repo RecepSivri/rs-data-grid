@@ -1,27 +1,52 @@
 {
   "name": "rs-data-grid-jquery",
   "version": "0.1.0",
-  "private": true,
+  "description": "A configurable data grid component built with jQuery -- filtering, sorting, pagination, inline/popup/batch editing, drag-and-drop, and Excel/PDF export.",
+  "license": "MIT",
+  "keywords": [
+    "jquery",
+    "data-grid",
+    "table",
+    "grid"
+  ],
   "type": "module",
+  "main": "./dist-lib/rs-data-grid-jquery.cjs",
+  "module": "./dist-lib/rs-data-grid-jquery.js",
+  "exports": {
+    ".": {
+      "import": "./dist-lib/rs-data-grid-jquery.js",
+      "require": "./dist-lib/rs-data-grid-jquery.cjs"
+    }
+  },
+  "files": [
+    "dist-lib"
+  ],
+  "sideEffects": false,
+  "peerDependencies": {
+    "jquery": "^3.7.1"
+  },
   "dependencies": {
-    "jquery": "^3.7.1",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "rs-data-grid-jquery": "^0.1.0",
     "xlsx": "^0.18.5"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "build:single-spa": "vite build --config vite.single-spa.config.ts",
     "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
     "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 3002 --strictPort",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build:lib"
   },
   "devDependencies": {
     "@vitest/coverage-istanbul": "^4.1.10",
+    "jquery": "^3.7.1",
     "jsdom": "^30.0.1",
     "vite": "^8.2.0",
     "vite-plugin-css-injected-by-js": "^5.0.2",

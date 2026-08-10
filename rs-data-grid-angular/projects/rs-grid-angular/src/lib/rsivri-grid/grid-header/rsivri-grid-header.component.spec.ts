@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { RsivriGridHeaderComponent } from './rsivri-grid-header.component';
-import { IColumn } from '../../../core/models/IColumn';
+import { IColumn } from '../../models/IColumn';
 
 describe('RsivriGridHeaderComponent', () => {
   let component: RsivriGridHeaderComponent;

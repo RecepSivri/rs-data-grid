@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
-import { IColumn } from '../../../core/models/IColumn';
+import { IColumn } from '../../models/IColumn';
 
 export interface GridSettingsDialogData {
   columns: IColumn[];

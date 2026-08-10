@@ -3,7 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { RsivriGridBodyComponent } from './rsivri-grid-body.component';
-import { IColumn } from '../../../core/models/IColumn';
+import { IColumn } from '../../models/IColumn';
 
 describe('RsivriGridBodyComponent', () => {
   let component: RsivriGridBodyComponent;

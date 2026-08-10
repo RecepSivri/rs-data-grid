@@ -80,7 +80,7 @@ const moveSelected = (fromField: string, toField: string) => {
               closable
               class="grid-settings-drag-chip"
               :class="{ 'grid-settings-drag-chip-over': dragOverField === field }"
-              draggable="true"
+              :draggable="true"
               @click:close="removeColumn(field)"
               @dragstart="draggedField = field"
               @dragend="() => { draggedField = null; dragOverField = null; }"

@@ -1,22 +1,44 @@
 {
   "name": "rs-data-grid-vanilla",
   "version": "0.1.0",
-  "private": true,
+  "description": "A configurable data grid component for plain JavaScript -- filtering, sorting, pagination, inline/popup/batch editing, drag-and-drop, and Excel/PDF export. No framework required.",
+  "license": "MIT",
+  "keywords": [
+    "vanilla-js",
+    "data-grid",
+    "table",
+    "grid"
+  ],
   "type": "module",
+  "main": "./dist-lib/rs-data-grid-vanilla.cjs",
+  "module": "./dist-lib/rs-data-grid-vanilla.js",
+  "exports": {
+    ".": {
+      "import": "./dist-lib/rs-data-grid-vanilla.js",
+      "require": "./dist-lib/rs-data-grid-vanilla.cjs"
+    }
+  },
+  "files": [
+    "dist-lib"
+  ],
+  "sideEffects": false,
   "dependencies": {
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
+    "rs-data-grid-vanilla": "^0.1.0",
     "xlsx": "^0.18.5"
   },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "build:lib": "vite build --config vite.lib.config.ts",
     "build:single-spa": "vite build --config vite.single-spa.config.ts",
     "watch:single-spa": "vite build --config vite.single-spa.config.ts --watch",
     "serve:single-spa": "vite preview --config vite.single-spa.config.ts --port 3001 --strictPort",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run build:lib"
   },
   "browserslist": {
     "production": [

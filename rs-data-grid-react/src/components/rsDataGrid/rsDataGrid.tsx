@@ -13,6 +13,23 @@ import { ConfirmDialog } from './dialogs/ConfirmDialog';
 import { EditRowDialog } from './dialogs/EditRowDialog';
 import { GridSettingsDialog } from './dialogs/GridSettingsDialog';
 
+// Stable references for array/object-typed prop defaults. A `= []`/`= {}`
+// default in a destructuring parameter is a FRESH literal on every call
+// where the caller omits the prop, so every render "changes" -- harmless by
+// itself, but rsDataGrid.tsx compares dataSource by reference (`dataSourceRef
+// .current !== dataSource`) to detect real prop changes, and a fresh []
+// every render makes that check always true. That fires loadData() during
+// render on every single render once mounted, which synchronously updates
+// state and re-renders, which sees a new [] again -- an infinite render loop
+// that only shows up when a consumer doesn't pass dataSource at all (every
+// usage in this repo always did, which is why this went unnoticed until a
+// real npm-installed consumer without that prop hit it). columns/pagingSizes
+// /fetchHeaders don't currently gate anything by reference, but share the
+// same "fresh literal by default" shape, so they're pinned here too rather
+// than leaving the next dependent effect/memo to silently break the same way.
+const EMPTY_ARRAY: never[] = [];
+const EMPTY_RECORD: Record<string, never> = {};
+
 export interface RsDataGridProps {
   theme?: 'dark' | 'light';
   headerColumnLines?: boolean;
@@ -70,12 +87,12 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     headerColumnLines = true,
     fetchUrl = '',
     fetchMethod = 'GET',
-    fetchHeaders = {},
+    fetchHeaders = EMPTY_RECORD,
     authToken = '',
     headerRowLines = true,
     bodyRowLines = true,
     bodyColumnLines = true,
-    columns = [],
+    columns = EMPTY_ARRAY,
     tableBorder = true,
     borderRadiusTop = false,
     borderRadiusBottom = false,
@@ -93,9 +110,9 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     gridMode = 'popup',
     exportExcel = false,
     exportPDF = false,
-    pagingSizes = [],
+    pagingSizes = EMPTY_ARRAY,
     currentPagingSize = 10,
-    dataSource = [],
+    dataSource = EMPTY_ARRAY,
     pageListSize = 5,
     entrySection,
     remoteMode = false,

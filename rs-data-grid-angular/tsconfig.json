@@ -29,5 +29,13 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": false
-  }
+  },
+  "references": [
+    {
+      "path": "./projects/rs-grid-angular/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/rs-grid-angular/tsconfig.spec.json"
+    }
+  ]
 }

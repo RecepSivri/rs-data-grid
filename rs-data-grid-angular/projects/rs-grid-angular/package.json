@@ -1,0 +1,21 @@
+{
+  "name": "rs-grid-angular",
+  "version": "0.1.0",
+  "description": "A configurable data grid component for Angular -- filtering, sorting, pagination, inline/popup/batch editing, drag-and-drop, and Excel/PDF export.",
+  "license": "MIT",
+  "keywords": ["angular", "data-grid", "table", "grid"],
+  "peerDependencies": {
+    "@angular/common": "^20.3.0",
+    "@angular/core": "^20.3.0",
+    "@angular/forms": "^20.3.0",
+    "@angular/material": "^20.2.14",
+    "@angular/cdk": "^20.2.14"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "xlsx": "^0.18.5"
+  },
+  "sideEffects": false
+}

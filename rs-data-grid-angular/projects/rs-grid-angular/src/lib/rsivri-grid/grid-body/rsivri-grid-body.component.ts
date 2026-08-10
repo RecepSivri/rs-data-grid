@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { IColumn } from '../../../core/models/IColumn';
+import { IColumn } from '../../models/IColumn';
 import { ConfirmDialogComponent } from '../dialogs/confirm-dialog.component';
 
 const IMAGE_URL_PATTERN = /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i;

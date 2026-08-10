@@ -12,6 +12,7 @@
 /build
 /dist
 /dist-single-spa
+/dist-lib
 
 # misc
 .DS_Store
