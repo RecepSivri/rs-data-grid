@@ -160,6 +160,34 @@ body[data-theme='light'] {
   display: none;
 }
 
+/* Uses var(--shell-text) directly rather than a per-theme override like the
+   older topbar rules above -- .app-topbar itself carries the data-theme
+   attribute, so it's already in scope for the --shell-* tokens defined on
+   [data-theme='...'] and needs no separate light-mode selector. */
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 0 6px 0 14px;
+  user-select: none;
+}
+
+.app-brand-icon {
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+}
+
+.app-brand-text {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--shell-text, #f2f2f3);
+  white-space: nowrap;
+}
+
 .theme-switch-wrapper {
   display: flex;
   align-items: center;
@@ -900,5 +928,18 @@ body[data-theme='light'] {
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 40;
+  }
+
+  .app-brand {
+    padding-left: 4px;
+  }
+}
+
+/* Below this, the hamburger + brand + at least one tab no longer fit on one
+   line without the tab strip losing all its scrollable width -- drop the
+   text label and keep just the icon so the tabs stay the priority. */
+@media (max-width: 480px) {
+  .app-brand-text {
+    display: none;
   }
 }
