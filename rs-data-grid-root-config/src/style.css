@@ -160,10 +160,6 @@ body[data-theme='light'] {
   display: none;
 }
 
-/* Uses var(--shell-text) directly rather than a per-theme override like the
-   older topbar rules above -- .app-topbar itself carries the data-theme
-   attribute, so it's already in scope for the --shell-* tokens defined on
-   [data-theme='...'] and needs no separate light-mode selector. */
 .app-brand {
   display: flex;
   align-items: center;
@@ -173,19 +169,35 @@ body[data-theme='light'] {
   user-select: none;
 }
 
+/* Sized against .app-tab-icon (16px) rather than matching it exactly -- the
+   tab icons are flat single-color SVGs that stay crisp that small, but this
+   is a detailed photographic badge that turns to mud much below ~24px. */
 .app-brand-icon {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
 }
 
+/* Text size/weight matched to .app-tab (14px / 600) so the wordmark reads
+   as part of the same button row instead of a separate, larger heading. A
+   system-font stack instead of the shell's plain Arial reads closer to the
+   badge icon's own lettering, and the two theme colors are sampled from the
+   badge's own palette (its shield navy / a warm gold-white) rather than the
+   neutral --shell-text tokens, so the wordmark reads as part of the same
+   mark instead of generic UI text next to it. Dark is the base rule and
+   light overrides it, matching every other topbar-chrome rule in this file. */
 .app-brand-text {
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-  color: var(--shell-text, #f2f2f3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: #f1e6cd;
   white-space: nowrap;
+}
+
+.app-topbar[data-theme='light'] .app-brand-text {
+  color: #1f3b57;
 }
 
 .theme-switch-wrapper {
@@ -350,7 +362,12 @@ body[data-theme='light'] {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0;
+  /* box-sizing: border-box so this right padding carves the gap out of the
+     existing 100%/max-width instead of adding to it -- the mounted grids
+     underneath fill 100% of whatever content-box space is left, so none of
+     the 5 framework apps need their own right-margin rule for this. */
+  box-sizing: border-box;
+  padding: 0 20px 0 0;
   overflow-y: auto;
 }
 
@@ -932,6 +949,10 @@ body[data-theme='light'] {
 
   .app-brand {
     padding-left: 4px;
+  }
+
+  #single-spa-application {
+    padding-right: 12px;
   }
 }
 
