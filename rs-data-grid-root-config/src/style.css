@@ -501,6 +501,144 @@ body[data-theme='light'] {
   tab-size: 2;
 }
 
+/* Unlike the code viewer (intentionally always dark), the wiki is prose --
+   it follows the shell's own light/dark theme tokens like the sidebar does,
+   since long-form reading benefits from matching the rest of the page. */
+.wiki-viewer {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  /* Matches #single-spa-application's own right inset (padding, not margin,
+     so the auto-centering above still works the same way) -- keeps this
+     box's right edge lined up with the grid's when switching between tabs. */
+  box-sizing: border-box;
+  padding-right: 20px;
+  display: none;
+  flex-direction: column;
+  background: var(--shell-bg-panel, #ffffff);
+  border: 1px solid var(--shell-border, #dddddd);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.wiki-viewer.wiki-viewer-active {
+  display: flex;
+}
+
+.wiki-inner {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 28px 32px;
+}
+
+.wiki-header {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--shell-border, #dddddd);
+}
+
+.wiki-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--shell-text, #1a1a1a);
+}
+
+.wiki-install {
+  display: inline-block;
+  margin: 0 12px 8px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--shell-bg-radio, #f5f5f5);
+  border: 1px solid var(--shell-border, #dddddd);
+  color: var(--shell-text-body, #333333);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+}
+
+.wiki-npm-link {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.wiki-npm-link:hover {
+  text-decoration: underline;
+}
+
+.wiki-peer-note {
+  margin: 8px 0 0;
+  color: var(--shell-text-muted, #6b6f74);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.wiki-section {
+  margin-bottom: 28px;
+}
+
+.wiki-section-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--shell-text, #1a1a1a);
+}
+
+.wiki-section-intro {
+  margin: 0 0 12px;
+  color: var(--shell-text-secondary, #555555);
+  font-size: 13.5px;
+  line-height: 1.6;
+  max-width: 900px;
+}
+
+.wiki-prop-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.wiki-prop-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1.5px solid var(--shell-border, #dddddd);
+  color: var(--shell-text-muted, #6b6f74);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.wiki-prop-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--shell-border-subtle, rgba(0, 0, 0, 0.08));
+  color: var(--shell-text-body, #333333);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.wiki-prop-syntax {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12.5px;
+  color: #2563eb;
+  white-space: nowrap;
+}
+
+.wiki-prop-type {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12px;
+  color: var(--shell-text-muted, #6b6f74);
+  white-space: nowrap;
+}
+
 .app-sidenav {
   width: 20%;
   min-width: 260px;

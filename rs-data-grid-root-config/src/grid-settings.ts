@@ -27,6 +27,12 @@ export const gridConfig: Record<string, any> = {
   entrySection: '',
   remoteMode: false,
   dataSource: [],
+  columns: [
+    { dataField: 'poster', caption: 'poster' },
+    { dataField: 'title', caption: 'title' },
+    { dataField: 'genres', caption: 'genres' },
+    { dataField: 'release_date', caption: 'release_date' },
+  ],
   headerRowLines: true,
   headerColumnLines: true,
   bodyRowLines: true,
@@ -92,7 +98,6 @@ export const settingsGroups: SettingsGroup[] = [
     title: 'Pagination',
     settings: [
       { key: 'pagination', label: 'Pagination', type: 'boolean' },
-      { key: 'remoteMode', label: 'Remote Mode', type: 'boolean' },
       { key: 'currentPagingSize', label: 'Current Paging Size', type: 'number' },
       { key: 'pageListSize', label: 'Page List Size', type: 'number' },
       { key: 'pagingSizes', label: 'Paging Sizes', type: 'string' },

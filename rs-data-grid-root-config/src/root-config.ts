@@ -2,6 +2,7 @@ import { mountRootParcel } from 'single-spa';
 import { getCustomProps, setUpdateHook, gridConfig, setSetting } from './grid-settings';
 import { renderSidebar } from './sidebar';
 import { renderCodeViewer } from './code-viewer';
+import { renderWiki } from './wiki-viewer';
 
 interface TabDef {
   name: string;
@@ -203,33 +204,42 @@ function renderTabs(): void {
 window.addEventListener('hashchange', renderTabs);
 renderTabs();
 
-// Demo/Code tab strip, rendered above the mounted grid. "Demo" shows the
-// live, sidebar-driven parcel exactly as before (it stays mounted the whole
-// time -- switching to Code just hides it, so nothing remounts or loses
+// Demo/Code/Wiki tab strip, rendered above the mounted grid. "Demo" shows
+// the live, sidebar-driven parcel exactly as before (it stays mounted the
+// whole time -- switching away just hides it, so nothing remounts or loses
 // state when switching back). "Code" shows that framework's own top-level
-// grid component source, read-only and highlighted.
-type ViewMode = 'demo' | 'code';
+// grid component source, read-only and highlighted. "Wiki" shows a
+// framework-specific prop reference, organized to mirror the sidebar's own
+// accordion sections.
+type ViewMode = 'demo' | 'code' | 'wiki';
 let viewMode: ViewMode = 'demo';
 
 function applyViewMode(): void {
   const demoEl = document.getElementById('single-spa-application')!;
   const codeEl = document.getElementById('code-viewer')!;
-  demoEl.classList.toggle('content-hidden', viewMode === 'code');
+  const wikiEl = document.getElementById('wiki-viewer')!;
+  demoEl.classList.toggle('content-hidden', viewMode !== 'demo');
   codeEl.classList.toggle('code-viewer-active', viewMode === 'code');
+  wikiEl.classList.toggle('wiki-viewer-active', viewMode === 'wiki');
   if (viewMode === 'code') {
     renderCodeViewer(codeEl, currentTab().hash);
+  } else if (viewMode === 'wiki') {
+    renderWiki(wikiEl, currentTab().hash);
   }
 }
 
 const VIEW_MODE_ICONS: Record<ViewMode, string> = {
   demo: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>`,
   code: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  wiki: `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
 };
+
+const VIEW_MODE_LABELS: Record<ViewMode, string> = { demo: 'Demo', code: 'Code', wiki: 'Wiki' };
 
 function renderViewModeTabs(): void {
   const container = document.getElementById('view-mode-tabs')!;
   container.innerHTML = '';
-  (['demo', 'code'] as ViewMode[]).forEach(mode => {
+  (['demo', 'code', 'wiki'] as ViewMode[]).forEach(mode => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'view-mode-tab' + (viewMode === mode ? ' view-mode-tab-active' : '');
@@ -240,7 +250,7 @@ function renderViewModeTabs(): void {
     icon.setAttribute('aria-hidden', 'true');
 
     const label = document.createElement('span');
-    label.textContent = mode === 'demo' ? 'Demo' : 'Code';
+    label.textContent = VIEW_MODE_LABELS[mode];
 
     button.append(icon, label);
     button.addEventListener('click', () => {

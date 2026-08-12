@@ -19,6 +19,12 @@ const defaultGridConfig: Record<string, any> = {
   entrySection: '',
   remoteMode: false,
   dataSource: [],
+  columns: [
+    { dataField: 'poster', caption: 'poster' },
+    { dataField: 'title', caption: 'title' },
+    { dataField: 'genres', caption: 'genres' },
+    { dataField: 'release_date', caption: 'release_date' },
+  ],
   headerRowLines: true,
   headerColumnLines: true,
   bodyRowLines: true,
@@ -82,6 +88,7 @@ watch(
       :entry-section="config.entrySection"
       :remote-mode="config.remoteMode"
       :data-source="config.dataSource"
+      :columns="config.columns"
       :header-row-lines="config.headerRowLines"
       :header-column-lines="config.headerColumnLines"
       :show-filter="config.showFilter"

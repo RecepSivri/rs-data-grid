@@ -14,6 +14,12 @@ const defaultGridConfig: Record<string, any> = {
   entrySection: '',
   remoteMode: false,
   dataSource: [],
+  columns: [
+    { dataField: 'poster', caption: 'poster' },
+    { dataField: 'title', caption: 'title' },
+    { dataField: 'genres', caption: 'genres' },
+    { dataField: 'release_date', caption: 'release_date' },
+  ],
   headerRowLines: true,
   headerColumnLines: true,
   bodyRowLines: true,
