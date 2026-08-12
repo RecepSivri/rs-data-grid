@@ -430,11 +430,21 @@ body[data-theme='light'] {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  /* Matches #single-spa-application's and .wiki-viewer's own right inset
+     (padding, not margin, so the auto-centering above still works the same
+     way) -- keeps this box's right edge lined up with the other two when
+     switching between tabs, instead of running to the container's full
+     width. The dark background/border-radius live on .code-viewer-inner,
+     not here: a background always paints the full border-box regardless of
+     padding, so putting it on this element would make the padding invisible
+     -- .code-viewer-inner is the "card" (like the grid's own white card
+     inside the transparent #single-spa-application), so it's the one that
+     needs to sit inset from this box's padded edge. */
+  box-sizing: border-box;
+  padding-right: 20px;
+  padding-bottom: 20px;
   display: none;
   flex-direction: column;
-  background: #282c34;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 .code-viewer.code-viewer-active {
@@ -447,6 +457,9 @@ body[data-theme='light'] {
   flex-direction: column;
   min-height: 0;
   flex: 1 1 auto;
+  background: #282c34;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .code-copy-button {
@@ -637,6 +650,91 @@ body[data-theme='light'] {
   font-size: 12px;
   color: var(--shell-text-muted, #6b6f74);
   white-space: nowrap;
+}
+
+/* A third flex row in body (after .app-topbar and .app-shell) -- flex: 0 0
+   auto so it takes only the height its content needs, letting .app-shell's
+   own flex:1/min-height:0 shrink to make room within body's fixed 100vh
+   rather than overflowing the viewport. Uses the same --shell-* tokens as
+   the rest of the shell chrome, inherited from body's own [data-theme]
+   attribute, so it needs no separate light/dark override block. */
+.app-footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--shell-bg-sidenav, #262a2e);
+  border-top: 1px solid var(--shell-border, #45494e);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.app-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.app-footer-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--shell-text-muted, #9a9ea3);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.app-footer-link:hover {
+  color: var(--shell-text, #f2f2f3);
+  background: var(--shell-bg-panel-hover, rgba(255, 255, 255, 0.06));
+}
+
+.app-footer-link svg {
+  display: block;
+}
+
+/* Text badge instead of a brand mark SVG -- npm's actual logo is a solid
+   square with the wordmark cut out of it in negative space, which needs an
+   evenodd fill-rule to render as a cutout rather than a solid blob; a
+   plain-text badge sidesteps that without needing a hand-verified path. */
+.app-footer-link-npm {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.app-footer-powered {
+  font-size: 12px;
+  color: var(--shell-text-muted, #9a9ea3);
+  text-align: center;
+}
+
+.app-footer-powered strong {
+  color: var(--shell-text, #f2f2f3);
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .app-footer {
+    padding: 12px 10px;
+    gap: 6px;
+  }
+
+  .app-footer-links {
+    gap: 8px;
+  }
+
+  .app-footer-link {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 .app-sidenav {

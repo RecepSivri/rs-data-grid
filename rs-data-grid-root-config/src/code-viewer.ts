@@ -25,12 +25,15 @@ const PROP_NAME: Record<string, string> = {
 };
 
 // Order mirrors each App entry point's own prop list. Internal demo-only
-// plumbing (dataSource, apiHeadersRaw, remoteModeParams) is left out
-// entirely, and otherwise-empty/inactive optional fields (authToken,
-// entrySection, fetchHeaders, remoteMode when off) are skipped -- a "how do
-// I use this" snippet shouldn't show empty or inactive props.
+// plumbing (apiHeadersRaw, remoteModeParams) is left out entirely, and
+// otherwise-empty/inactive optional fields (authToken, entrySection,
+// fetchHeaders, remoteMode when off) are skipped -- a "how do I use this"
+// snippet shouldn't show empty or inactive props. dataSource is handled
+// specially below: it's mutually exclusive with fetchUrl in the actual grid
+// (a non-empty dataSource always wins), so the snippet shows whichever one
+// is actually driving the data right now, never both.
 const PROP_ORDER = [
-  'theme', 'fetchUrl', 'apiMethod', 'apiHeaders', 'authToken', 'entrySection', 'remoteMode',
+  'theme', 'fetchUrl', 'apiMethod', 'apiHeaders', 'authToken', 'entrySection', 'dataSource', 'remoteMode',
   'headerRowLines', 'headerColumnLines', 'bodyRowLines', 'bodyColumnLines',
   'tableBorder', 'borderRadiusTop', 'borderRadiusBottom', 'diagonalRow',
   'dragDropColumns', 'dragDropRows',
@@ -40,9 +43,14 @@ const PROP_ORDER = [
   'gridMode',
 ];
 
+const FETCH_ONLY_KEYS = new Set(['fetchUrl', 'apiMethod', 'apiHeaders', 'authToken', 'entrySection']);
+
 function relevantEntries(config: Record<string, any>): Entry[] {
+  const usingDataSource = Array.isArray(config.dataSource) && config.dataSource.length > 0;
   const entries: Entry[] = [];
   for (const key of PROP_ORDER) {
+    if (usingDataSource && FETCH_ONLY_KEYS.has(key)) continue;
+    if (!usingDataSource && key === 'dataSource') continue;
     const value = config[key];
     if ((key === 'authToken' || key === 'entrySection') && !value) continue;
     if (key === 'apiHeaders' && (!value || Object.keys(value).length === 0)) continue;
