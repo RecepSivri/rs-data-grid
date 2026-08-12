@@ -39,7 +39,25 @@ ensure_deps rs-data-grid-react
 
 step "rs-data-grid-angular -- single-spa bundle -> dist/rsivri-data-grid/main.js"
 ensure_deps rs-data-grid-angular
-(cd rs-data-grid-angular && npm run build:single-spa:rsivri-data-grid)
+# Unlike the other 4 apps, the rsivri-data-grid app depends on rs-grid-angular
+# as an ordinary registry package (^0.1.0), resolved by npm ci from whatever
+# is actually published -- there's no Vite-style self-reference trick for
+# Angular libraries. So on a clean CI install (Netlify) it always gets the
+# last-published rs-grid-angular, which silently drifts behind this repo's
+# own in-progress library source. Building the library fresh from source and
+# overwriting node_modules/rs-grid-angular with that output, every time,
+# keeps the app compiling against what's actually in this repo -- no publish
+# required. (.angular is cleared first: its incremental cache can otherwise
+# serve a stale compiled library even after a fresh source build.)
+(
+  cd rs-data-grid-angular
+  rm -rf .angular
+  npx ng build rs-grid-angular
+  rm -rf node_modules/rs-grid-angular
+  mkdir -p node_modules/rs-grid-angular
+  cp -R dist/rs-grid-angular/. node_modules/rs-grid-angular/
+  npm run build:single-spa:rsivri-data-grid
+)
 
 step "rs-data-grid-vue -- single-spa bundle -> dist-single-spa/rs-data-grid-vue.js"
 ensure_deps rs-data-grid-vue
