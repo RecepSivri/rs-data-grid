@@ -23,6 +23,32 @@ import './global.css';
 // unrelated prop change. A single stable reference fixes it.
 const EMPTY_ARRAY = [];
 
+// Grid Settings' column selection persists across page reloads (localStorage)
+// but resets whenever the underlying data actually changes (a real dataSource
+// change or a manual fetch) -- a selection saved against one dataset can
+// reference fields that don't exist in the next one, which otherwise filters
+// every column out and makes the grid look empty even though rows loaded.
+const GRID_SETTINGS_STORAGE_KEY = 'rs-data-grid-selected-columns';
+
+function readPersistedColumnSelection() {
+  try {
+    const raw = localStorage.getItem(GRID_SETTINGS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistColumnSelection(next) {
+  try {
+    localStorage.setItem(GRID_SETTINGS_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Private browsing / storage quota exceeded -- the selection just won't
+    // survive a reload, which is a reasonable degradation.
+  }
+}
+
 /**
  * Live-typing inputs (currently just the global search box) rebuild the
  * whole region they live in on every keystroke -- unlike edit/batch drafts,
@@ -95,6 +121,7 @@ export function createGrid() {
 
   function fetchNow() {
     if (lastProps) {
+      setSelectedColumnFields([]);
       loadData(lastProps);
     }
   }
@@ -140,7 +167,12 @@ export function createGrid() {
   // Grid Settings: which columns to show and in what order, separate from
   // (and applied on top of) the drag-reorder-driven columnOrder above. Empty
   // selection means "show everything" -- matches React/Vue/Angular exactly.
-  let selectedColumnFields = [];
+  let selectedColumnFields = readPersistedColumnSelection();
+
+  function setSelectedColumnFields(next) {
+    selectedColumnFields = next;
+    persistColumnSelection(next);
+  }
 
   function visibleColumnsFor(allColumns) {
     if (selectedColumnFields.length === 0) {
@@ -162,7 +194,7 @@ export function createGrid() {
       columns: allColumns,
       selected: selectedColumnFields,
       theme: props.theme,
-      onChange: next => { selectedColumnFields = next; renderNow(); },
+      onChange: next => { setSelectedColumnFields(next); renderNow(); },
     });
   }
 
@@ -474,6 +506,7 @@ export function createGrid() {
       if (isFirstDataSource) {
         isFirstDataSource = false;
       } else {
+        setSelectedColumnFields([]);
         loadData(lastProps);
       }
     }

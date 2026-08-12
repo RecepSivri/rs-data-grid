@@ -57,15 +57,14 @@ const props = defineProps<{
 const gridRef = ref<InstanceType<typeof RsDataGrid> | null>(null);
 const config = computed(() => props.gridConfig ?? defaultGridConfig);
 
-let isFirstFetchNonce = true;
+// watch() without { immediate: true } never fires for the prop's initial
+// value -- only for genuine subsequent changes -- so no separate "skip the
+// first call" flag is needed here (one used to exist and incorrectly ate
+// the very first real Fetch click after every page load).
 watch(
   () => props.fetchNonce,
   nonce => {
     if (nonce === undefined) return;
-    if (isFirstFetchNonce) {
-      isFirstFetchNonce = false;
-      return;
-    }
     gridRef.value?.fetchNow();
   }
 );

@@ -52,18 +52,18 @@ function toGridProps(props) {
 export function createApp() {
   const grid = createGrid();
   let wrapperEl = null;
-  let isFirstFetchNonce = true;
   let lastFetchNonce;
 
+  // mount() already seeds lastFetchNonce with whatever value fetchNonce
+  // starts at, so any later value that differs from it is by definition a
+  // genuine change -- no separate "skip the first call" flag needed (one
+  // used to exist here and, combined with this same lastFetchNonce check,
+  // silently ate the very first real Fetch click after every page load).
   function handleFetchNonce(props) {
     if (props.fetchNonce === undefined || props.fetchNonce === lastFetchNonce) {
       return;
     }
     lastFetchNonce = props.fetchNonce;
-    if (isFirstFetchNonce) {
-      isFirstFetchNonce = false;
-      return;
-    }
     grid.fetchNow();
   }
 

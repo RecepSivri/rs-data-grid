@@ -30,6 +30,32 @@ import { GridSettingsDialog } from './dialogs/GridSettingsDialog';
 const EMPTY_ARRAY: never[] = [];
 const EMPTY_RECORD: Record<string, never> = {};
 
+// Grid Settings' column selection persists across page reloads (localStorage)
+// but resets whenever the underlying data actually changes (a real dataSource
+// change or a manual fetch) -- a selection saved against one dataset can
+// reference fields that don't exist in the next one, which otherwise filters
+// every column out and makes the grid look empty even though rows loaded.
+const GRID_SETTINGS_STORAGE_KEY = 'rs-data-grid-selected-columns';
+
+function readPersistedColumnSelection(): string[] {
+  try {
+    const raw = localStorage.getItem(GRID_SETTINGS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed : EMPTY_ARRAY;
+  } catch {
+    return EMPTY_ARRAY;
+  }
+}
+
+function persistColumnSelection(next: string[]): void {
+  try {
+    localStorage.setItem(GRID_SETTINGS_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Private browsing / storage quota exceeded -- the selection just won't
+    // survive a reload, which is a reasonable degradation.
+  }
+}
+
 export interface RsDataGridProps {
   theme?: 'dark' | 'light';
   headerColumnLines?: boolean;
@@ -214,7 +240,11 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   // Empty means "show every column" -- this layers on top of the drag-drop
   // columnOrder above rather than replacing it.
   const [gridSettingsOpen, setGridSettingsOpen] = useState(false);
-  const [selectedColumnFields, setSelectedColumnFields] = useState<string[]>([]);
+  const [selectedColumnFields, setSelectedColumnFieldsState] = useState<string[]>(readPersistedColumnSelection);
+  const setSelectedColumnFields = useCallback((next: string[]) => {
+    setSelectedColumnFieldsState(next);
+    persistColumnSelection(next);
+  }, []);
 
   const visibleColumns = useMemo<IColumn[]>(() => {
     if (selectedColumnFields.length === 0) {
@@ -266,11 +296,17 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     if (isFirstDataSource.current) {
       isFirstDataSource.current = false;
     } else {
+      setSelectedColumnFields([]);
       loadData();
     }
   }
 
-  useImperativeHandle(ref, () => ({ fetchNow: loadData }));
+  useImperativeHandle(ref, () => ({
+    fetchNow: () => {
+      setSelectedColumnFields([]);
+      loadData();
+    },
+  }));
 
   const onFilterChange = (event: { dataField: string; values: string[] }) => store.setFilter(event.dataField, event.values);
   const onSortToggle = (dataField: string) => store.toggleSort(dataField);

@@ -13,6 +13,32 @@ import { ConfirmDialogComponent } from './dialogs/confirm-dialog.component';
 import { EditRowDialogComponent } from './dialogs/edit-row-dialog.component';
 import { GridSettingsDialogComponent } from './dialogs/grid-settings-dialog.component';
 
+// Grid Settings' column selection persists across page reloads (localStorage)
+// but resets whenever the underlying data actually changes (a real dataSource
+// change or a manual fetch) -- a selection saved against one dataset can
+// reference fields that don't exist in the next one, which otherwise filters
+// every column out and makes the grid look empty even though rows loaded.
+const GRID_SETTINGS_STORAGE_KEY = 'rs-data-grid-selected-columns';
+
+function readPersistedColumnSelection(): string[] {
+  try {
+    const raw = localStorage.getItem(GRID_SETTINGS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistColumnSelection(next: string[]): void {
+  try {
+    localStorage.setItem(GRID_SETTINGS_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // Private browsing / storage quota exceeded -- the selection just won't
+    // survive a reload, which is a reasonable degradation.
+  }
+}
+
 @Component({
   selector: 'rs-grid-angular',
   standalone: true,
@@ -156,7 +182,12 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   // Column visibility + order picked from the toolbar's Grid Settings dialog.
   // Empty means "show every column" -- this layers on top of the drag-drop
   // columnOrder above rather than replacing it.
-  selectedColumnFields: string[] = [];
+  selectedColumnFields: string[] = readPersistedColumnSelection();
+
+  private setSelectedColumnFields(next: string[]): void {
+    this.selectedColumnFields = next;
+    persistColumnSelection(next);
+  }
 
   private visibleColumnsCacheKey: { columns: IColumn[]; selected: string[] } | null = null;
   private visibleColumnsCacheResult: IColumn[] = [];
@@ -188,7 +219,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
       panelClass: this.dialogPanelClass
     });
     const sub = dialogRef.componentInstance.selectedChange.subscribe((next: string[]) => {
-      this.selectedColumnFields = next;
+      this.setSelectedColumnFields(next);
     });
     dialogRef.afterClosed().subscribe(() => sub.unsubscribe());
   }
@@ -324,6 +355,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['dataSource'] && !changes['dataSource'].firstChange) {
+      this.setSelectedColumnFields([]);
       this.loadData();
     }
   }
@@ -337,6 +369,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   fetchNow(): void {
+    this.setSelectedColumnFields([]);
     this.loadData();
   }
 
