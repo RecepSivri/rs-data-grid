@@ -13,12 +13,7 @@ const defaultGridConfig: Record<string, any> = {
   entrySection: '',
   remoteMode: false,
   dataSource: [],
-  columns: [
-    { dataField: 'poster', caption: 'poster' },
-    { dataField: 'title', caption: 'title' },
-    { dataField: 'genres', caption: 'genres' },
-    { dataField: 'release_date', caption: 'release_date' },
-  ],
+  defaultVisibleColumns: ['poster', 'title', 'genres', 'release_date'],
   headerRowLines: true,
   headerColumnLines: true,
   bodyRowLines: true,
@@ -84,7 +79,7 @@ function App(props: AppProps) {
         entrySection={gridConfig.entrySection}
         remoteMode={gridConfig.remoteMode}
         dataSource={gridConfig.dataSource}
-        columns={gridConfig.columns}
+        defaultVisibleColumns={gridConfig.defaultVisibleColumns}
         headerRowLines={gridConfig.headerRowLines}
         headerColumnLines={gridConfig.headerColumnLines}
         showFilter={gridConfig.showFilter}

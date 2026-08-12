@@ -20,13 +20,22 @@ import { GridSettingsDialogComponent } from './dialogs/grid-settings-dialog.comp
 // every column out and makes the grid look empty even though rows loaded.
 const GRID_SETTINGS_STORAGE_KEY = 'rs-data-grid-selected-columns';
 
-function readPersistedColumnSelection(): string[] {
+// `fallback` is only ever consulted on a fresh visit (nothing persisted
+// yet) -- it seeds the very first render with a consumer-chosen default
+// subset (defaultVisibleColumns), but every later reset (real data change)
+// always goes to "show everything", never back to this fallback, since a
+// fallback tuned for one dataset can be just as wrong for the next as a
+// stale persisted selection would be.
+function readPersistedColumnSelection(fallback: string[]): string[] {
   try {
     const raw = localStorage.getItem(GRID_SETTINGS_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) ? parsed : [];
+    if (raw === null) {
+      return fallback;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
@@ -74,6 +83,12 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   @Input() bodyRowLines: boolean = true;
   @Input() bodyColumnLines: boolean = true;
   @Input() columns: IColumn[] = [];
+  // Which columns Grid Settings shows initially, before the user (or a
+  // persisted localStorage selection) picks anything -- purely a starting
+  // point, unrelated to `columns` (which controls the full available set
+  // inferred from data). Ignored once anything is persisted or a reset
+  // happens (see readPersistedColumnSelection above).
+  @Input() defaultVisibleColumns: string[] = [];
   @Input() tableBorder: boolean = true;
   @Input() borderRadiusTop: boolean = false;
   @Input() borderRadiusBottom: boolean = false;
@@ -181,8 +196,11 @@ export class RsivriGridComponent implements OnInit, OnChanges {
 
   // Column visibility + order picked from the toolbar's Grid Settings dialog.
   // Empty means "show every column" -- this layers on top of the drag-drop
-  // columnOrder above rather than replacing it.
-  selectedColumnFields: string[] = readPersistedColumnSelection();
+  // columnOrder above rather than replacing it. Field initializers run in
+  // the constructor, before Angular has applied @Input() bindings, so the
+  // real (defaultVisibleColumns-aware) value is set in ngOnInit() instead;
+  // this placeholder just satisfies strict property initialization.
+  selectedColumnFields: string[] = [];
 
   private setSelectedColumnFields(next: string[]): void {
     this.selectedColumnFields = next;
@@ -350,6 +368,7 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   }
 
   ngOnInit() {
+    this.selectedColumnFields = readPersistedColumnSelection(this.defaultVisibleColumns);
     this.loadData();
   }
 

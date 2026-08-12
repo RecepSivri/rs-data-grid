@@ -30,13 +30,22 @@ const EMPTY_ARRAY = [];
 // every column out and makes the grid look empty even though rows loaded.
 const GRID_SETTINGS_STORAGE_KEY = 'rs-data-grid-selected-columns';
 
-function readPersistedColumnSelection() {
+// `fallback` is only ever consulted on a fresh visit (nothing persisted
+// yet) -- it seeds the very first render with a consumer-chosen default
+// subset (defaultVisibleColumns), but every later reset (real data change)
+// always goes to "show everything", never back to this fallback, since a
+// fallback tuned for one dataset can be just as wrong for the next as a
+// stale persisted selection would be.
+function readPersistedColumnSelection(fallback) {
   try {
     const raw = localStorage.getItem(GRID_SETTINGS_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) ? parsed : [];
+    if (raw === null) {
+      return fallback;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
@@ -167,7 +176,9 @@ export function createGrid() {
   // Grid Settings: which columns to show and in what order, separate from
   // (and applied on top of) the drag-reorder-driven columnOrder above. Empty
   // selection means "show everything" -- matches React/Vue/Angular exactly.
-  let selectedColumnFields = readPersistedColumnSelection();
+  // The real (defaultVisibleColumns-aware) initial value is set in render()'s
+  // first-mount branch below, once props are actually available.
+  let selectedColumnFields = [];
 
   function setSelectedColumnFields(next) {
     selectedColumnFields = next;
@@ -494,6 +505,7 @@ export function createGrid() {
 
     if (!didMount) {
       didMount = true;
+      selectedColumnFields = readPersistedColumnSelection(lastProps.defaultVisibleColumns ?? []);
       dataSourceRef = lastProps.dataSource;
       loadData(lastProps);
       return; // loadData's store.setData/fetchData triggers notify() -> renderNow()
@@ -524,6 +536,7 @@ export function createGrid() {
       bodyRowLines: true,
       bodyColumnLines: true,
       columns: [],
+      defaultVisibleColumns: [],
       tableBorder: true,
       borderRadiusTop: false,
       borderRadiusBottom: false,

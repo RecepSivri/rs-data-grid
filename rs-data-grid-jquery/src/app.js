@@ -18,7 +18,7 @@ function toGridProps(props) {
     entrySection: gridConfig.entrySection,
     remoteMode: gridConfig.remoteMode,
     dataSource: gridConfig.dataSource,
-    columns: gridConfig.columns,
+    defaultVisibleColumns: gridConfig.defaultVisibleColumns,
     headerRowLines: gridConfig.headerRowLines,
     headerColumnLines: gridConfig.headerColumnLines,
     showFilter: gridConfig.showFilter,

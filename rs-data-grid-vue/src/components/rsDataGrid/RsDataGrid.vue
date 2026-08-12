@@ -20,13 +20,22 @@ import GridSettingsDialog from './dialogs/GridSettingsDialog.vue';
 // every column out and makes the grid look empty even though rows loaded.
 const GRID_SETTINGS_STORAGE_KEY = 'rs-data-grid-selected-columns';
 
-function readPersistedColumnSelection(): string[] {
+// `fallback` is only ever consulted on a fresh visit (nothing persisted
+// yet) -- it seeds the very first render with a consumer-chosen default
+// subset (defaultVisibleColumns), but every later reset (real data change)
+// always goes to "show everything", never back to this fallback, since a
+// fallback tuned for one dataset can be just as wrong for the next as a
+// stale persisted selection would be.
+function readPersistedColumnSelection(fallback: string[]): string[] {
   try {
     const raw = localStorage.getItem(GRID_SETTINGS_STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) ? parsed : [];
+    if (raw === null) {
+      return fallback;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
   } catch {
-    return [];
+    return fallback;
   }
 }
 
@@ -51,6 +60,12 @@ const props = withDefaults(
     bodyRowLines?: boolean;
     bodyColumnLines?: boolean;
     columns?: IColumn[];
+    // Which columns Grid Settings shows initially, before the user (or a
+    // persisted localStorage selection) picks anything -- purely a starting
+    // point, unrelated to `columns` (which controls the full available set
+    // inferred from data). Ignored once anything is persisted or a reset
+    // happens (see readPersistedColumnSelection above).
+    defaultVisibleColumns?: string[];
     tableBorder?: boolean;
     borderRadiusTop?: boolean;
     borderRadiusBottom?: boolean;
@@ -87,6 +102,7 @@ const props = withDefaults(
     bodyRowLines: true,
     bodyColumnLines: true,
     columns: () => [],
+    defaultVisibleColumns: () => [],
     tableBorder: true,
     borderRadiusTop: false,
     borderRadiusBottom: false,
@@ -215,7 +231,7 @@ const onColumnMove = (fromField: string, toField: string) => {
 // Empty means "show every column" -- this layers on top of the drag-drop
 // columnOrder above rather than replacing it.
 const gridSettingsOpen = ref(false);
-const selectedColumnFields = ref<string[]>(readPersistedColumnSelection());
+const selectedColumnFields = ref<string[]>(readPersistedColumnSelection(props.defaultVisibleColumns));
 const setSelectedColumnFields = (next: string[]): void => {
   selectedColumnFields.value = next;
   persistColumnSelection(next);
