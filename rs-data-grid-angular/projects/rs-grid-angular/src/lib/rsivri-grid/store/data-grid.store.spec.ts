@@ -3,8 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import {
-  applyFilters, applyGlobalSearch, applySort, DataGridStore, returnLastPageList, returnPageList,
-  returnPageStateRelatedPageNum, setDataWrapper
+  applyFilters, applyGlobalSearch, applySort, compareValues, DataGridStore, moveItem, resolveDataPath, returnLastPageList,
+  returnPageList, returnPageStateRelatedPageNum, setDataWrapper
 } from './data-grid.store';
 import { AppState } from './data-grid.state';
 
@@ -208,6 +208,44 @@ describe('data-grid pager math (pure helpers)', () => {
     });
   });
 
+  describe('resolveDataPath', () => {
+    it('returns the data unchanged when path is undefined or blank', () => {
+      const data = { a: 1 };
+      expect(resolveDataPath(data, undefined)).toBe(data);
+      expect(resolveDataPath(data, '   ')).toBe(data);
+    });
+
+    it('resolves a dotted path, including bracket array indices', () => {
+      expect(resolveDataPath({ a: { b: [{ c: 42 }] } }, 'a.b[0].c')).toBe(42);
+    });
+
+    it('returns undefined once an intermediate value is null or undefined', () => {
+      expect(resolveDataPath({ a: null }, 'a.b')).toBeUndefined();
+      expect(resolveDataPath({ a: undefined }, 'a.b')).toBeUndefined();
+    });
+  });
+
+  describe('moveItem', () => {
+    const a = { id: 'a' };
+    const b = { id: 'b' };
+    const c = { id: 'c' };
+
+    it('moves an item forward, landing after the target', () => {
+      expect(moveItem([a, b, c], a, c)).toEqual([b, c, a]);
+    });
+
+    it('moves an item backward, landing before the target', () => {
+      expect(moveItem([a, b, c], c, a)).toEqual([c, a, b]);
+    });
+
+    it('returns the same array reference when fromItem === toItem, or either is not found', () => {
+      const data = [a, b];
+      expect(moveItem(data, a, a)).toBe(data);
+      expect(moveItem(data, { id: 'x' }, b)).toBe(data);
+      expect(moveItem(data, a, { id: 'x' })).toBe(data);
+    });
+  });
+
   describe('applyGlobalSearch', () => {
     const rows = [
       { firstName: 'Jane', lastName: 'Doe', city: 'Boston' },
@@ -235,6 +273,32 @@ describe('data-grid pager math (pure helpers)', () => {
 
     it('returns an empty array when nothing matches', () => {
       expect(applyGlobalSearch(rows, 'nonexistent')).toEqual([]);
+    });
+
+    it('handles null rows and null/undefined field values gracefully', () => {
+      // lastName/city (null/undefined) come before firstName in insertion
+      // order, so Object.values().some(...) evaluates them -- and their own
+      // `value ?? ''` fallback -- before it reaches the actually-matching field.
+      expect(applyGlobalSearch([null, { lastName: null, city: undefined, firstName: 'Bob' }], 'bob')).toEqual([
+        { lastName: null, city: undefined, firstName: 'Bob' },
+      ]);
+    });
+  });
+
+  describe('compareValues', () => {
+    it('compares two numeric-looking values numerically', () => {
+      expect(compareValues(2, 10)).toBeLessThan(0);
+      expect(compareValues('2', '10')).toBeLessThan(0);
+    });
+
+    it('falls back to string compare when either side is null, undefined, or non-numeric', () => {
+      expect(compareValues(null, 5)).toBe(''.localeCompare('5'));
+      expect(compareValues(5, undefined)).toBe('5'.localeCompare(''));
+      expect(compareValues('abc', 5)).toBe('abc'.localeCompare('5'));
+    });
+
+    it('compares two non-numeric strings lexicographically', () => {
+      expect(compareValues('banana', 'apple')).toBe('banana'.localeCompare('apple'));
     });
   });
 });
@@ -295,6 +359,14 @@ describe('DataGridStore', () => {
     expect(store.pageNumber()).toBe(9);
     store.decreasePageNum();
     expect(store.pageNumber()).toBe(8);
+    store.increasePageNum();
+    expect(store.pageNumber()).toBe(9);
+  });
+
+  it('increasePageNum stays on the last page once already there', () => {
+    store.setData(new Array(100).fill({}), false); // pageLimit = 10
+    store.lastPageNum();
+    expect(store.pageNumber()).toBe(9);
     store.increasePageNum();
     expect(store.pageNumber()).toBe(9);
   });
@@ -448,6 +520,41 @@ describe('DataGridStore', () => {
     });
   });
 
+  describe('addRow/removeRow/updateRow/moveRow', () => {
+    it('addRow prepends a row, preserving remote paging flags', () => {
+      store.setData([{ id: 1 }], true, 25);
+      store.addRow({ id: 'new' });
+      expect(store.data()[0]).toEqual({ id: 'new' });
+      expect(store.data().length).toBe(2);
+    });
+
+    it('removeRow removes the matching row by reference', () => {
+      const rowA = { id: 1 };
+      const rowB = { id: 2 };
+      store.setData([rowA, rowB], false);
+      store.removeRow(rowA);
+      expect(store.data()).toEqual([rowB]);
+    });
+
+    it('updateRow replaces the matching row by reference, leaving other rows untouched', () => {
+      const rowA = { id: 1 };
+      const rowB = { id: 2 };
+      store.setData([rowA, rowB], false);
+      store.updateRow(rowA, { id: 99 });
+      expect(store.data()).toEqual([{ id: 99 }, { id: 2 }]);
+      expect(store.data()[1]).toBe(rowB);
+    });
+
+    it('moveRow reorders rows via moveItem', () => {
+      const rowA = { id: 1 };
+      const rowB = { id: 2 };
+      const rowC = { id: 3 };
+      store.setData([rowA, rowB, rowC], false);
+      store.moveRow(rowA, rowC);
+      expect(store.data()).toEqual([rowB, rowC, rowA]);
+    });
+  });
+
   describe('fetchData (local, non-paginated)', () => {
     it('extracts the given section from the response', async () => {
       store.fetchData('http://api.test/x', 'items', false);
@@ -477,6 +584,7 @@ describe('DataGridStore', () => {
       TestBed.flushEffects();
       expect(store.data()).toEqual(response);
     });
+
   });
 
   describe('fetchData (remote, paginated)', () => {
@@ -569,6 +677,28 @@ describe('DataGridStore', () => {
       TestBed.flushEffects();
       const expectedSort = encodeURIComponent(JSON.stringify({ field: 'firstName', direction: 'desc' }));
       const req = httpMock.expectOne(`http://api.test/search?page=0&size=10&sort=${expectedSort}`);
+      req.flush({ items: [{ firstName: 'Jane' }], size: 1 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+      expect(store.data()).toEqual([{ firstName: 'Jane' }]);
+    });
+
+    it('adds a search query param and refetches from page 0 when the global search term changes', async () => {
+      store.fetchData('http://api.test/search', 'items', true, 'size');
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=0&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.changePageNumber(3);
+      TestBed.flushEffects();
+      httpMock.expectOne('http://api.test/search?page=3&size=10').flush({ items: [], size: 100 });
+      await appRef.whenStable();
+      TestBed.flushEffects();
+
+      store.setGlobalSearch('jane');
+      TestBed.flushEffects();
+      const req = httpMock.expectOne('http://api.test/search?page=0&size=10&search=jane');
       req.flush({ items: [{ firstName: 'Jane' }], size: 1 });
       await appRef.whenStable();
       TestBed.flushEffects();

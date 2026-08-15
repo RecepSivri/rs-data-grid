@@ -108,6 +108,99 @@ describe('RsDataGridTable - popup/default mode rendering', () => {
     expect(cells[0].className).toContain('border-right'); // first column, not last
     expect(cells[1].className).not.toContain('border-right'); // last column, no actions
   });
+
+  it('renders an image cell (with no title attribute) for a value that looks like an image URL', () => {
+    const data = [{ name: 'https://example.com/photo.png', age: 1 }];
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" />);
+    const img = container.querySelector('.cell-thumbnail') as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.src).toBe('https://example.com/photo.png');
+    expect(img.closest('.section-style')?.getAttribute('title')).toBeNull();
+  });
+
+  it('renders a plain text cell (with a title attribute) for a value that does not look like an image URL', () => {
+    const data = [{ name: 'Alice', age: 1 }];
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" />);
+    expect(container.querySelector('.cell-thumbnail')).toBeNull();
+    const cell = screen.getByText('Alice');
+    expect(cell.getAttribute('title')).toBe('Alice');
+  });
+});
+
+describe('RsDataGridTable - row drag-and-drop', () => {
+  const data = [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25 }, { name: 'Carol', age: 20 }];
+
+  it('does not render drag handles when dragDropRows is off', () => {
+    render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={false} />);
+    expect(screen.queryByLabelText('Reorder row')).not.toBeInTheDocument();
+  });
+
+  it('renders a drag handle per row when dragDropRows is on', () => {
+    render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} />);
+    expect(screen.getAllByLabelText('Reorder row')).toHaveLength(3);
+  });
+
+  it('sets dataTransfer.effectAllowed on dragstart', () => {
+    render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} />);
+    const handle = screen.getAllByLabelText('Reorder row')[0];
+    fireEvent.dragStart(handle, { dataTransfer: { effectAllowed: null } });
+  });
+
+  it('drop calls onRowMove with the dragged and target rows, marking drag state along the way', () => {
+    const onRowMove = vi.fn();
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} onRowMove={onRowMove} />);
+    const handles = screen.getAllByLabelText('Reorder row');
+    const rows = container.querySelectorAll('.column-layout > div');
+    fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+    expect(rows[0].className).toContain('row-dragging');
+    fireEvent.dragOver(rows[2]);
+    expect(rows[2].className).toContain('row-drag-over');
+    fireEvent.drop(rows[2]);
+    expect(onRowMove).toHaveBeenCalledWith(data[0], data[2]);
+    expect(rows[2].className).not.toContain('row-drag-over');
+  });
+
+  it('drop with no active draggedRow does not call onRowMove', () => {
+    const onRowMove = vi.fn();
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} onRowMove={onRowMove} />);
+    fireEvent.drop(container.querySelectorAll('.column-layout > div')[1]);
+    expect(onRowMove).not.toHaveBeenCalled();
+  });
+
+  it('dragleave clears the drag-over row, and is a no-op for a row that is not currently marked', () => {
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} />);
+    const rows = container.querySelectorAll('.column-layout > div');
+    fireEvent.dragOver(rows[1]);
+    expect(rows[1].className).toContain('row-drag-over');
+    fireEvent.dragLeave(rows[0]);
+    expect(rows[1].className).toContain('row-drag-over'); // unaffected -- dragleave targeted a different row
+    fireEvent.dragLeave(rows[1]);
+    expect(rows[1].className).not.toContain('row-drag-over');
+  });
+
+  it('dragend clears the dragged row so a later drop is a no-op', () => {
+    const onRowMove = vi.fn();
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} onRowMove={onRowMove} />);
+    const handles = screen.getAllByLabelText('Reorder row');
+    const rows = container.querySelectorAll('.column-layout > div');
+    fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+    fireEvent.dragEnd(handles[0]);
+    fireEvent.drop(rows[1]);
+    expect(onRowMove).not.toHaveBeenCalled();
+  });
+
+  it('renders the leading drag cell with border-right when bodyColumnLines is on', () => {
+    const { container } = render(<RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} bodyColumnLines={true} />);
+    expect(container.querySelector('.drag-cell')?.className).toContain('border-right');
+  });
+
+  it('omits border-right on the leading drag/index cells when bodyColumnLines is off', () => {
+    const { container } = render(
+      <RsDataGridTable {...baseProps} data={data} gridMode="popup" dragDropRows={true} showIndex={true} bodyColumnLines={false} />
+    );
+    expect(container.querySelector('.drag-cell')?.className).not.toContain('border-right');
+    expect(container.querySelector('.index-cell')?.className).not.toContain('border-right');
+  });
 });
 
 describe('RsDataGridTable - row mode (inline add/edit)', () => {
@@ -152,6 +245,27 @@ describe('RsDataGridTable - row mode (inline add/edit)', () => {
     await vi.waitFor(() => expect(onRequestConfirm).toHaveBeenCalled());
     expect(onBatchRowAdd).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Save row')).toBeInTheDocument(); // still open
+  });
+
+  it('renders the add-row leading drag/index cells (with border-right) and no row-style token when tableBorder is off', () => {
+    const ref = createRef<RsDataGridTableHandle>();
+    const { container } = render(
+      <RsDataGridTable {...baseProps} ref={ref} data={[]} gridMode="row" dragDropRows={true} showIndex={true} tableBorder={false} bodyColumnLines={true} />
+    );
+    act(() => ref.current!.startAddingRow());
+    expect(container.querySelector('.drag-cell')).not.toBeNull();
+    expect(container.querySelector('.index-cell')).not.toBeNull();
+    const rowEl = container.querySelector('.column-layout > div') as HTMLElement;
+    expect(rowEl.className.split(' ')).not.toContain('row-style');
+  });
+
+  it('leaves a newly-added column\'s add-row draft value empty when columns change while adding', () => {
+    const ref = createRef<RsDataGridTableHandle>();
+    const { rerender } = render(<RsDataGridTable {...baseProps} ref={ref} data={[]} gridMode="row" columns={[columns[0]]} />);
+    act(() => ref.current!.startAddingRow());
+    rerender(<RsDataGridTable {...baseProps} ref={ref} data={[]} gridMode="row" columns={columns} />);
+    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+    expect(inputs.map(i => i.value)).toEqual(['', '']);
   });
 
   it('cancelling the add row closes it without calling onBatchRowAdd', () => {
@@ -215,6 +329,15 @@ describe('RsDataGridTable - row mode (inline add/edit)', () => {
     expect(onBatchRowSave).not.toHaveBeenCalled();
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.queryByDisplayValue('Changed')).not.toBeInTheDocument();
+  });
+
+  it('leaves a newly-added column\'s inline-edit draft value empty when columns change while editing', () => {
+    const row = { name: 'Alice', age: 30 };
+    const { rerender } = render(<RsDataGridTable {...baseProps} data={[row]} gridMode="row" columns={[columns[0]]} />);
+    fireEvent.click(screen.getByLabelText('Edit row'));
+    rerender(<RsDataGridTable {...baseProps} data={[row]} gridMode="row" columns={columns} />);
+    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+    expect(inputs.map(i => i.value)).toEqual(['Alice', '']);
   });
 
   it('a second, non-editing row still renders statically while another row is being edited', () => {
@@ -312,6 +435,45 @@ describe('RsDataGridTable - batch mode', () => {
 
     // new drafts are cleared after save
     expect(screen.queryByLabelText('Remove row')).not.toBeInTheDocument();
+  });
+
+  it('renders the batch-new-row leading drag/index cells (with border-right) and no row-style token when tableBorder is off', () => {
+    const ref = createRef<RsDataGridTableHandle>();
+    const { container } = render(
+      <RsDataGridTable {...baseProps} ref={ref} data={[]} gridMode="batch" dragDropRows={true} showIndex={true} tableBorder={false} bodyColumnLines={true} />
+    );
+    act(() => ref.current!.addBatchRow());
+    expect(container.querySelector('.drag-cell')).not.toBeNull();
+    expect(container.querySelector('.index-cell')).not.toBeNull();
+    const rowEl = container.querySelector('.column-layout > div') as HTMLElement;
+    expect(rowEl.className.split(' ')).not.toContain('row-style');
+  });
+
+  it('leaves a newly-added column\'s batch-new-row draft value empty when columns change afterward', () => {
+    const ref = createRef<RsDataGridTableHandle>();
+    const { rerender } = render(<RsDataGridTable {...baseProps} ref={ref} data={[]} gridMode="batch" columns={[columns[0]]} />);
+    act(() => ref.current!.addBatchRow());
+    rerender(<RsDataGridTable {...baseProps} ref={ref} data={[]} gridMode="batch" columns={columns} />);
+    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[];
+    expect(inputs.map(i => i.value)).toEqual(['', '']);
+  });
+
+  it('treats a null/undefined original field as an empty string when computing dirtiness', () => {
+    const onBatchCommit = vi.fn();
+    const data = [{ name: 'Alice', age: null }];
+    const ref = createRef<RsDataGridTableHandle>();
+    render(<RsDataGridTable {...baseProps} ref={ref} data={data} gridMode="batch" onBatchCommit={onBatchCommit} />);
+    // The draft's age field renders as '' (same as the null original stringified) -- not dirty yet.
+    act(() => ref.current!.saveBatch());
+    expect(onBatchCommit).toHaveBeenLastCalledWith({ added: [], updated: [] });
+
+    // Now actually change it -- becomes dirty against the null original.
+    fireEvent.change(screen.getByDisplayValue('Alice'), { target: { value: 'Alicia' } });
+    act(() => ref.current!.saveBatch());
+    expect(onBatchCommit).toHaveBeenLastCalledWith({
+      added: [],
+      updated: [{ original: data[0], updated: { name: 'Alicia', age: '' } }],
+    });
   });
 
   it('saveBatch reports no updates when no batch draft differs from its source row', () => {

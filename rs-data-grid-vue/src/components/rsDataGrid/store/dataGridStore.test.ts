@@ -5,6 +5,7 @@ import {
   applySort,
   compareValues,
   initialState,
+  moveItem,
   resolveDataPath,
   returnLastPageList,
   returnPageList,
@@ -279,5 +280,35 @@ describe('returnLastPageList', () => {
     const result = returnLastPageList(state, 9);
     expect(result.pager.pageNumber).toBe(9);
     expect(result.pager.pageList).toEqual([8, 9, 10]);
+  });
+});
+
+describe('moveItem', () => {
+  const data = ['a', 'b', 'c', 'd'];
+
+  it('returns the data unchanged when fromItem is not found', () => {
+    expect(moveItem(data, 'z', 'b')).toBe(data);
+  });
+
+  it('returns the data unchanged when toItem is not found', () => {
+    expect(moveItem(data, 'a', 'z')).toBe(data);
+  });
+
+  it('returns the data unchanged when fromItem and toItem are the same', () => {
+    expect(moveItem(data, 'b', 'b')).toBe(data);
+  });
+
+  it('moves an item forward, landing after the target', () => {
+    expect(moveItem(data, 'a', 'c')).toEqual(['b', 'c', 'a', 'd']);
+  });
+
+  it('moves an item backward, landing before the target', () => {
+    expect(moveItem(data, 'c', 'a')).toEqual(['c', 'a', 'b', 'd']);
+  });
+
+  it('does not mutate the original array', () => {
+    const original = [...data];
+    moveItem(data, 'a', 'c');
+    expect(data).toEqual(original);
   });
 });

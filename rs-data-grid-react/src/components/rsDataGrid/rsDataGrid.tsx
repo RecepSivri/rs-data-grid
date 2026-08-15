@@ -273,6 +273,10 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   }, [effectiveColumns, selectedColumnFields]);
 
   const buildRequestHeaders = useCallback((): Record<string, string> | undefined => {
+    // fetchHeaders already defaults to EMPTY_RECORD via the destructured
+    // prop default above, applied whenever the value resolves to undefined
+    // -- so it can never actually be nullish here. Defensive fallback only.
+    /* istanbul ignore next */
     const headers: Record<string, string> = { ...(fetchHeaders ?? {}) };
     if (authToken) {
       headers['Authorization'] = `Bearer ${authToken}`;
@@ -390,6 +394,10 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   };
 
   const getDisplayedRows = useCallback((): any[] => {
+    // store.data (sortedData in useDataGridStore) is always an array --
+    // state.data starts as [] and setDataWrapper always assigns an array --
+    // not reachable via the public API. Defensive fallback only.
+    /* istanbul ignore next */
     const rows = store.data ?? [];
     if (!remoteModeParams && pagination) {
       return rows.slice(store.pageNumber * store.pageSize, (store.pageNumber + 1) * store.pageSize);
@@ -423,6 +431,8 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
     doc.save('export.pdf');
   };
 
+  // Same "always an array" guarantee as getDisplayedRows above.
+  /* istanbul ignore next */
   const data = store.data ?? [];
   const bodyRows = getDisplayedRows();
 

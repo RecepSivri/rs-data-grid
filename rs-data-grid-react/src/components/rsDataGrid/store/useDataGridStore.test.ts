@@ -76,16 +76,32 @@ describe('useDataGridStore - direct data mutation', () => {
     expect(result.current.rawData).toEqual([rowB]);
   });
 
-  it('updateRow replaces the matching row by reference', () => {
+  it('updateRow replaces the matching row by reference, leaving other rows untouched', () => {
     const rowA = { id: 1 };
+    const rowB = { id: 2 };
     const { result } = renderHook(() => useDataGridStore());
     act(() => {
-      result.current.setData([rowA], false);
+      result.current.setData([rowA, rowB], false);
     });
     act(() => {
       result.current.updateRow(rowA, { id: 99 });
     });
-    expect(result.current.rawData).toEqual([{ id: 99 }]);
+    expect(result.current.rawData).toEqual([{ id: 99 }, { id: 2 }]);
+    expect(result.current.rawData[1]).toBe(rowB);
+  });
+
+  it('moveRow reorders rows via the store', () => {
+    const rowA = { id: 1 };
+    const rowB = { id: 2 };
+    const rowC = { id: 3 };
+    const { result } = renderHook(() => useDataGridStore());
+    act(() => {
+      result.current.setData([rowA, rowB, rowC], false);
+    });
+    act(() => {
+      result.current.moveRow(rowA, rowC);
+    });
+    expect(result.current.rawData).toEqual([rowB, rowC, rowA]);
   });
 });
 
@@ -505,6 +521,27 @@ describe('useDataGridStore - fetching', () => {
       result.current.increasePageNum();
     });
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(6));
+  });
+
+  it('rewrites an insecure fetch URL through the same-origin proxy when the page itself is https', async () => {
+    vi.stubGlobal('location', { protocol: 'https:' });
+    (fetch as any).mockResolvedValue(jsonResponse([]));
+    const { result } = renderHook(() => useDataGridStore());
+    act(() => {
+      result.current.fetchData('http://api.test/data', undefined, false);
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect((fetch as any).mock.calls[0][0]).toBe('/api/http-proxy/api.test/data');
+  });
+
+  it('leaves an http fetch URL unchanged when the page itself is not https', async () => {
+    (fetch as any).mockResolvedValue(jsonResponse([]));
+    const { result } = renderHook(() => useDataGridStore());
+    act(() => {
+      result.current.fetchData('http://api.test/data', undefined, false);
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect((fetch as any).mock.calls[0][0]).toBe('http://api.test/data');
   });
 
   it('calling fetchData again re-triggers the initial-fetch effect with a new config', async () => {

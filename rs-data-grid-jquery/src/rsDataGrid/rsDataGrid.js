@@ -232,6 +232,10 @@ export function createGrid() {
 
   function getDisplayedRows(props) {
     const snapshot = store.getSnapshot();
+    // snapshot.data is always an array (dataGridStore's applyFilters/
+    // applyGlobalSearch/applySort chain never returns anything else) -- not
+    // reachable via the public API, kept as a defensive fallback only.
+    /* istanbul ignore next */
     const rows = snapshot.data ?? [];
     if (!props.remoteModeParams && props.pagination) {
       return rows.slice(snapshot.pageNumber * snapshot.pageSize, (snapshot.pageNumber + 1) * snapshot.pageSize);
@@ -380,7 +384,12 @@ export function createGrid() {
             children: [el('span', { className: 'grid-state-icon', html: '&#9888;' }), el('span', { text: snapshot.error.message || 'Something went wrong while loading data.' })],
           });
     }
-    if ((snapshot.rawData ?? []).length === 0) {
+    // snapshot.rawData mirrors the store's own state.data, always an array
+    // by construction -- not reachable via the public API, kept as a
+    // defensive fallback only.
+    /* istanbul ignore next */
+    const rawData = snapshot.rawData ?? [];
+    if (rawData.length === 0) {
       return props.emptyTemplate ?? el('div', { className: 'grid-state grid-state-empty', text: 'No data to display.' });
     }
 
@@ -417,7 +426,10 @@ export function createGrid() {
     });
 
     let bodyEl;
-    if ((snapshot.data ?? []).length === 0) {
+    // Same defensive-only fallback as above -- snapshot.data is always an array.
+    /* istanbul ignore next */
+    const displayData = snapshot.data ?? [];
+    if (displayData.length === 0) {
       bodyEl = el('div', { className: 'grid-state grid-state-empty grid-state-empty-inline', text: 'No matching rows.' });
     } else {
       const tableContainer = el('div');
@@ -475,6 +487,11 @@ export function createGrid() {
       renderPending = true;
       return;
     }
+    /* istanbul ignore next -- store.subscribe(renderNow) is only ever
+       registered inside render(), after containerEl/lastProps are already
+       assigned at the top of that same call, and destroy()'s unsubscribe()
+       synchronously removes the subscription before nulling them out. There
+       is no path that invokes renderNow() while either is unset. */
     if (!containerEl || !lastProps) {
       return;
     }

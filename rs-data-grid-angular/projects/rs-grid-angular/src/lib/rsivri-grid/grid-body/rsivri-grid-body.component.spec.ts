@@ -212,7 +212,7 @@ describe('RsivriGridBodyComponent', () => {
       fixture.detectChanges();
       expect(rowHosts()[0].classList).toContain('row-style');
 
-      component.tableBorder = false;
+      fixture.componentRef.setInput('tableBorder', false);
       await settle();
       fixture.detectChanges();
       expect(rowHosts()[0].classList).not.toContain('row-style');
@@ -227,10 +227,117 @@ describe('RsivriGridBodyComponent', () => {
       expect(hosts[0].classList).not.toContain('border-area-small');
       expect(hosts[1].classList).toContain('border-area-small');
 
-      component.borderRadiusBottom = false;
+      fixture.componentRef.setInput('borderRadiusBottom', false);
       await settle();
       fixture.detectChanges();
       expect(rowHosts()[1].classList).not.toContain('border-area-small');
+    });
+
+    function dragEvent(type: string): DragEvent {
+      return new DragEvent(type, { dataTransfer: new DataTransfer(), bubbles: true, cancelable: true });
+    }
+
+    it('does not render drag handles when dragDropRows is off', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = false;
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.drag-handle')).toBeNull();
+    });
+
+    it('renders a drag handle per row when dragDropRows is on', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('.drag-handle').length).toBe(2);
+    });
+
+    it('sets dataTransfer.effectAllowed on dragstart and marks the row as dragging', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      const handle: HTMLElement = fixture.nativeElement.querySelector('.drag-handle');
+      handle.dispatchEvent(dragEvent('dragstart'));
+      fixture.detectChanges();
+      expect(rowHosts()[0].classList).toContain('row-dragging');
+    });
+
+    it('highlights the hovered row on dragover and clears it on dragleave', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      const hosts = rowHosts();
+      hosts[1].dispatchEvent(dragEvent('dragover'));
+      fixture.detectChanges();
+      expect(hosts[1].classList).toContain('row-drag-over');
+      hosts[1].dispatchEvent(dragEvent('dragleave'));
+      fixture.detectChanges();
+      expect(hosts[1].classList).not.toContain('row-drag-over');
+    });
+
+    it('dragleave on a row that is not the current dragOverRow is a no-op', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      const hosts = rowHosts();
+      hosts[0].dispatchEvent(dragEvent('dragover'));
+      hosts[1].dispatchEvent(dragEvent('dragleave'));
+      fixture.detectChanges();
+      expect(hosts[0].classList).toContain('row-drag-over');
+    });
+
+    it('drop calls rowMove with the dragged and target rows, then clears drag state', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      const emitted: { fromRow: any; toRow: any }[] = [];
+      component.rowMove.subscribe(e => emitted.push(e));
+      const handles = fixture.nativeElement.querySelectorAll('.drag-handle');
+      const hosts = rowHosts();
+      handles[0].dispatchEvent(dragEvent('dragstart'));
+      hosts[1].dispatchEvent(dragEvent('drop'));
+      expect(emitted).toEqual([{ fromRow: rows[0], toRow: rows[1] }]);
+      fixture.detectChanges();
+      expect(rowHosts()[0].classList).not.toContain('row-dragging');
+    });
+
+    it('drop with no active draggedRow does not emit rowMove', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      const emitted: unknown[] = [];
+      component.rowMove.subscribe(e => emitted.push(e));
+      rowHosts()[1].dispatchEvent(dragEvent('drop'));
+      expect(emitted).toEqual([]);
+    });
+
+    it('dragend clears the dragged row so a later drop is a no-op', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      fixture.detectChanges();
+      const emitted: unknown[] = [];
+      component.rowMove.subscribe(e => emitted.push(e));
+      const handles = fixture.nativeElement.querySelectorAll('.drag-handle');
+      handles[0].dispatchEvent(dragEvent('dragstart'));
+      handles[0].dispatchEvent(dragEvent('dragend'));
+      rowHosts()[1].dispatchEvent(dragEvent('drop'));
+      expect(emitted).toEqual([]);
+    });
+
+    it('renders the leading drag cell with border-right when bodyColumnLines is on', () => {
+      component.columns = oneColumn;
+      component.data = rows;
+      component.dragDropRows = true;
+      component.bodyColumnLines = true;
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.drag-cell').classList).toContain('border-right');
     });
 
     it('applies row-background to odd rows only when diagonalRow is true', () => {
@@ -278,6 +385,27 @@ describe('RsivriGridBodyComponent', () => {
       expect(component.editDraft).toEqual({ firstName: 'Jane', age: '' });
       expect(getInputs().length).toBe(2);
       expect(getInputs()[0].value).toBe('Jane');
+    });
+
+    it('opens the confirm dialog with the light panel class by default, and the dark one when theme is dark', async () => {
+      dialogSpy.open.and.returnValue(afterClosedReturning(false));
+      getActionButtons()[0].click();
+      await settle();
+      fixture.detectChanges();
+      let saveButton = fixture.nativeElement.querySelector('.row-action-save') as HTMLButtonElement;
+      saveButton.click();
+      expect(dialogSpy.open.calls.mostRecent().args[1]?.panelClass).toBe('rg-dialog-light');
+
+      dialogSpy.open.calls.reset();
+      component.onCancelEditClick();
+      fixture.componentRef.setInput('theme', 'dark');
+      fixture.detectChanges();
+      getActionButtons()[0].click();
+      await settle();
+      fixture.detectChanges();
+      saveButton = fixture.nativeElement.querySelector('.row-action-save') as HTMLButtonElement;
+      saveButton.click();
+      expect(dialogSpy.open.calls.mostRecent().args[1]?.panelClass).toBe('rg-dialog-dark');
     });
 
     it('confirms and emits batchRowSave with the merged row on save, then exits edit mode', async () => {

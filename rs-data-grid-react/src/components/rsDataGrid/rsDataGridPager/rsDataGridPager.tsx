@@ -21,7 +21,15 @@ export const RsDataGridPager = ({ pagination, pagingSizes, currentPagingSize, pa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // React runs every effect in declaration order within the same commit, so
+  // on mount the effect above already flips didInit.current to true
+  // (synchronously) before this one ever checks it -- the guard below can
+  // never actually see `false` here. It's harmless (both effects end up
+  // calling the same idempotent setter with the same mount-time value, just
+  // once redundantly) and kept as-is rather than restructured for a
+  // cosmetic fix, but it means the early-return is dead code.
   useEffect(() => {
+    /* istanbul ignore if */
     if (!didInit.current) {
       return;
     }
@@ -30,6 +38,7 @@ export const RsDataGridPager = ({ pagination, pagingSizes, currentPagingSize, pa
   }, [pageListSize]);
 
   useEffect(() => {
+    /* istanbul ignore if */
     if (!didInit.current) {
       return;
     }

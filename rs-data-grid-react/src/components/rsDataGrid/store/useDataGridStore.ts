@@ -185,8 +185,20 @@ export const useDataGridStore = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchConfig]);
 
-  // Remote-mode refetch when page/size/filters/sort/search change.
+  // Remote-mode refetch when page/size/filters/sort/search change. React
+  // runs every effect on the very first mount regardless of its deps, so
+  // without the isFirstPagerEffect guard this fired a second, redundant
+  // fetch alongside the "fetchConfig changed" effect above on every initial
+  // remote-mode mount (both effects see the same just-set fetchConfig on
+  // that first commit). The guard skips only that first automatic run --
+  // once flipped, every later page/size/filter/sort/search change refetches
+  // normally.
+  const isFirstPagerEffect = useRef(true);
   useEffect(() => {
+    if (isFirstPagerEffect.current) {
+      isFirstPagerEffect.current = false;
+      return;
+    }
     if (!fetchConfig || !fetchConfig.remote) {
       return;
     }

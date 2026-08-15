@@ -104,6 +104,8 @@ async function importRootConfig(hash: string): Promise<typeof import('./root-con
     <div id="view-mode-tabs"></div>
     <div id="single-spa-application"></div>
     <div id="code-viewer"></div>
+    <div id="wiki-viewer"></div>
+    <button id="theme-toggle-btn"></button>
   `;
   rootConfigMod = await import('./root-config');
   return rootConfigMod;
@@ -123,6 +125,7 @@ let originalAddEventListener: typeof window.addEventListener;
 beforeEach(() => {
   vi.resetModules();
   document.body.innerHTML = '';
+  localStorage.clear();
   for (const tab of TAB_DEFS) {
     delete (window as any)[tab.globalName];
   }
@@ -146,6 +149,7 @@ afterEach(() => {
     window.removeEventListener(type, listener);
   }
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 describe('currentTab / getActiveTabLabel', () => {
@@ -527,5 +531,137 @@ describe('renderTabs', () => {
 
     expect(window.location.hash).toBe(TAB_DEFS[2].hash);
     await flush();
+  });
+});
+
+describe('view mode tabs (Demo / Code / Wiki)', () => {
+  function viewModeButtons(): HTMLButtonElement[] {
+    return Array.from(document.getElementById('view-mode-tabs')!.querySelectorAll('button.view-mode-tab'));
+  }
+
+  it('renders Demo/Code/Wiki buttons, Demo active by default', async () => {
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    const buttons = viewModeButtons();
+    expect(buttons.map(b => b.querySelector('span:not(.view-mode-tab-icon)')?.textContent)).toEqual(['Demo', 'Code', 'Wiki']);
+    expect(buttons[0].className).toContain('view-mode-tab-active');
+    expect(buttons[1].className).not.toContain('view-mode-tab-active');
+    expect(document.getElementById('single-spa-application')!.classList).not.toContain('content-hidden');
+  });
+
+  it('switching to Code hides the demo content, marks the Code tab active, and renders the code viewer', async () => {
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    viewModeButtons()[1].click();
+
+    expect(document.getElementById('single-spa-application')!.classList).toContain('content-hidden');
+    expect(document.getElementById('code-viewer')!.classList).toContain('code-viewer-active');
+    expect(document.getElementById('code-viewer')!.querySelector('code')).not.toBeNull();
+    expect(viewModeButtons()[1].className).toContain('view-mode-tab-active');
+  });
+
+  it('switching to Wiki hides the demo content, marks the Wiki tab active, and renders the wiki viewer', async () => {
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    viewModeButtons()[2].click();
+
+    expect(document.getElementById('single-spa-application')!.classList).toContain('content-hidden');
+    expect(document.getElementById('wiki-viewer')!.classList).toContain('wiki-viewer-active');
+    expect(document.getElementById('wiki-viewer')!.querySelector('.wiki-title')).not.toBeNull();
+    expect(viewModeButtons()[2].className).toContain('view-mode-tab-active');
+  });
+
+  it('clicking the already-active mode is a no-op', async () => {
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    const demoButton = viewModeButtons()[0];
+    const beforeHtml = document.getElementById('view-mode-tabs')!.innerHTML;
+    demoButton.click();
+    expect(document.getElementById('view-mode-tabs')!.innerHTML).toBe(beforeHtml);
+  });
+
+  it('re-applies the current view mode on hashchange (e.g. re-renders the code/wiki viewer for the newly active tab)', async () => {
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    viewModeButtons()[1].click();
+    expect(document.getElementById('code-viewer')!.textContent).toContain('rs-data-grid-react');
+
+    setHash(TAB_DEFS[2].hash);
+    fireHashChange();
+    await flush();
+    expect(document.getElementById('code-viewer')!.textContent).toContain('rs-data-grid-vue');
+  });
+
+  it('pushing a live settings update while in Code mode re-renders the code viewer', async () => {
+    const gridSettingsMod = await import('./grid-settings');
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    viewModeButtons()[1].click();
+    const before = document.getElementById('code-viewer')!.querySelector('code')!.textContent;
+
+    gridSettingsMod.setSetting('theme', 'dark');
+
+    const after = document.getElementById('code-viewer')!.querySelector('code')!.textContent;
+    expect(after).toContain(`theme="dark"`);
+    expect(after).not.toBe(before);
+  });
+});
+
+describe('theme toggle', () => {
+  it('defaults to light when nothing is stored, and applies it to the shell + toggle button', async () => {
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    expect(document.body.getAttribute('data-theme')).toBe('light');
+    const toggleBtn = document.getElementById('theme-toggle-btn')!;
+    expect(toggleBtn.getAttribute('data-theme')).toBe('light');
+    expect(toggleBtn.getAttribute('aria-label')).toBe('Switch to dark theme');
+  });
+
+  it('restores a persisted dark theme on load', async () => {
+    localStorage.setItem('rs-data-grid-theme', 'dark');
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    expect(document.body.getAttribute('data-theme')).toBe('dark');
+    expect(document.getElementById('theme-toggle-btn')!.getAttribute('aria-label')).toBe('Switch to light theme');
+  });
+
+  it('clicking the toggle switches light -> dark, persists it, and updates gridConfig via setSetting', async () => {
+    const gridSettingsMod = await import('./grid-settings');
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    const toggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement;
+
+    toggleBtn.click();
+
+    expect(localStorage.getItem('rs-data-grid-theme')).toBe('dark');
+    expect(document.body.getAttribute('data-theme')).toBe('dark');
+    expect(toggleBtn.getAttribute('aria-label')).toBe('Switch to light theme');
+    expect(gridSettingsMod.gridConfig.theme).toBe('dark');
+  });
+
+  it('clicking the toggle again switches dark -> light', async () => {
+    localStorage.setItem('rs-data-grid-theme', 'dark');
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    const toggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement;
+
+    toggleBtn.click();
+
+    expect(localStorage.getItem('rs-data-grid-theme')).toBe('light');
+    expect(document.body.getAttribute('data-theme')).toBe('light');
+    expect(toggleBtn.getAttribute('aria-label')).toBe('Switch to dark theme');
+  });
+});
+
+describe('REMOTE_BASE_URLS (production build)', () => {
+  it('uses same-origin /mfe/<name> script URLs when import.meta.env.DEV is false', async () => {
+    vi.stubEnv('DEV', false);
+    await importRootConfig(TAB_DEFS[0].hash);
+    await flush();
+    const loader = mountRootParcelMock.mock.calls[0][0] as () => Promise<unknown>;
+    const appendChildSpy = vi.spyOn(document.head, 'appendChild');
+    loader();
+    const script = appendChildSpy.mock.calls[0][0] as HTMLScriptElement;
+    expect(script.src).toContain('/mfe/react/rs-data-grid-react.js');
   });
 });

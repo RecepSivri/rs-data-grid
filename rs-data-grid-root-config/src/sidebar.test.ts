@@ -40,7 +40,7 @@ describe('renderSidebar - overall structure', () => {
     expect(container.querySelector('.sidenav-title')?.textContent).toBe('Grid Settings');
   });
 
-  it('builds one accordion panel per settings group plus Data Management and Code Snippet', () => {
+  it('builds one accordion panel per settings group plus Data Management', () => {
     const container = makeContainer();
     sidebarMod.renderSidebar(container);
     const summaries = Array.from(container.querySelectorAll('.settings-accordion > details > summary')).map(
@@ -52,7 +52,6 @@ describe('renderSidebar - overall structure', () => {
       'Appearance',
       'Pagination',
       'Toolbar Features',
-      'Code Snippet',
     ]);
   });
 
@@ -369,12 +368,11 @@ describe('radio controls (Grid Mode)', () => {
 });
 
 describe('rerender wiring', () => {
-  it('does nothing when rerender is invoked before renderSidebar sets a container', () => {
-    // Registering the rerender hook happens inside renderSidebar, so exercising
-    // this guard means calling the hook directly before any container exists.
-    // We reach it via the hashchange listener registered by a previous test's
-    // module instance being gone (fresh module here) -- so nothing is wired
-    // yet, and dispatching hashchange must not throw.
+  it('a hashchange before this test has ever called renderSidebar does not throw', () => {
+    // Regression smoke-test for stale hashchange listeners left behind by
+    // earlier tests' module instances (vi.resetModules() only resets the
+    // module registry, not window's own listener list) -- must not throw
+    // regardless of which module instance's rerender ends up running.
     expect(() => window.dispatchEvent(new Event('hashchange'))).not.toThrow();
   });
 
@@ -407,32 +405,71 @@ describe('rerender wiring', () => {
     expect(panel.open).toBe(false);
   });
 
-  it('openPanels persists open state for the Code Snippet panel across rerenders', () => {
+});
+
+describe('off-canvas drawer (narrow-screen toggle)', () => {
+  function makeToggleAndBackdrop(): { toggleBtn: HTMLButtonElement; backdrop: HTMLElement } {
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'sidebar-toggle-btn';
+    document.body.appendChild(toggleBtn);
+    const backdrop = document.createElement('div');
+    backdrop.id = 'sidebar-backdrop';
+    document.body.appendChild(backdrop);
+    return { toggleBtn, backdrop };
+  }
+
+  it('does not throw when the toggle button/backdrop are absent from the page', () => {
     const container = makeContainer();
-    sidebarMod.renderSidebar(container);
-    let panel = detailsFor(container, 'Code Snippet');
-    panel.open = true;
-    panel.dispatchEvent(new Event('toggle'));
-    window.dispatchEvent(new Event('hashchange'));
-    panel = detailsFor(container, 'Code Snippet');
-    expect(panel.open).toBe(true);
+    expect(() => sidebarMod.renderSidebar(container)).not.toThrow();
   });
 
-  it('closing the Code Snippet panel removes it from openPanels (toggle-close branch)', () => {
+  it('clicking the toggle button opens the drawer (adds the open class + visible backdrop)', () => {
+    const { toggleBtn, backdrop } = makeToggleAndBackdrop();
     const container = makeContainer();
     sidebarMod.renderSidebar(container);
-    let panel = detailsFor(container, 'Code Snippet');
-    panel.open = true;
-    panel.dispatchEvent(new Event('toggle'));
-    window.dispatchEvent(new Event('hashchange'));
-    panel = detailsFor(container, 'Code Snippet');
-    expect(panel.open).toBe(true);
 
-    panel.open = false;
-    panel.dispatchEvent(new Event('toggle'));
+    toggleBtn.click();
+
+    expect(container.classList).toContain('app-sidenav-open');
+    expect(backdrop.classList).toContain('visible');
+  });
+
+  it('clicking the toggle button again closes the drawer', () => {
+    const { toggleBtn, backdrop } = makeToggleAndBackdrop();
+    const container = makeContainer();
+    sidebarMod.renderSidebar(container);
+
+    toggleBtn.click();
+    toggleBtn.click();
+
+    expect(container.classList).not.toContain('app-sidenav-open');
+    expect(backdrop.classList).not.toContain('visible');
+  });
+
+  it('clicking the backdrop closes the drawer', () => {
+    const { toggleBtn, backdrop } = makeToggleAndBackdrop();
+    const container = makeContainer();
+    sidebarMod.renderSidebar(container);
+    toggleBtn.click();
+    expect(container.classList).toContain('app-sidenav-open');
+
+    backdrop.click();
+
+    expect(container.classList).not.toContain('app-sidenav-open');
+    expect(backdrop.classList).not.toContain('visible');
+  });
+
+  it('a hashchange closes the drawer', () => {
+    const { toggleBtn, backdrop } = makeToggleAndBackdrop();
+    const container = makeContainer();
+    sidebarMod.renderSidebar(container);
+    toggleBtn.click();
+    expect(container.classList).toContain('app-sidenav-open');
+
     window.dispatchEvent(new Event('hashchange'));
-    panel = detailsFor(container, 'Code Snippet');
-    expect(panel.open).toBe(false);
+
+    expect(container.classList).not.toContain('app-sidenav-open');
+    expect(backdrop.classList).not.toContain('visible');
   });
 });
 

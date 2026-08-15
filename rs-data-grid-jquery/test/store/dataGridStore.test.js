@@ -7,6 +7,7 @@ import {
   applyGlobalSearch,
   compareValues,
   applySort,
+  moveItem,
   returnPageList,
   returnPageStateRelatedPageNum,
   returnLastPageList,
@@ -291,6 +292,15 @@ describe('returnPageStateRelatedPageNum', () => {
     expect(next.pager.pageList).toEqual([6, 7, 8, 9, 10]);
   });
 
+  it('clamps the forward-sliding window to pageLimit when it would otherwise overrun', () => {
+    // Unlike the equal-length case above, pageLimit(6) here is smaller than
+    // pageNumber+pageListSize, so the window must be clamped, not run past it.
+    const state = makeState({ pageNumber: 3, pageLimit: 6, pageList: [2, 3, 4], pageListSize: 3 });
+    const next = returnPageStateRelatedPageNum(state, 4, 'increase');
+    expect(next.pager.pageNumber).toBe(4);
+    expect(next.pager.pageList).toEqual([5, 6]);
+  });
+
   it('recomputes the sliding window backward when moving one page before the current window (decrease)', () => {
     // pageVal(4) + 2 equals the first item of the current pageList [6..10] -> triggers the
     // "decrease" edge branch, sliding the window to end right before pageVal, clamped at 0.
@@ -339,5 +349,35 @@ describe('returnLastPageList', () => {
     const next = returnLastPageList(state, 1);
     expect(next.pager.pageNumber).toBe(1);
     expect(next.pager.pageList).toEqual([-2, -1, 0, 1, 2]);
+  });
+});
+
+describe('moveItem', () => {
+  const data = ['a', 'b', 'c', 'd'];
+
+  it('returns the data unchanged when fromItem is not found', () => {
+    expect(moveItem(data, 'z', 'b')).toBe(data);
+  });
+
+  it('returns the data unchanged when toItem is not found', () => {
+    expect(moveItem(data, 'a', 'z')).toBe(data);
+  });
+
+  it('returns the data unchanged when fromItem and toItem are the same', () => {
+    expect(moveItem(data, 'b', 'b')).toBe(data);
+  });
+
+  it('moves an item forward, landing after the target', () => {
+    expect(moveItem(data, 'a', 'c')).toEqual(['b', 'c', 'a', 'd']);
+  });
+
+  it('moves an item backward, landing before the target', () => {
+    expect(moveItem(data, 'c', 'a')).toEqual(['c', 'a', 'b', 'd']);
+  });
+
+  it('does not mutate the original array', () => {
+    const original = [...data];
+    moveItem(data, 'a', 'c');
+    expect(data).toEqual(original);
   });
 });

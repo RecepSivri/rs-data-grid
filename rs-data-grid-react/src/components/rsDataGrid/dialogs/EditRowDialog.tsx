@@ -64,7 +64,10 @@ export const EditRowDialog = ({ open, row, columns, theme = 'light', container, 
                 <input
                   type="text"
                   className="edit-input"
-                  value={editableRow[field.key] ?? ''}
+                  // editableRow always has an entry for every field in
+                  // `fields` (the effect above sets both together) -- never
+                  // reachable as nullish, defensive fallback only.
+                  value={/* istanbul ignore next */ editableRow[field.key] ?? ''}
                   onChange={e => setEditableRow({ ...editableRow, [field.key]: e.target.value })}
                 />
               </div>

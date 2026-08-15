@@ -75,6 +75,32 @@ describe('rsDataGridTable', () => {
       expect(cellTexts).toEqual(['', '']);
     });
 
+    it('renders an <img> thumbnail (no title/text) for image-URL values, and a title attr for plain text', () => {
+      const table = createTable();
+      table.render(container, baseProps({ data: [{ firstName: 'https://example.com/x.png', age: 30 }] }));
+      const cells = container.querySelector('[data-row-index]').querySelectorAll('.section-style');
+      const img = cells[0].querySelector('img.cell-thumbnail');
+      expect(img.getAttribute('src')).toBe('https://example.com/x.png');
+      expect(cells[0].hasAttribute('title')).toBe(false);
+      expect(cells[1].getAttribute('title')).toBe('30');
+    });
+
+    it('gates border-right on the leading drag/index cells by bodyColumnLines', () => {
+      const table = createTable();
+      table.render(container, baseProps({ dragDropRows: true, showIndex: true, bodyColumnLines: true }));
+      const row = container.querySelector('[data-row-index]');
+      expect(row.querySelector('.drag-cell').className).toContain('border-right');
+      expect(row.querySelector('.index-cell').className).toContain('border-right');
+
+      const table2 = createTable();
+      const container2 = document.createElement('div');
+      document.body.appendChild(container2);
+      table2.render(container2, baseProps({ dragDropRows: true, showIndex: true, bodyColumnLines: false }));
+      const row2 = container2.querySelector('[data-row-index]');
+      expect(row2.querySelector('.drag-cell').className).not.toContain('border-right');
+      expect(row2.querySelector('.index-cell').className).not.toContain('border-right');
+    });
+
     it('renders edit and delete action buttons when showActions is true, and none when false', () => {
       const table = createTable();
       table.render(container, baseProps({ showActions: true }));
@@ -185,6 +211,28 @@ describe('rsDataGridTable', () => {
       expect(onBatchRowSave).not.toHaveBeenCalled();
       expect(container.querySelectorAll('.inline-edit-input').length).toBeGreaterThan(0);
     });
+
+    it('omits Save/Cancel actions while editing once showActions turns off mid-edit', () => {
+      const table = createTable();
+      const props = baseProps({ gridMode: 'row' });
+      table.render(container, props);
+      container.querySelectorAll('.row-action-edit')[0].click();
+      // Same row references, showActions flips off -- editingRow (matched by
+      // identity) is still the same row, so this stays in inline-edit mode.
+      table.render(container, { ...props, showActions: false });
+      expect(container.querySelector('.actions-cell')).toBeNull();
+      expect(container.querySelector('.inline-edit-input')).not.toBeNull();
+    });
+
+    it('a column added after entering edit mode falls back to an empty value for it', () => {
+      const table = createTable();
+      const props = baseProps({ gridMode: 'row', columns: [columns[0]] });
+      table.render(container, props);
+      container.querySelectorAll('.row-action-edit')[0].click();
+      table.render(container, { ...props, columns });
+      const ageInput = container.querySelector('.inline-edit-input[data-field="age"]');
+      expect(ageInput.value).toBe('');
+    });
   });
 
   describe('popup-mode editing (gridMode: "popup", the default)', () => {
@@ -272,6 +320,35 @@ describe('rsDataGridTable', () => {
       expect(onBatchRowAdd).not.toHaveBeenCalled();
       expect(container.querySelectorAll('.inline-edit-input[data-kind="add"]').length).toBe(0);
     });
+
+    it('shows drag/index leading cells, and omits row-style/actions when tableBorder/showActions are off', () => {
+      const table = createTable();
+      table.render(container, baseProps({ dragDropRows: true, showIndex: true, tableBorder: false, showActions: false }));
+      table.startAddingRow();
+      const row = container.querySelectorAll('.column-layout > .full-row')[0];
+      expect(row.querySelector('.drag-cell')).not.toBeNull();
+      expect(row.querySelector('.index-cell')).not.toBeNull();
+      expect(row.className).not.toContain('row-style ');
+      expect(row.querySelector('.actions-cell')).toBeNull();
+    });
+
+    it('omits border-right on the add-row leading cells when bodyColumnLines is off', () => {
+      const table = createTable();
+      table.render(container, baseProps({ dragDropRows: true, showIndex: true, bodyColumnLines: false }));
+      table.startAddingRow();
+      const row = container.querySelectorAll('.column-layout > .full-row')[0];
+      expect(row.querySelector('.drag-cell').className).not.toContain('border-right');
+      expect(row.querySelector('.index-cell').className).not.toContain('border-right');
+    });
+
+    it('a column added after startAddingRow falls back to an empty value for it', () => {
+      const table = createTable();
+      table.render(container, baseProps({ columns: [columns[0]] }));
+      table.startAddingRow();
+      table.render(container, baseProps({ columns }));
+      const ageInput = container.querySelector('.inline-edit-input[data-kind="add"][data-field="age"]');
+      expect(ageInput.value).toBe('');
+    });
   });
 
   describe('batch mode', () => {
@@ -333,6 +410,38 @@ describe('rsDataGridTable', () => {
       expect(onBatchCommit).toHaveBeenCalledWith({ added: [], updated: [] });
     });
 
+    it('saveBatch() skips rows with no known draft (e.g. called outside batch mode)', () => {
+      const table = createTable();
+      const onBatchCommit = vi.fn();
+      table.render(container, baseProps({ gridMode: 'popup', onBatchCommit }));
+      table.saveBatch();
+      expect(onBatchCommit).toHaveBeenCalledWith({ added: [], updated: [] });
+    });
+
+    it('saveBatch() treats a null-valued field, unedited, as not dirty', () => {
+      const table = createTable();
+      const onBatchCommit = vi.fn();
+      table.render(container, baseProps({ gridMode: 'batch', data: [{ firstName: null, age: 30 }], onBatchCommit }));
+      table.saveBatch();
+      expect(onBatchCommit).toHaveBeenCalledWith({ added: [], updated: [] });
+    });
+
+    it('omits the delete action in batch mode when showActions is off', () => {
+      const table = createTable();
+      table.render(container, baseProps({ gridMode: 'batch', showActions: false }));
+      expect(container.querySelector('.actions-cell')).toBeNull();
+    });
+
+    it('a column added after a batch draft was cached falls back to an empty value for it', () => {
+      const table = createTable();
+      const oneColumn = [columns[0]];
+      const props = baseProps({ gridMode: 'batch', columns: oneColumn, data: [{ firstName: 'ada' }] });
+      table.render(container, props);
+      table.render(container, baseProps({ gridMode: 'batch', columns, data: props.data }));
+      const ageInput = container.querySelector('.inline-edit-input[data-kind="batch"][data-field="age"]');
+      expect(ageInput.value).toBe('');
+    });
+
     it('addBatchRow() appends a new blank draft row with data-new-index, rendered after the data rows', () => {
       const table = createTable();
       const data = makeData();
@@ -357,6 +466,70 @@ describe('rsDataGridTable', () => {
       table.render(container, baseProps({ gridMode: 'batch', data, onBatchCommit }));
       table.saveBatch();
       expect(onBatchCommit).toHaveBeenCalledWith({ added: [{ firstName: 'Newbie', age: '' }], updated: [] });
+    });
+
+    it('batch-new rows show drag/index leading cells, omit row-style when tableBorder is off, and omit actions when showActions is off', () => {
+      const table = createTable();
+      table.render(container, baseProps({
+        gridMode: 'batch',
+        data: [],
+        dragDropRows: true,
+        showIndex: true,
+        tableBorder: false,
+        showActions: false,
+      }));
+      table.addBatchRow();
+      const row = container.querySelector('[data-new-index="0"]');
+      expect(row.querySelector('.drag-cell')).not.toBeNull();
+      expect(row.querySelector('.index-cell')).not.toBeNull();
+      expect(row.className).not.toContain('row-style ');
+      expect(row.querySelector('.actions-cell')).toBeNull();
+    });
+
+    it('omits border-right on the batch-new-row leading cells when bodyColumnLines is off', () => {
+      const table = createTable();
+      table.render(container, baseProps({ gridMode: 'batch', data: [], dragDropRows: true, showIndex: true, bodyColumnLines: false }));
+      table.addBatchRow();
+      const row = container.querySelector('[data-new-index="0"]');
+      expect(row.querySelector('.drag-cell').className).not.toContain('border-right');
+      expect(row.querySelector('.index-cell').className).not.toContain('border-right');
+    });
+
+    it('the delegated input handler ignores an input whose data-kind matches none of the known kinds', () => {
+      const table = createTable();
+      table.render(container, baseProps({ gridMode: 'batch', data: [] }));
+      table.addBatchRow();
+      const stray = document.createElement('input');
+      stray.className = 'inline-edit-input';
+      stray.setAttribute('data-kind', 'bogus');
+      stray.setAttribute('data-field', 'firstName');
+      container.appendChild(stray);
+      expect(() => {
+        stray.value = 'whatever';
+        stray.dispatchEvent(new Event('input', { bubbles: true }));
+      }).not.toThrow();
+    });
+
+    it('the batchNew input-routing guard no-ops for an input whose new-index draft is momentarily absent', () => {
+      const table = createTable();
+      table.render(container, baseProps({ gridMode: 'batch', data: [] }));
+      table.addBatchRow();
+      const row = container.querySelector('[data-new-index="0"]');
+      row.setAttribute('data-new-index', '99'); // simulate a stale/missing slot
+      const input = row.querySelector('.inline-edit-input[data-field="firstName"]');
+      expect(() => {
+        input.value = 'whatever';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }).not.toThrow();
+    });
+
+    it('a column added after addBatchRow falls back to an empty value for it on the new row', () => {
+      const table = createTable();
+      table.render(container, baseProps({ gridMode: 'batch', data: [], columns: [columns[0]] }));
+      table.addBatchRow();
+      table.render(container, baseProps({ gridMode: 'batch', data: [], columns }));
+      const ageInput = container.querySelector('.inline-edit-input[data-kind="batchNew"][data-field="age"]');
+      expect(ageInput.value).toBe('');
     });
 
     it('row-action-remove-new removes only the targeted new-row draft by its data-new-index', () => {
@@ -416,6 +589,86 @@ describe('rsDataGridTable', () => {
     });
   });
 
+  describe('drag-and-drop rows (dragDropRows)', () => {
+    it('sets dataTransfer.effectAllowed on dragstart when available (via event.originalEvent), tolerates its absence, and marks the row row-dragging', () => {
+      const table = createTable();
+      table.render(container, baseProps({ dragDropRows: true }));
+      const handle = container.querySelector('.drag-handle');
+      const event = new Event('dragstart', { bubbles: true });
+      event.dataTransfer = { effectAllowed: null };
+      handle.dispatchEvent(event);
+      expect(event.dataTransfer.effectAllowed).toBe('move');
+      expect(container.querySelector('[data-row-index="0"]').className).toContain('row-dragging');
+      expect(() => handle.dispatchEvent(new Event('dragstart', { bubbles: true }))).not.toThrow();
+    });
+
+    it('highlights the hovered row on dragover, clears on dragleave (no-op if not the current target)', () => {
+      const table = createTable();
+      table.render(container, baseProps({ dragDropRows: true }));
+      const [rowA, rowB] = container.querySelectorAll('[data-row-index]');
+      rowA.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(rowA.classList.contains('row-drag-over')).toBe(true);
+      rowA.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(() => rowB.dispatchEvent(new Event('dragleave', { bubbles: true }))).not.toThrow();
+      rowA.dispatchEvent(new Event('dragleave', { bubbles: true }));
+      expect(rowA.classList.contains('row-drag-over')).toBe(false);
+    });
+
+    it('moving the hover from one row to another clears the previous highlight', () => {
+      const table = createTable();
+      table.render(container, baseProps({ dragDropRows: true }));
+      const [rowA, rowB] = container.querySelectorAll('[data-row-index]');
+      rowA.dispatchEvent(new Event('dragover', { bubbles: true }));
+      rowB.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(rowA.classList.contains('row-drag-over')).toBe(false);
+      expect(rowB.classList.contains('row-drag-over')).toBe(true);
+    });
+
+    it('drop calls onRowMove with the dragged and target rows', () => {
+      const table = createTable();
+      const data = makeData();
+      const onRowMove = vi.fn();
+      table.render(container, baseProps({ dragDropRows: true, data, onRowMove }));
+      const handle = container.querySelector('.drag-handle');
+      handle.dispatchEvent(new Event('dragstart', { bubbles: true }));
+      const rows = container.querySelectorAll('[data-row-index]');
+      rows[1].dispatchEvent(new Event('drop', { bubbles: true }));
+      expect(onRowMove).toHaveBeenCalledWith(data[0], data[1]);
+    });
+
+    it('drop with no active draggedRow does not call onRowMove', () => {
+      const table = createTable();
+      const onRowMove = vi.fn();
+      table.render(container, baseProps({ dragDropRows: true, onRowMove }));
+      container.querySelectorAll('[data-row-index]')[1].dispatchEvent(new Event('drop', { bubbles: true }));
+      expect(onRowMove).not.toHaveBeenCalled();
+    });
+
+    it('dragend clears drag state and re-renders', () => {
+      const table = createTable();
+      const onRowMove = vi.fn();
+      table.render(container, baseProps({ dragDropRows: true, onRowMove }));
+      const handle = container.querySelector('.drag-handle');
+      handle.dispatchEvent(new Event('dragstart', { bubbles: true }));
+      handle.dispatchEvent(new Event('dragend', { bubbles: true }));
+      expect(container.querySelector('[data-row-index="0"]').className).not.toContain('row-dragging');
+      container.querySelectorAll('[data-row-index]')[1].dispatchEvent(new Event('drop', { bubbles: true }));
+      expect(onRowMove).not.toHaveBeenCalled();
+    });
+
+    it('keeps the row-dragging/row-drag-over classes through a full external re-render while still active', () => {
+      const table = createTable();
+      const props = baseProps({ dragDropRows: true });
+      table.render(container, props);
+      const handle = container.querySelector('.drag-handle');
+      handle.dispatchEvent(new Event('dragstart', { bubbles: true }));
+      container.querySelectorAll('[data-row-index]')[1].dispatchEvent(new Event('dragover', { bubbles: true }));
+      table.render(container, props);
+      expect(container.querySelector('[data-row-index="0"]').className).toContain('row-dragging');
+      expect(container.querySelector('[data-row-index="1"]').className).toContain('row-drag-over');
+    });
+  });
+
   describe('jQuery event delegation survives full DOM rebuilds', () => {
     it('a stable delegationRoot keeps row-action clicks working after the table container is torn down and replaced', () => {
       const table = createTable();
@@ -464,9 +717,12 @@ describe('rsDataGridTable', () => {
       input.value = 'Still Works';
       input.dispatchEvent(new Event('input', { bubbles: true }));
       table.saveBatch();
+      // Every field in the draft is string-coerced by toDraft() and applied
+      // in full on save, not just the one that was actually typed into -- so
+      // age comes back as "30" (string), not the original numeric 30.
       expect(onBatchCommit).toHaveBeenCalledWith({
         added: [],
-        updated: [{ original: data[0], updated: { ...data[0], firstName: 'Still Works' } }],
+        updated: [{ original: data[0], updated: { firstName: 'Still Works', age: '30' } }],
       });
     });
 

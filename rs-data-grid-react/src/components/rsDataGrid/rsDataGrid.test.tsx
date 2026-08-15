@@ -43,6 +43,7 @@ const columns: IColumn[] = [
 ];
 
 beforeEach(() => {
+  localStorage.clear();
   vi.stubGlobal('fetch', vi.fn());
 });
 
@@ -78,6 +79,12 @@ describe('RsDataGrid - loading / error / empty / data states', () => {
     expect(await screen.findByText('Request failed with status 500')).toBeInTheDocument();
   });
 
+  it('falls back to a generic error message when the error message is genuinely empty', async () => {
+    (fetch as any).mockRejectedValue(new Error(''));
+    render(<RsDataGrid fetchUrl="http://api.test/data" />);
+    expect(await screen.findByText('Something went wrong while loading data.')).toBeInTheDocument();
+  });
+
   it('renders a custom errorTemplate function with the error', async () => {
     (fetch as any).mockRejectedValue(new Error('oops'));
     render(<RsDataGrid fetchUrl="http://api.test/data" errorTemplate={err => <div>Custom Error: {err.message}</div>} />);
@@ -90,9 +97,24 @@ describe('RsDataGrid - loading / error / empty / data states', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('applies border-area-small to the root when tableBorder is true, and omits it when false', () => {
+    const { container, rerender } = render(<RsDataGrid dataSource={[{ name: 'Alice', age: 30 }]} columns={columns} tableBorder={true} />);
+    expect(container.firstChild).toHaveClass('border-area-small');
+    rerender(<RsDataGrid dataSource={[{ name: 'Alice', age: 30 }]} columns={columns} tableBorder={false} />);
+    expect(container.firstChild).not.toHaveClass('border-area-small');
+  });
+
   it('shows a custom emptyTemplate when provided', () => {
     render(<RsDataGrid dataSource={[]} emptyTemplate={<div>Nothing here</div>} />);
     expect(screen.getByText('Nothing here')).toBeInTheDocument();
+  });
+
+  it('sends an Authorization header built from authToken', async () => {
+    (fetch as any).mockResolvedValue(jsonResponse([]));
+    render(<RsDataGrid dataSource={[]} fetchUrl="http://api.test/data" authToken="secret" />);
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith('http://api.test/data', expect.objectContaining({ headers: { Authorization: 'Bearer secret' } }))
+    );
   });
 
   it('renders the header, table and pager once data is available', () => {
@@ -117,10 +139,196 @@ describe('RsDataGrid - effectiveColumns auto-derivation', () => {
   });
 });
 
-describe('RsDataGrid - toolbar visibility', () => {
-  it('renders no toolbar when search/export/add are all off and gridMode is not batch', () => {
+describe('RsDataGrid - column drag-reorder', () => {
+  const data = [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25 }];
+
+  it('reorders columns via drag-and-drop and keeps the order across a data update', () => {
+    const { container, rerender } = render(<RsDataGrid dataSource={data} columns={columns} dragDropColumns={true} />);
+    const handles = container.querySelectorAll('.drag-handle');
+    const cells = container.querySelectorAll('.content-style');
+    fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+    fireEvent.drop(cells[1]);
+    let captions = Array.from(container.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Age', 'Name']);
+
+    rerender(<RsDataGrid dataSource={[...data, { name: 'Carol', age: 40 }]} columns={columns} dragDropColumns={true} />);
+    captions = Array.from(container.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Age', 'Name']);
+  });
+
+  it('dropping a dragged column onto itself is a no-op', () => {
+    const { container } = render(<RsDataGrid dataSource={data} columns={columns} dragDropColumns={true} />);
+    const before = Array.from(container.querySelectorAll('.header-caption')).map(el => el.textContent);
+    const handles = container.querySelectorAll('.drag-handle');
+    const cells = container.querySelectorAll('.content-style');
+    fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+    fireEvent.drop(cells[0]);
+    const after = Array.from(container.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(after).toEqual(before);
+  });
+
+  it('dragging a column backward (later index onto an earlier one) reorders correctly', () => {
+    const threeColumns: IColumn[] = [...columns, { caption: 'city', dataField: 'city' }];
     const { container } = render(
-      <RsDataGrid dataSource={[{ name: 'A', age: 1 }]} columns={columns} showSearch={false} exportExcel={false} exportPDF={false} showAdd={false} gridMode="popup" />
+      <RsDataGrid dataSource={[{ name: 'A', age: 1, city: 'X' }]} columns={threeColumns} dragDropColumns={true} />
+    );
+    const handles = container.querySelectorAll('.drag-handle');
+    const cells = container.querySelectorAll('.content-style');
+    fireEvent.dragStart(handles[2], { dataTransfer: { effectAllowed: null } });
+    fireEvent.drop(cells[0]);
+    const captions = Array.from(container.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['City', 'Name', 'Age']);
+  });
+
+  it('drops fields from the retained drag order once they no longer exist, and appends genuinely new fields at the end', () => {
+    const { container, rerender } = render(<RsDataGrid dataSource={data} columns={columns} dragDropColumns={true} />);
+    fireEvent.dragStart(container.querySelectorAll('.drag-handle')[0], { dataTransfer: { effectAllowed: null } });
+    fireEvent.drop(container.querySelectorAll('.content-style')[1]);
+    // The first dataSource reference change after mount is intentionally
+    // swallowed (see "RsDataGrid - dataSource prop change reload semantics"
+    // below) -- an extra no-op rerender consumes that skip so the next
+    // (real) change actually reloads.
+    rerender(<RsDataGrid dataSource={[...data]} columns={[]} dragDropColumns={true} />);
+    rerender(<RsDataGrid dataSource={[{ age: 5, genre: 'Action' }]} columns={[]} dragDropColumns={true} />);
+    const captions = Array.from(container.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Age', 'Genre']);
+  });
+});
+
+describe('RsDataGrid - Grid Settings', () => {
+  const data = [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25 }];
+
+  it('opens via the toolbar button and filters/orders visible columns, ignoring unknown fields', () => {
+    render(<RsDataGrid dataSource={data} columns={columns} showGridSettings={true} />);
+    fireEvent.click(screen.getByLabelText('Grid settings'));
+    fireEvent.mouseDown(screen.getByLabelText('Columns'));
+    fireEvent.click(screen.getByRole('option', { name: 'age' }));
+    let captions = Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Age']);
+  });
+
+  it('shows the badge dot once a selection is active, and hides it again once cleared', () => {
+    render(<RsDataGrid dataSource={data} columns={columns} showGridSettings={true} />);
+    fireEvent.click(screen.getByLabelText('Grid settings'));
+    fireEvent.mouseDown(screen.getByLabelText('Columns'));
+    fireEvent.click(screen.getByRole('option', { name: 'name' }));
+    expect(document.querySelector('.MuiBadge-dot:not(.MuiBadge-invisible)')).not.toBeNull();
+    fireEvent.click(screen.getByText('Clear'));
+    expect(document.querySelector('.MuiBadge-dot:not(.MuiBadge-invisible)')).toBeNull();
+  });
+
+  it('the Close button closes the dialog', async () => {
+    render(<RsDataGrid dataSource={data} columns={columns} showGridSettings={true} />);
+    fireEvent.click(screen.getByLabelText('Grid settings'));
+    expect(screen.getByText('Grid Settings')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Close'));
+    await waitFor(() => expect(screen.queryByText('Grid Settings')).not.toBeInTheDocument());
+  });
+
+  it('persists the selection to localStorage and restores it on the next mount', () => {
+    const { unmount } = render(<RsDataGrid dataSource={data} columns={columns} showGridSettings={true} />);
+    fireEvent.click(screen.getByLabelText('Grid settings'));
+    fireEvent.mouseDown(screen.getByLabelText('Columns'));
+    fireEvent.click(screen.getByRole('option', { name: 'name' }));
+    unmount();
+    render(<RsDataGrid dataSource={data} columns={columns} showGridSettings={true} />);
+    const captions = Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Name']);
+  });
+
+  it('seeds the initial selection from defaultVisibleColumns on a fresh visit (nothing persisted yet)', () => {
+    render(<RsDataGrid dataSource={data} columns={columns} defaultVisibleColumns={['age']} />);
+    const captions = Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Age']);
+  });
+
+  it('ignores corrupted (non-array) persisted JSON and falls back to showing everything', () => {
+    localStorage.setItem('rs-data-grid-selected-columns', JSON.stringify({ not: 'an array' }));
+    render(<RsDataGrid dataSource={data} columns={columns} />);
+    const captions = Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Name', 'Age']);
+  });
+
+  it('ignores unparseable persisted JSON and falls back to showing everything', () => {
+    localStorage.setItem('rs-data-grid-selected-columns', 'not valid json {{{');
+    render(<RsDataGrid dataSource={data} columns={columns} />);
+    const captions = Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent);
+    expect(captions).toEqual(['Name', 'Age']);
+  });
+
+  it('a real dataSource change resets the selection back to "show everything"', () => {
+    const { rerender } = render(<RsDataGrid dataSource={[{ name: 'First', age: 1 }]} columns={columns} showGridSettings={true} />);
+    fireEvent.click(screen.getByLabelText('Grid settings'));
+    fireEvent.mouseDown(screen.getByLabelText('Columns'));
+    fireEvent.click(screen.getByRole('option', { name: 'name' }));
+    expect(Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent)).toEqual(['Name']);
+
+    rerender(<RsDataGrid dataSource={[{ name: 'Second', age: 2 }]} columns={columns} showGridSettings={true} />);
+    expect(Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent)).toEqual(['Name']);
+    rerender(<RsDataGrid dataSource={[{ name: 'Third', age: 3 }]} columns={columns} showGridSettings={true} />);
+    expect(Array.from(document.querySelectorAll('.header-caption')).map(el => el.textContent)).toEqual(['Name', 'Age']);
+  });
+});
+
+describe('RsDataGrid - header wiring (filter/sort)', () => {
+  const data = [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25 }, { name: 'Carol', age: 20 }];
+
+  it('a header filter selection narrows the displayed rows via the store', () => {
+    const { container } = render(<RsDataGrid dataSource={data} columns={columns} showFilter={true} />);
+    fireEvent.click(screen.getByLabelText('Filter name'));
+    const checkbox = container.querySelector('.filter-panel input[type="checkbox"]') as HTMLInputElement;
+    fireEvent.click(checkbox);
+    // Close the still-open filter dropdown so "Alice" is unambiguous (row cell only).
+    fireEvent.click(document.body);
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.queryByText('Bob')).not.toBeInTheDocument();
+  });
+
+  it('a header sort toggle reorders the displayed rows via the store', () => {
+    const { container } = render(<RsDataGrid dataSource={data} columns={columns} showSort={true} />);
+    fireEvent.click(screen.getByLabelText('Sort name'));
+    const names = Array.from(container.querySelectorAll('.section-style')).filter(el => !el.className.includes('drag')).map(el => el.textContent);
+    // First click sorts descending: Carol, Bob, Alice (by age column absent from sort; sort is on `name` field alphabetically desc)
+    expect(names[0]).toBe('Carol');
+  });
+
+  it('shows an inline "No matching rows" state when a filter/search leaves nothing, without unmounting the header', () => {
+    render(<RsDataGrid dataSource={data} columns={columns} showSearch={true} />);
+    const input = screen.getByLabelText('Search all columns');
+    fireEvent.change(input, { target: { value: 'nonexistent name' } });
+    expect(screen.getByText('No matching rows.')).toBeInTheDocument();
+    expect(document.querySelector('.header-caption')).not.toBeNull();
+  });
+});
+
+describe('RsDataGrid - row drag-and-drop', () => {
+  it('reordering rows via drag calls store.moveRow, reflected in render order', () => {
+    const data = [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25 }, { name: 'Carol', age: 20 }];
+    const { container } = render(<RsDataGrid dataSource={data} columns={columns} dragDropRows={true} />);
+    const handles = screen.getAllByLabelText('Reorder row');
+    const rows = container.querySelectorAll('.column-layout > div');
+    fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+    fireEvent.drop(rows[2]);
+    const names = Array.from(container.querySelectorAll('.section-style:not(.drag-cell)'))
+      .filter((_, i) => i % 2 === 0)
+      .map(el => el.textContent);
+    expect(names).toEqual(['Bob', 'Carol', 'Alice']);
+  });
+});
+
+describe('RsDataGrid - toolbar visibility', () => {
+  it('renders no toolbar when search/export/add/gridSettings are all off and gridMode is not batch', () => {
+    const { container } = render(
+      <RsDataGrid
+        dataSource={[{ name: 'A', age: 1 }]}
+        columns={columns}
+        showSearch={false}
+        exportExcel={false}
+        exportPDF={false}
+        showAdd={false}
+        showGridSettings={false}
+        gridMode="popup"
+      />
     );
     expect(container.querySelector('.grid-toolbar')).toBeNull();
   });
@@ -165,6 +373,13 @@ describe('RsDataGrid - export', () => {
     expect(config.body).toEqual([['Alice', '30']]);
     expect(mockPdfSave).toHaveBeenCalledWith('export.pdf');
   });
+
+  it('renders a null/undefined field value as an empty string in the PDF body', () => {
+    render(<RsDataGrid dataSource={[{ name: 'Alice', age: null }]} columns={columns} exportPDF={true} />);
+    fireEvent.click(screen.getByLabelText('Export to PDF'));
+    const [, config] = mockAutoTable.mock.calls[0];
+    expect(config.body).toEqual([['Alice', '']]);
+  });
 });
 
 describe('RsDataGrid - popup gridMode add/edit/delete flow', () => {
@@ -193,13 +408,16 @@ describe('RsDataGrid - popup gridMode add/edit/delete flow', () => {
     expect(screen.getByText('Alicia')).toBeInTheDocument();
   });
 
-  it('cancelling the popup dialog does not add/edit anything', () => {
+  it('cancelling the popup dialog does not add/edit anything', async () => {
     const onRowAdd = vi.fn();
     render(<RsDataGrid dataSource={[{ name: 'Alice', age: 30 }]} columns={columns} showAdd={true} showActions={true} gridMode="popup" onRowAdd={onRowAdd} />);
     fireEvent.click(screen.getByLabelText('Add row'));
     fireEvent.click(screen.getByText('Cancel'));
     expect(onRowAdd).not.toHaveBeenCalled();
-    expect(screen.queryByText('Add row', { selector: '.MuiDialogTitle-root' })).not.toBeInTheDocument();
+    // MUI's Dialog exit transition keeps the content mounted for a moment
+    // after `open` flips to false, so this needs to wait rather than assert
+    // synchronously (the delete-confirmation tests below already do this).
+    await waitFor(() => expect(screen.queryByText('Add row', { selector: '.MuiDialogTitle-root' })).not.toBeInTheDocument());
   });
 
   it('deletes a row after confirming, and calls onRowDelete', async () => {
@@ -288,14 +506,19 @@ describe('RsDataGrid - batch gridMode flow', () => {
 
     fireEvent.click(screen.getByLabelText('Save batch changes'));
 
-    expect(onRowEdit).toHaveBeenCalledWith({ name: 'Alicia', age: '30' });
-    expect(onRowAdd).toHaveBeenCalledWith({ name: 'Carol', age: '' });
+    // Batch commit only fires the aggregate onBatchSave -- individual
+    // onRowEdit/onRowAdd are for the popup/row-mode single-row flows, not
+    // batch commit (same contract as the Vue/vanilla/jQuery implementations).
+    expect(onRowEdit).not.toHaveBeenCalled();
+    expect(onRowAdd).not.toHaveBeenCalled();
     expect(onBatchSave).toHaveBeenCalledWith({
       added: [{ name: 'Carol', age: '' }],
       updated: [{ original: rowA, updated: { name: 'Alicia', age: '30' } }],
     });
-    expect(screen.getByText('Alicia')).toBeInTheDocument();
-    expect(screen.getByText('Carol')).toBeInTheDocument();
+    // Batch mode's own row commit is a store update (not a data reload), so
+    // the row cells stay editable inputs -- assert on their value, not text.
+    expect(screen.getByDisplayValue('Alicia')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Carol')).toBeInTheDocument();
   });
 
   it('deletes still go through the confirmation dialog in batch mode', async () => {

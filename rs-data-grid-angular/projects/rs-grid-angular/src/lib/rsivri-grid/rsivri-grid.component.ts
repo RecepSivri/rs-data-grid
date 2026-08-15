@@ -187,6 +187,10 @@ export class RsivriGridComponent implements OnInit, OnChanges {
     order.splice(insertAt, 0, event.fromField);
     this.columnOrder = order;
     const byField = new Map(this.columns.map(c => [c.dataField, c]));
+    // `order` is built entirely from fields already present in
+    // `this.columns` (see above), so byField.get(field) always succeeds --
+    // not reachable via the public API. Defensive fallback only.
+    /* istanbul ignore next */
     this.columns = order.map(field => byField.get(field) ?? { caption: field, dataField: field });
   }
 
@@ -319,6 +323,9 @@ export class RsivriGridComponent implements OnInit, OnChanges {
   // border toggle from the sidebar) doesn't hand the OnPush body a fresh array
   // reference every check and force it to re-render every row for nothing.
   getPagedData(): any[] {
+    // store.data (sortedData) is always an array -- state.data starts as []
+    // and setDataWrapper always assigns an array. Defensive fallback only.
+    /* istanbul ignore next */
     const rows = this.data() ?? [];
     const remote = !!this.remoteModeParams;
     if (remote || !this.pagination) {

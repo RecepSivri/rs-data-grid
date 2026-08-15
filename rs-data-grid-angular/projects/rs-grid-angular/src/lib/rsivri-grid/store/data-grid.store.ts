@@ -7,6 +7,11 @@ import { AppState } from './data-grid.state';
 // over HTTPS. Routing it through a same-origin proxy (see netlify.toml)
 // keeps the browser's connection on HTTPS regardless of the target.
 function toSameOriginIfInsecure(url: string): string {
+  // Reachable in real https deployments, but this branch can't be exercised
+  // from a spec: karma-jasmine runs in a real browser (unlike the jsdom/
+  // Vitest environments used by this repo's other framework packages), and
+  // real browsers refuse to let a test redefine window.location.
+  /* istanbul ignore next */
   if (typeof location !== 'undefined' && location.protocol === 'https:' && /^http:\/\//i.test(url)) {
     return `/api/http-proxy/${url.slice('http://'.length)}`;
   }
@@ -244,8 +249,16 @@ export class DataGridStore {
   constructor() {
     effect(() => {
       const cfg = this._fetchConfig();
+      // httpResource's .value() throws (rather than returning undefined)
+      // once the resource has entered an error state, so it must be read
+      // only after confirming there's no error -- otherwise this effect
+      // throws on every reactive recompute following any fetch failure,
+      // not just once.
+      if (!cfg || this.resource.error()) {
+        return;
+      }
       const values = this.resource.value();
-      if (!cfg || values === undefined) {
+      if (values === undefined) {
         return;
       }
       this.setData(

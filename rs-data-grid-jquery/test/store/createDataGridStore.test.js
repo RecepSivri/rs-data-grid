@@ -123,6 +123,12 @@ describe('createDataGridStore', () => {
       store.addRow(row);
       expect(store.getSnapshot().pageLimit).toBe(5); // ceil(50/10)
     });
+
+    it('moveRow reorders rows via moveItem', () => {
+      store.setData(['a', 'b', 'c'], false);
+      store.moveRow('a', 'c');
+      expect(store.getSnapshot().rawData).toEqual(['b', 'c', 'a']);
+    });
   });
 
   describe('getSnapshot: filters, search, sort composition', () => {
@@ -485,6 +491,35 @@ describe('createDataGridStore', () => {
       vi.stubGlobal('fetch', fetchMock);
       store.fetchData('http://example.com/api?already=there', 'data', false, undefined, 'GET');
       expect(fetchMock).toHaveBeenCalledWith('http://example.com/api?already=there', { method: 'GET', headers: undefined });
+    });
+  });
+
+  describe('toSameOriginIfInsecure (mixed-content proxy)', () => {
+    it('routes an insecure http:// baseUrl through the same-origin proxy when the page itself is https', async () => {
+      vi.stubGlobal('location', { protocol: 'https:' });
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse([]));
+      vi.stubGlobal('fetch', fetchMock);
+      store.fetchData('http://insecure.example.com/data', undefined, false);
+      await flushMicrotasks();
+      expect(fetchMock).toHaveBeenCalledWith('/api/http-proxy/insecure.example.com/data', expect.anything());
+    });
+
+    it('leaves an http:// baseUrl untouched when the page itself is not https', async () => {
+      vi.stubGlobal('location', { protocol: 'http:' });
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse([]));
+      vi.stubGlobal('fetch', fetchMock);
+      store.fetchData('http://plain.example.com/data', undefined, false);
+      await flushMicrotasks();
+      expect(fetchMock).toHaveBeenCalledWith('http://plain.example.com/data', expect.anything());
+    });
+
+    it('leaves an already-https baseUrl untouched regardless of page protocol', async () => {
+      vi.stubGlobal('location', { protocol: 'https:' });
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse([]));
+      vi.stubGlobal('fetch', fetchMock);
+      store.fetchData('https://secure.example.com/data', undefined, false);
+      await flushMicrotasks();
+      expect(fetchMock).toHaveBeenCalledWith('https://secure.example.com/data', expect.anything());
     });
   });
 });

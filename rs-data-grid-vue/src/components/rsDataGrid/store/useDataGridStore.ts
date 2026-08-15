@@ -188,24 +188,36 @@ export const useDataGridStore = () => {
 
   // Initial / config-change fetch (covers both local one-shot fetch and remote's first page).
   watch(fetchConfig, cfg => {
+    // fetchConfig is only ever assigned a real object (via fetchData()),
+    // never reset back to null -- this watcher (without immediate:true)
+    // only fires on a change, so cfg is always truthy here. Defensive guard
+    // only, not reachable via the public API.
+    /* istanbul ignore if */
     if (!cfg) {
       return;
     }
     performFetch(cfg, state.value.pager.pageNumber, state.value.pager.pageSize);
   });
 
-  // Remote-mode refetch when page/size/filters/sort/search change.
-  watch(
-    [() => state.value.pager.pageNumber, () => state.value.pager.pageSize, filters, sort, globalSearch],
-    () => {
-      const cfg = fetchConfig.value;
-      if (!cfg || !cfg.remote) {
-        return;
-      }
-      performFetch(cfg, state.value.pager.pageNumber, state.value.pager.pageSize);
-    },
-    { deep: true }
-  );
+  // Remote-mode refetch when page/size/filters/sort/search change. No `deep`
+  // here on purpose: pageNumber/pageSize are primitives read via getters
+  // (deep is meaningless for them), and filters/sort/globalSearch are always
+  // reassigned wholesale (`.value = {...}`), never mutated in place, so
+  // shallow (the default) is exactly what's needed. `{ deep: true }` used to
+  // be set here, which turned this into an infinite loop: with `state` a
+  // deeply-reactive ref, the pageNumber/pageSize getters read through
+  // `state.value`, so deep-tracking them ends up deep-tracking the WHOLE
+  // pager object -- any reassignment of state.value (including the one this
+  // same watcher's own performFetch()->setData() call performs, even when
+  // pageNumber/pageSize themselves are unchanged) then re-fired the watcher,
+  // which fetched again, which reassigned state.value again, forever.
+  watch([() => state.value.pager.pageNumber, () => state.value.pager.pageSize, filters, sort, globalSearch], () => {
+    const cfg = fetchConfig.value;
+    if (!cfg || !cfg.remote) {
+      return;
+    }
+    performFetch(cfg, state.value.pager.pageNumber, state.value.pager.pageSize);
+  });
 
   const filteredData = computed(() => applyFilters(state.value.data, filters.value));
   const searchedData = computed(() => applyGlobalSearch(filteredData.value, globalSearch.value));

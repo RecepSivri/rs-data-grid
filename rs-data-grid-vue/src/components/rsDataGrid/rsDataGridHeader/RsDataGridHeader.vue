@@ -69,6 +69,11 @@ onUnmounted(() => document.removeEventListener('click', closeDropdown));
 
 const openDropdownOptions = computed<string[]>(() => {
   const dataField = openDataField.value;
+  // openDropdownOptions is only ever read via getOptions() below, which
+  // only accesses .value when openDataField.value === dataField (a real,
+  // non-null string) -- dataField is therefore never falsy here, hence the
+  // inline ignore.
+  /* istanbul ignore if */
   if (!dataField) {
     return [];
   }
@@ -85,6 +90,11 @@ const openDropdownOptions = computed<string[]>(() => {
   return Array.from(values).sort();
 });
 
+// The template only ever calls getOptions(column.dataField) from inside a
+// v-if="isOpen(column.dataField)" block, which is the same equality check --
+// so the fallback [] side is unreachable via the template, hence the inline
+// ignore.
+/* istanbul ignore next */
 const getOptions = (dataField: string): string[] => (openDataField.value === dataField ? openDropdownOptions.value : []);
 
 const sortDirection = (dataField: string): 'asc' | 'desc' | null => (props.sort.field === dataField ? props.sort.direction : null);

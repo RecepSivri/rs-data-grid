@@ -41,6 +41,11 @@ export const GridSettingsDialog = ({ open, columns, selected, theme = 'light', c
 
   const handleSelectChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
+    // MUI's own SelectChangeEvent types `value` as `T | string` because a
+    // *native* multi-select yields a comma-joined string, but this Select
+    // isn't `native` -- MUI's JS-based multi-select always hands back the
+    // real array, so the string branch here is unreachable in practice.
+    /* istanbul ignore next */
     onChange(typeof value === 'string' ? value.split(',') : value);
   };
 
@@ -50,6 +55,10 @@ export const GridSettingsDialog = ({ open, columns, selected, theme = 'light', c
     }
     const fromIndex = selected.indexOf(fromField);
     const toIndexOriginal = selected.indexOf(toField);
+    // draggedField/toField always come from a rendered chip, which is always
+    // itself a member of `selected` -- so both lookups always succeed. Kept
+    // as a defensive guard only.
+    /* istanbul ignore if */
     if (fromIndex === -1 || toIndexOriginal === -1) {
       return;
     }

@@ -147,6 +147,12 @@ let batchDraftRowRefs: any[] = [];
 const syncBatchDrafts = () => {
   const draftByRow = new Map<any, Record<string, string>>();
   batchDraftRowRefs.forEach((row, i) => {
+    // batchDraftRowRefs and batchDrafts.value are only ever reassigned
+    // together, as same-length arrays, at the bottom of this function --
+    // batchDrafts.value[i] is therefore always defined for every index this
+    // loop visits. Kept as a guard for structural safety, not a
+    // reachable-via-the-public-API case.
+    /* istanbul ignore else */
     if (batchDrafts.value[i]) {
       draftByRow.set(row, batchDrafts.value[i]);
     }

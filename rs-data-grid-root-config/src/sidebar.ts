@@ -239,15 +239,18 @@ function buildGroupPanel(title: string, settings: GridSetting[]): HTMLDetailsEle
 let containerRef: HTMLElement | null = null;
 
 function rerender(): void {
-  if (!containerRef) return;
-  containerRef.innerHTML = '';
-  containerRef.appendChild(el('div', 'sidenav-title', 'Grid Settings'));
+  // Both call sites (the hashchange listener and the setRerenderHook
+  // callback, both below) are wired up in renderSidebar() strictly *after*
+  // containerRef is assigned, so it's never null here -- non-null assertion
+  // for TypeScript rather than an unreachable runtime guard.
+  containerRef!.innerHTML = '';
+  containerRef!.appendChild(el('div', 'sidenav-title', 'Grid Settings'));
   const accordion = el('div', 'settings-accordion');
   accordion.appendChild(buildDataManagementPanel());
   for (const group of settingsGroups) {
     accordion.appendChild(buildGroupPanel(group.title, group.settings));
   }
-  containerRef.appendChild(accordion);
+  containerRef!.appendChild(accordion);
 }
 
 export function renderSidebar(container: HTMLElement): void {

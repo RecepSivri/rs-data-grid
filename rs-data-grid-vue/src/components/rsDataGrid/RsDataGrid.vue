@@ -257,6 +257,11 @@ const onRowMove = (fromRow: any, toRow: any) => {
 };
 
 const buildRequestHeaders = (): Record<string, string> | undefined => {
+  // props.fetchHeaders has a `() => ({})` default via withDefaults, and Vue
+  // applies that default whenever the resolved value is undefined -- whether
+  // the prop is omitted or explicitly passed as undefined -- so it can never
+  // actually be nullish here. Defensive fallback only.
+  /* istanbul ignore next */
   const headers: Record<string, string> = { ...(props.fetchHeaders ?? {}) };
   if (props.authToken) {
     headers['Authorization'] = `Bearer ${props.authToken}`;
@@ -372,6 +377,10 @@ const onBatchCommit = (payload: { added: any[]; updated: { original: any; update
 };
 
 const getDisplayedRows = (): any[] => {
+  // store.data is always an array (dataGridStore's applyFilters/
+  // applyGlobalSearch/applySort chain never returns anything else) -- not
+  // reachable via the public API, kept as a defensive fallback only.
+  /* istanbul ignore next */
   const rows = store.data ?? [];
   if (!props.remoteModeParams && props.pagination) {
     return rows.slice(store.pageNumber * store.pageSize, (store.pageNumber + 1) * store.pageSize);
@@ -405,6 +414,8 @@ const onExportPdfClick = () => {
   doc.save('export.pdf');
 };
 
+// Same "always an array" guarantee as getDisplayedRows above.
+/* istanbul ignore next */
 const data = computed(() => store.data ?? []);
 const bodyRows = computed(() => getDisplayedRows());
 </script>

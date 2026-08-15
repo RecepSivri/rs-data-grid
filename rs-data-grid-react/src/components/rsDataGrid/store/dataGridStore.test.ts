@@ -6,6 +6,7 @@ import {
   applySort,
   compareValues,
   initialState,
+  moveItem,
   resolveDataPath,
   returnLastPageList,
   returnPageList,
@@ -222,6 +223,43 @@ describe('applySort', () => {
   it('handles null rows via optional chaining', () => {
     const withNull = [{ v: 2 }, null, { v: 1 }];
     expect(applySort(withNull, { field: 'v', direction: 'asc' })).toEqual([null, { v: 1 }, { v: 2 }]);
+  });
+});
+
+describe('moveItem', () => {
+  const a = { id: 'a' };
+  const b = { id: 'b' };
+  const c = { id: 'c' };
+  const d = { id: 'd' };
+
+  it('moves an item forward, landing after the target', () => {
+    expect(moveItem([a, b, c, d], a, c)).toEqual([b, c, a, d]);
+  });
+
+  it('moves an item backward, landing before the target', () => {
+    expect(moveItem([a, b, c, d], d, b)).toEqual([a, d, b, c]);
+  });
+
+  it('returns the same array reference when fromItem === toItem', () => {
+    const data = [a, b, c];
+    expect(moveItem(data, a, a)).toBe(data);
+  });
+
+  it('returns the same array reference when fromItem is not found', () => {
+    const data = [a, b];
+    expect(moveItem(data, { id: 'missing' }, b)).toBe(data);
+  });
+
+  it('returns the same array reference when toItem is not found', () => {
+    const data = [a, b];
+    expect(moveItem(data, a, { id: 'missing' })).toBe(data);
+  });
+
+  it('does not mutate the original array', () => {
+    const data = [a, b, c];
+    const copy = [...data];
+    moveItem(data, a, c);
+    expect(data).toEqual(copy);
   });
 });
 

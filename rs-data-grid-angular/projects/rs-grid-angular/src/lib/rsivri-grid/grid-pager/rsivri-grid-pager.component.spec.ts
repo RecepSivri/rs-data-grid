@@ -147,6 +147,34 @@ describe('RsivriGridPagerComponent', () => {
     });
   });
 
+  describe('ngOnChanges (post-init prop changes)', () => {
+    it('re-applies pageListSize when it changes after init', () => {
+      // Inputs must first be set through Angular's own binding mechanism
+      // (setInput), not raw property assignment, so that Angular's
+      // SimpleChanges tracks firstChange correctly for the *next* setInput
+      // call below (the ngOnChanges guard checks `!firstChange`).
+      fixture.componentRef.setInput('pagination', true);
+      fixture.componentRef.setInput('pageListSize', 5);
+      fixture.detectChanges();
+      const spy = spyOn(store, 'changePageListSize').and.callThrough();
+      fixture.componentRef.setInput('pageListSize', 8);
+      fixture.detectChanges();
+      expect(spy).toHaveBeenCalledWith(8);
+    });
+
+    it('resets to page 0 and applies the new size when currentPagingSize changes after init', () => {
+      fixture.componentRef.setInput('pagination', true);
+      fixture.componentRef.setInput('currentPagingSize', 10);
+      fixture.detectChanges();
+      const pageNumberSpy = spyOn(store, 'changePageNumber').and.callThrough();
+      const pageSizeSpy = spyOn(store, 'changePageSize').and.callThrough();
+      fixture.componentRef.setInput('currentPagingSize', 25);
+      fixture.detectChanges();
+      expect(pageNumberSpy).toHaveBeenCalledWith(0);
+      expect(pageSizeSpy).toHaveBeenCalledWith(25);
+    });
+  });
+
   describe('writeAS', () => {
     it('returns false when the last visible page would exceed the page limit', () => {
       expect(component.writeAS(6, 5, 10)).toBeFalse();

@@ -122,8 +122,13 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
       return;
     }
     const draftByRow = new Map<any, Record<string, string>>();
+    // batchDraftRowRefsRef.current and batchDrafts are always reassigned
+    // together (right below) to the same length, on every run of this
+    // effect that reaches this point -- so `existing` is always defined for
+    // every index in range. Defensive guard only.
     batchDraftRowRefsRef.current.forEach((row, i) => {
       const existing = batchDrafts[i];
+      /* istanbul ignore else */
       if (existing) {
         draftByRow.set(row, existing);
       }

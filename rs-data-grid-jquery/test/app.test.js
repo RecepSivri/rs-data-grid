@@ -7,7 +7,10 @@ const mocks = vi.hoisted(() => ({
   createGrid: vi.fn(),
 }));
 
-vi.mock('../src/rsDataGrid/rsDataGrid.js', () => ({
+// app.js imports createGrid via the package's own self-reference
+// ('rs-data-grid-jquery'), not a relative path -- the mock specifier has to
+// match that exactly for vi.mock to actually intercept it.
+vi.mock('rs-data-grid-jquery', () => ({
   createGrid: mocks.createGrid,
 }));
 
@@ -84,6 +87,18 @@ describe('app.js createApp', () => {
       app.mount(container, { gridConfig: defaultGridConfig, fetchNonce: 1 });
       expect(mocks.fetchNow).not.toHaveBeenCalled();
     });
+
+    it('sets a white background for the light theme', () => {
+      const app = createApp();
+      app.mount(container, { gridConfig: { ...defaultGridConfig, theme: 'light' } });
+      expect(container.children[0].style.background).toBe('rgb(255, 255, 255)');
+    });
+
+    it('sets a dark background for any non-light theme', () => {
+      const app = createApp();
+      app.mount(container, { gridConfig: { ...defaultGridConfig, theme: 'dark' } });
+      expect(container.children[0].style.background).toBe('rgb(28, 30, 33)');
+    });
   });
 
   describe('update', () => {
@@ -93,6 +108,13 @@ describe('app.js createApp', () => {
       mocks.render.mockClear();
       app.update({ gridConfig: defaultGridConfig });
       expect(mocks.render).toHaveBeenCalledTimes(1);
+    });
+
+    it('updates the background when the theme changes', () => {
+      const app = createApp();
+      app.mount(container, { gridConfig: { ...defaultGridConfig, theme: 'light' } });
+      app.update({ gridConfig: { ...defaultGridConfig, theme: 'dark' } });
+      expect(container.children[0].style.background).toBe('rgb(28, 30, 33)');
     });
 
     it('does not call fetchNow when fetchNonce is undefined', () => {
@@ -109,13 +131,16 @@ describe('app.js createApp', () => {
       expect(mocks.fetchNow).not.toHaveBeenCalled();
     });
 
-    it('skips fetchNow on the first genuine fetchNonce change (isFirstFetchNonce), but calls it on the next change', () => {
+    it('the first genuine fetchNonce change after mount is not swallowed (no isFirstFetchNonce skip)', () => {
+      // A skip-the-first-real-change flag used to exist here and, combined
+      // with the lastFetchNonce check, silently ate the very first real
+      // Fetch click after every page load -- see app.js's own comment.
       const app = createApp();
       app.mount(container, { gridConfig: defaultGridConfig }); // fetchNonce undefined
-      app.update({ gridConfig: defaultGridConfig, fetchNonce: 1 }); // first defined value: skip flag consumed
-      expect(mocks.fetchNow).not.toHaveBeenCalled();
-      app.update({ gridConfig: defaultGridConfig, fetchNonce: 2 }); // genuine change: fetchNow fires
+      app.update({ gridConfig: defaultGridConfig, fetchNonce: 1 }); // first defined value: genuine change
       expect(mocks.fetchNow).toHaveBeenCalledTimes(1);
+      app.update({ gridConfig: defaultGridConfig, fetchNonce: 2 }); // another genuine change
+      expect(mocks.fetchNow).toHaveBeenCalledTimes(2);
     });
   });
 

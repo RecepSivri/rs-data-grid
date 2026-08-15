@@ -131,6 +131,136 @@ describe('RsivriGridHeaderComponent', () => {
     expect(cells[0].classList).not.toContain('border-right');
   });
 
+  it('renders the drag-header and index leading cells with border-right when enabled', () => {
+    component.dragDropRows = true;
+    component.showIndex = true;
+    component.headerColumnLines = true;
+    setColumns(twoColumns);
+    const dragCell: HTMLElement = fixture.nativeElement.querySelector('.drag-header-cell');
+    const indexCell: HTMLElement = fixture.nativeElement.querySelector('.index-header-cell');
+    expect(dragCell.classList).toContain('border-right');
+    expect(indexCell.classList).toContain('border-right');
+    expect(indexCell.textContent?.trim()).toBe('#');
+  });
+
+  it('omits border-right on the leading cells when headerColumnLines is false', () => {
+    component.dragDropRows = true;
+    component.showIndex = true;
+    component.headerColumnLines = false;
+    setColumns(twoColumns);
+    const dragCell: HTMLElement = fixture.nativeElement.querySelector('.drag-header-cell');
+    expect(dragCell.classList).not.toContain('border-right');
+  });
+
+  it('does not render the leading cells when dragDropRows/showIndex are off', () => {
+    setColumns(twoColumns);
+    expect(fixture.nativeElement.querySelector('.drag-header-cell')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.index-header-cell')).toBeNull();
+  });
+
+  it('renders the Actions header cell when showActions is true, and omits the last border-right', () => {
+    component.showActions = true;
+    component.headerColumnLines = true;
+    setColumns(twoColumns);
+    expect(fixture.nativeElement.querySelector('.actions-header-cell')?.textContent?.trim()).toBe('Actions');
+    expect(getCells()[1].classList).toContain('border-right');
+  });
+
+  it('does not render the Actions header cell when showActions is false', () => {
+    setColumns(twoColumns);
+    expect(fixture.nativeElement.querySelector('.actions-header-cell')).toBeNull();
+  });
+
+  describe('drag-to-reorder columns', () => {
+    function dragEvent(type: string): DragEvent {
+      return new DragEvent(type, { dataTransfer: new DataTransfer(), bubbles: true, cancelable: true });
+    }
+
+    it('does not render drag handles when dragDropColumns is off', () => {
+      setColumns(twoColumns);
+      expect(fixture.nativeElement.querySelector('.drag-handle')).toBeNull();
+    });
+
+    it('renders a drag handle per column when dragDropColumns is on', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      expect(fixture.nativeElement.querySelectorAll('.drag-handle').length).toBe(2);
+    });
+
+    it('sets dataTransfer.effectAllowed on dragstart', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      const handle: HTMLElement = fixture.nativeElement.querySelector('.drag-handle');
+      expect(() => handle.dispatchEvent(dragEvent('dragstart'))).not.toThrow();
+    });
+
+    it('highlights the hovered column cell on dragover and clears it on dragleave', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      const cell = getCells()[0];
+      cell.dispatchEvent(dragEvent('dragover'));
+      fixture.detectChanges();
+      expect(cell.classList).toContain('column-drag-over');
+      cell.dispatchEvent(dragEvent('dragleave'));
+      fixture.detectChanges();
+      expect(cell.classList).not.toContain('column-drag-over');
+    });
+
+    it('dragleave on a cell that is not the current dragOverField is a no-op', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      const [cellA, cellB] = getCells();
+      cellA.dispatchEvent(dragEvent('dragover'));
+      cellB.dispatchEvent(dragEvent('dragleave'));
+      fixture.detectChanges();
+      expect(cellA.classList).toContain('column-drag-over');
+    });
+
+    it('drop calls columnMove with the dragged and target fields, then clears drag state', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      const emitted: { fromField: string; toField: string }[] = [];
+      component.columnMove.subscribe(e => emitted.push(e));
+      const handles = fixture.nativeElement.querySelectorAll('.drag-handle');
+      const cells = getCells();
+      handles[0].dispatchEvent(dragEvent('dragstart'));
+      cells[1].dispatchEvent(dragEvent('drop'));
+      expect(emitted).toEqual([{ fromField: 'firstName', toField: 'lastName' }]);
+    });
+
+    it('drop with no active draggedField does not emit columnMove', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      const emitted: unknown[] = [];
+      component.columnMove.subscribe(e => emitted.push(e));
+      getCells()[1].dispatchEvent(dragEvent('drop'));
+      expect(emitted).toEqual([]);
+    });
+
+    it('dragend clears the dragged field so a later drop is a no-op', () => {
+      component.dragDropColumns = true;
+      setColumns(twoColumns);
+      const emitted: unknown[] = [];
+      component.columnMove.subscribe(e => emitted.push(e));
+      const handles = fixture.nativeElement.querySelectorAll('.drag-handle');
+      handles[0].dispatchEvent(dragEvent('dragstart'));
+      handles[0].dispatchEvent(dragEvent('dragend'));
+      getCells()[1].dispatchEvent(dragEvent('drop'));
+      expect(emitted).toEqual([]);
+    });
+
+    it('when dragDropColumns is off, the cell dragover/dragleave/drop handlers are no-ops', () => {
+      setColumns(twoColumns);
+      const cell = getCells()[0];
+      expect(() => {
+        cell.dispatchEvent(dragEvent('dragover'));
+        cell.dispatchEvent(dragEvent('dragleave'));
+        cell.dispatchEvent(dragEvent('drop'));
+      }).not.toThrow();
+      expect(cell.classList).not.toContain('column-drag-over');
+    });
+  });
+
   describe('filtering', () => {
     it('renders no filter row when showFilter is not set (defaults to false)', () => {
       setColumns(twoColumns);
@@ -217,6 +347,159 @@ describe('RsivriGridHeaderComponent', () => {
       checkbox.dispatchEvent(new Event('change'));
 
       expect(emitted).toEqual([{ dataField: 'firstName', values: [] }]);
+    });
+
+    it('closes the dropdown when the toggle is clicked again', () => {
+      component.showFilter = true;
+      setColumns(twoColumns);
+      const toggle = getFilterToggles()[0];
+      toggle.dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      expect(toggle.classList).toContain('filter-toggle-open');
+      toggle.dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.filter-panel')).toBeNull();
+    });
+
+    it('opening a second column\'s dropdown closes the first', () => {
+      component.showFilter = true;
+      setColumns(twoColumns);
+      const toggles = getFilterToggles();
+      toggles[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      toggles[1].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      expect(toggles[0].classList).not.toContain('filter-toggle-open');
+      expect(toggles[1].classList).toContain('filter-toggle-open');
+    });
+
+    it('shows "No values" when the column has none among the (cross-filtered) rows', () => {
+      component.showFilter = true;
+      component.data = [];
+      setColumns(twoColumns);
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.filter-empty')?.textContent?.trim()).toBe('No values');
+    });
+
+    it('excludes null/undefined/empty-string values from the options list', () => {
+      component.showFilter = true;
+      component.data = [{ firstName: 'A', lastName: '' }, { firstName: null, lastName: 'x' }, { firstName: undefined, lastName: 'y' }];
+      setColumns(twoColumns);
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      const values = Array.from(fixture.nativeElement.querySelectorAll('.filter-option span:last-child')).map((s: any) => s.textContent);
+      expect(values).toEqual(['A']);
+    });
+
+    it('excludes the current column\'s own selection when computing its own cross-filter options', () => {
+      component.showFilter = true;
+      component.data = [
+        { firstName: 'Alice', lastName: 'Ankara' },
+        { firstName: 'Bob', lastName: 'Istanbul' },
+        { firstName: 'Carol', lastName: 'Ankara' },
+      ];
+      setColumns(twoColumns);
+      // Select "Ankara" for lastName first.
+      getFilterToggles()[1].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      getFilterOptionCheckboxes()[0].dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      // Now open firstName's dropdown -- cross-filtered by lastName=Ankara (Alice, Carol).
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      const values = Array.from(fixture.nativeElement.querySelectorAll('.filter-option span:last-child')).map((s: any) => s.textContent);
+      expect(values).toEqual(['Alice', 'Carol']);
+    });
+
+    it('clicking the filter-count badge clears that filter', () => {
+      component.showFilter = true;
+      component.data = [{ firstName: 'Jane', lastName: 'Doe' }];
+      setColumns(twoColumns);
+      const emitted: { dataField: string; values: string[] }[] = [];
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      getFilterOptionCheckboxes()[0].dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      component.filterChange.subscribe(event => emitted.push(event));
+      const badge: HTMLElement = fixture.nativeElement.querySelector('.filter-count');
+      expect(badge.textContent?.trim()).toBe('1');
+      badge.dispatchEvent(new Event('click'));
+      expect(emitted).toEqual([{ dataField: 'firstName', values: [] }]);
+    });
+
+    it('shows "Clear selection" once something is selected, and it clears the filter', () => {
+      component.showFilter = true;
+      component.data = [{ firstName: 'Jane', lastName: 'Doe' }];
+      setColumns(twoColumns);
+      const emitted: { dataField: string; values: string[] }[] = [];
+      getFilterToggles()[0].dispatchEvent(new Event('click'));
+      fixture.detectChanges();
+      getFilterOptionCheckboxes()[0].dispatchEvent(new Event('change'));
+      fixture.detectChanges();
+      const clearBtn: HTMLButtonElement = fixture.nativeElement.querySelector('.filter-clear');
+      expect(clearBtn).not.toBeNull();
+      component.filterChange.subscribe(event => emitted.push(event));
+      clearBtn.click();
+      expect(emitted).toEqual([{ dataField: 'firstName', values: [] }]);
+    });
+
+    it('a click inside the filter-dropdown does not bubble to the document close-listener', () => {
+      component.showFilter = true;
+      setColumns(twoColumns);
+      getFilterToggles()[0].dispatchEvent(new Event('click', { bubbles: true }));
+      fixture.detectChanges();
+      const dropdown: HTMLElement = fixture.nativeElement.querySelector('.filter-dropdown');
+      dropdown.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.filter-panel')).not.toBeNull();
+    });
+
+    it('a click outside the header (document) closes an open filter dropdown', () => {
+      component.showFilter = true;
+      setColumns(twoColumns);
+      getFilterToggles()[0].dispatchEvent(new Event('click', { bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.filter-panel')).not.toBeNull();
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.filter-panel')).toBeNull();
+    });
+
+    it('renders the leading drag/index filter-row cells with border-right when bodyColumnLines is on', () => {
+      component.showFilter = true;
+      component.dragDropRows = true;
+      component.showIndex = true;
+      component.bodyColumnLines = true;
+      setColumns(twoColumns);
+      const dragCell: HTMLElement = fixture.nativeElement.querySelector('.drag-header-cell.filter-cell');
+      const indexCell: HTMLElement = fixture.nativeElement.querySelector('.index-header-cell.filter-cell');
+      expect(dragCell.classList).toContain('border-right');
+      expect(indexCell.classList).toContain('border-right');
+    });
+
+    it('omits border-right on the leading filter-row cells when bodyColumnLines is off', () => {
+      component.showFilter = true;
+      component.dragDropRows = true;
+      component.showIndex = true;
+      component.bodyColumnLines = false;
+      setColumns(twoColumns);
+      const dragCell: HTMLElement = fixture.nativeElement.querySelector('.drag-header-cell.filter-cell');
+      expect(dragCell.classList).not.toContain('border-right');
+    });
+
+    it('renders an actions filter-cell placeholder when showActions is true', () => {
+      component.showFilter = true;
+      component.showActions = true;
+      setColumns(twoColumns);
+      expect(fixture.nativeElement.querySelector('.actions-header-cell.filter-cell')).not.toBeNull();
+    });
+
+    it('applies filter-row-border only when tableBorder is true', () => {
+      component.showFilter = true;
+      component.tableBorder = false;
+      setColumns(twoColumns);
+      expect(fixture.nativeElement.querySelector('.filter-row').classList).not.toContain('filter-row-border');
     });
   });
 

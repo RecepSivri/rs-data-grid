@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { titleCase } from '../src/rsDataGrid/titleCase.js';
+import { describe, expect, it } from 'vitest';
+import { titleCase } from './titleCase';
 
 describe('titleCase', () => {
   it('capitalizes the first letter of each word and lowercases the rest', () => {
@@ -11,14 +11,18 @@ describe('titleCase', () => {
   });
 
   it('handles a single word', () => {
-    expect(titleCase('university')).toBe('University');
-  });
-
-  it('handles snake_case-ish dataFields with underscores as part of the word', () => {
-    expect(titleCase('first_name')).toBe('First_name');
+    expect(titleCase('movies')).toBe('Movies');
   });
 
   it('handles an empty string', () => {
     expect(titleCase('')).toBe('');
+  });
+
+  it('handles numbers and mixed alphanumeric words', () => {
+    expect(titleCase('release_date 2024')).toBe('Release_date 2024');
+  });
+
+  it('handles multiple spaces between words', () => {
+    expect(titleCase('foo  bar')).toBe('Foo  Bar');
   });
 });

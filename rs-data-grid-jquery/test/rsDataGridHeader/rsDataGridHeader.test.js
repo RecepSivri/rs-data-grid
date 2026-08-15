@@ -70,6 +70,18 @@ describe('rsDataGridHeader', () => {
       expect(indexCell.textContent).toBe('#');
     });
 
+    it('gates border-right on the index header cell by headerColumnLines', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      header.render(container, baseProps({ showIndex: true, headerColumnLines: true }));
+      expect(container.querySelector('.index-header-cell').className).toContain('border-right');
+
+      const header2 = createHeader();
+      const container2 = document.createElement('div');
+      header2.render(container2, baseProps({ showIndex: true, headerColumnLines: false }));
+      expect(container2.querySelector('.index-header-cell').className).not.toContain('border-right');
+    });
+
     it('omits the index header cell when showIndex is false', () => {
       const header = createHeader();
       const container = document.createElement('div');
@@ -142,6 +154,40 @@ describe('rsDataGridHeader', () => {
       expect(row.className).toContain('border-header');
       expect(row.className).toContain('border-area-small');
     });
+
+    it('omits border-header/border-area-small when tableBorder/borderRadiusTop are off', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      header.render(container, baseProps({ tableBorder: false, borderRadiusTop: false }));
+      const row = container.querySelector('.full-row.row-layout-space-between-center');
+      expect(row.className).not.toContain('border-header');
+      expect(row.className).not.toContain('border-area-small');
+    });
+
+    it('renders a drag-header cell when dragDropRows is on, with border-right gated by headerColumnLines', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      header.render(container, baseProps({ dragDropRows: true, headerColumnLines: true }));
+      expect(container.querySelector('.drag-header-cell').className).toContain('border-right');
+      const header2 = createHeader();
+      const container2 = document.createElement('div');
+      header2.render(container2, baseProps({ dragDropRows: true, headerColumnLines: false }));
+      expect(container2.querySelector('.drag-header-cell').className).not.toContain('border-right');
+    });
+
+    it('does not render drag handles when dragDropColumns is off', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      header.render(container, baseProps({ dragDropColumns: false }));
+      expect(container.querySelector('.drag-handle')).toBeNull();
+    });
+
+    it('renders a drag handle per column when dragDropColumns is on', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      header.render(container, baseProps({ dragDropColumns: true }));
+      expect(container.querySelectorAll('.drag-handle').length).toBe(2);
+    });
   });
 
   describe('buildFilterRow via render()', () => {
@@ -184,6 +230,20 @@ describe('rsDataGridHeader', () => {
       const container = document.createElement('div');
       header.render(container, baseProps({ showFilter: true, tableBorder: false }));
       expect(container.querySelector('.filter-row').className).not.toContain('filter-row-border');
+    });
+
+    it('gates border-right on the leading drag/index filter cells by bodyColumnLines', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      header.render(container, baseProps({ showFilter: true, dragDropRows: true, showIndex: true, bodyColumnLines: true }));
+      expect(container.querySelector('.drag-header-cell.filter-cell').className).toContain('border-right');
+      expect(container.querySelector('.index-header-cell.filter-cell').className).toContain('border-right');
+
+      const header2 = createHeader();
+      const container2 = document.createElement('div');
+      header2.render(container2, baseProps({ showFilter: true, dragDropRows: true, showIndex: true, bodyColumnLines: false }));
+      expect(container2.querySelector('.drag-header-cell.filter-cell').className).not.toContain('border-right');
+      expect(container2.querySelector('.index-header-cell.filter-cell').className).not.toContain('border-right');
     });
   });
 
@@ -326,6 +386,19 @@ describe('rsDataGridHeader', () => {
       expect(container.querySelector('.filter-count')).toBeNull();
     });
 
+    it('clicking the filter-count badge clears that field\'s selection', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const onFilterChange = vi.fn();
+      header.render(container, baseProps({ showFilter: true, onFilterChange }));
+      container.querySelectorAll('.filter-toggle')[0].click();
+      container.querySelector('.filter-option input[type="checkbox"]').dispatchEvent(new Event('change', { bubbles: true }));
+      container.querySelector('.filter-count').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(onFilterChange).toHaveBeenLastCalledWith({ dataField: 'firstName', values: [] });
+      expect(container.querySelector('.filter-count')).toBeNull();
+    });
+
     it('clicking inside the filter-dropdown itself does not bubble to close it (stopPropagation)', () => {
       const header = createHeader();
       const container = document.createElement('div');
@@ -335,6 +408,113 @@ describe('rsDataGridHeader', () => {
       const dropdown = container.querySelector('.filter-dropdown');
       dropdown.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(container.querySelectorAll('.filter-toggle')[0].className).toContain('filter-toggle-open');
+    });
+  });
+
+  describe('drag-and-drop columns (dragDropColumns)', () => {
+    it('sets dataTransfer.effectAllowed on dragstart when available (via event.originalEvent), tolerates its absence', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      header.render(container, baseProps({ dragDropColumns: true }));
+      const handle = container.querySelectorAll('.drag-handle')[0];
+      // jQuery wraps the dispatched native Event as event.originalEvent --
+      // attaching dataTransfer directly to the native Event before dispatch
+      // makes it reachable that way.
+      const event = new Event('dragstart', { bubbles: true });
+      event.dataTransfer = { effectAllowed: null };
+      handle.dispatchEvent(event);
+      expect(event.dataTransfer.effectAllowed).toBe('move');
+      expect(() => handle.dispatchEvent(new Event('dragstart', { bubbles: true }))).not.toThrow();
+    });
+
+    it('highlights the hovered column cell on dragover and clears it on dragleave', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      header.render(container, baseProps({ dragDropColumns: true }));
+      const cell = container.querySelectorAll('.content-style[data-field]')[0];
+      cell.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(cell.classList.contains('column-drag-over')).toBe(true);
+      // A second dragover on the same field is a no-op re-add.
+      cell.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(cell.classList.contains('column-drag-over')).toBe(true);
+      cell.dispatchEvent(new Event('dragleave', { bubbles: true }));
+      expect(cell.classList.contains('column-drag-over')).toBe(false);
+    });
+
+    it('moving the hover from one column cell to another clears the previous highlight', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      header.render(container, baseProps({ dragDropColumns: true }));
+      const [cellA, cellB] = container.querySelectorAll('.content-style[data-field]');
+      cellA.dispatchEvent(new Event('dragover', { bubbles: true }));
+      cellB.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(cellA.classList.contains('column-drag-over')).toBe(false);
+      expect(cellB.classList.contains('column-drag-over')).toBe(true);
+    });
+
+    it('dragleave on a cell that is not the current dragOverField is a no-op', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      header.render(container, baseProps({ dragDropColumns: true }));
+      const [cellA, cellB] = container.querySelectorAll('.content-style[data-field]');
+      cellA.dispatchEvent(new Event('dragover', { bubbles: true }));
+      expect(() => cellB.dispatchEvent(new Event('dragleave', { bubbles: true }))).not.toThrow();
+      expect(cellA.classList.contains('column-drag-over')).toBe(true);
+    });
+
+    it('drop calls onColumnMove with the dragged and target fields, then clears drag state', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const onColumnMove = vi.fn();
+      header.render(container, baseProps({ dragDropColumns: true, onColumnMove }));
+      const handles = container.querySelectorAll('.drag-handle');
+      const cells = container.querySelectorAll('.content-style[data-field]');
+      handles[0].dispatchEvent(new Event('dragstart', { bubbles: true }));
+      cells[1].dispatchEvent(new Event('drop', { bubbles: true }));
+      expect(onColumnMove).toHaveBeenCalledWith('firstName', 'age');
+    });
+
+    it('drop with no active draggedField does not call onColumnMove', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const onColumnMove = vi.fn();
+      header.render(container, baseProps({ dragDropColumns: true, onColumnMove }));
+      const cells = container.querySelectorAll('.content-style[data-field]');
+      cells[1].dispatchEvent(new Event('drop', { bubbles: true }));
+      expect(onColumnMove).not.toHaveBeenCalled();
+    });
+
+    it('dragend clears the dragged field and re-renders', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const onColumnMove = vi.fn();
+      header.render(container, baseProps({ dragDropColumns: true, onColumnMove }));
+      const handles = container.querySelectorAll('.drag-handle');
+      handles[0].dispatchEvent(new Event('dragstart', { bubbles: true }));
+      handles[0].dispatchEvent(new Event('dragend', { bubbles: true }));
+      const cells = container.querySelectorAll('.content-style[data-field]');
+      cells[1].dispatchEvent(new Event('drop', { bubbles: true }));
+      expect(onColumnMove).not.toHaveBeenCalled();
+    });
+
+    it('keeps the highlight class through a full external re-render while a hover is still active', () => {
+      const header = createHeader();
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const props = baseProps({ dragDropColumns: true });
+      header.render(container, props);
+      const cell = container.querySelectorAll('.content-style[data-field]')[0];
+      cell.dispatchEvent(new Event('dragover', { bubbles: true }));
+      header.render(container, props);
+      const rebuiltCell = container.querySelectorAll('.content-style[data-field]')[0];
+      expect(rebuiltCell.classList.contains('column-drag-over')).toBe(true);
     });
   });
 

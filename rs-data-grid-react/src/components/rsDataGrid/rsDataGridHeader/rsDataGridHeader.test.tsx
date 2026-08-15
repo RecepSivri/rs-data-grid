@@ -191,6 +191,92 @@ describe('RsDataGridHeader', () => {
     expect(Array.from(panel.querySelectorAll('.filter-option span:last-child')).map(n => n.textContent)).toEqual(['alice', 'carol']);
   });
 
+  it('clicking the filter-count badge clears that filter without toggling the toggle button itself', async () => {
+    const onFilterChange = vi.fn();
+    render(<RsDataGridHeader {...baseProps} onFilterChange={onFilterChange} />);
+    await userEvent.click(screen.getByLabelText('Filter first name'));
+    fireEvent.click(screen.getByText('alice').previousSibling as HTMLInputElement);
+    const badge = screen.getByLabelText('Clear filter for first name');
+    fireEvent.click(badge);
+    expect(onFilterChange).toHaveBeenLastCalledWith({ dataField: 'firstName', values: [] });
+  });
+
+  it('renders the drag-header/index leading cells (in both the caption row and filter row) with border-right when column lines are on', () => {
+    render(<RsDataGridHeader {...baseProps} dragDropRows={true} showIndex={true} headerColumnLines={true} bodyColumnLines={true} showFilter={true} />);
+    const dragCells = document.querySelectorAll('.drag-header-cell');
+    const indexCells = document.querySelectorAll('.index-header-cell');
+    expect(dragCells.length).toBe(2); // caption row + filter row
+    expect(indexCells.length).toBe(2);
+    dragCells.forEach(cell => expect(cell.className).toContain('border-right'));
+    indexCells.forEach(cell => expect(cell.className).toContain('border-right'));
+  });
+
+  it('omits border-right on the leading cells when column lines are off', () => {
+    render(<RsDataGridHeader {...baseProps} dragDropRows={true} showIndex={true} headerColumnLines={false} bodyColumnLines={false} showFilter={true} />);
+    document.querySelectorAll('.drag-header-cell').forEach(cell => expect(cell.className).not.toContain('border-right'));
+    document.querySelectorAll('.index-header-cell').forEach(cell => expect(cell.className).not.toContain('border-right'));
+  });
+
+  describe('drag-to-reorder columns', () => {
+    it('does not render drag handles when dragDropColumns is off', () => {
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={false} />);
+      expect(document.querySelector('.drag-handle')).toBeNull();
+    });
+
+    it('sets dataTransfer.effectAllowed on dragstart', () => {
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={true} />);
+      const handle = document.querySelectorAll('.drag-handle')[0];
+      const event = new Event('dragstart', { bubbles: true }) as any;
+      event.dataTransfer = { effectAllowed: null };
+      handle.dispatchEvent(event);
+      expect(event.dataTransfer.effectAllowed).toBe('move');
+    });
+
+    it('highlights the hovered column cell on dragover and clears it on dragleave', () => {
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={true} />);
+      const cell = document.querySelectorAll('.content-style')[0];
+      fireEvent.dragOver(cell);
+      expect(cell.className).toContain('column-drag-over');
+      fireEvent.dragLeave(cell);
+      expect(cell.className).not.toContain('column-drag-over');
+    });
+
+    it('dragleave on a cell that is not the current dragOverField is a no-op', () => {
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={true} />);
+      const [cellA, cellB] = document.querySelectorAll('.content-style');
+      fireEvent.dragOver(cellA);
+      fireEvent.dragLeave(cellB);
+      expect(cellA.className).toContain('column-drag-over');
+    });
+
+    it('drop calls onColumnMove with the dragged and target fields, then clears drag state', () => {
+      const onColumnMove = vi.fn();
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={true} onColumnMove={onColumnMove} />);
+      const handles = document.querySelectorAll('.drag-handle');
+      const cells = document.querySelectorAll('.content-style');
+      fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+      fireEvent.drop(cells[1]);
+      expect(onColumnMove).toHaveBeenCalledWith('firstName', 'city');
+    });
+
+    it('drop with no active draggedField does not call onColumnMove', () => {
+      const onColumnMove = vi.fn();
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={true} onColumnMove={onColumnMove} />);
+      fireEvent.drop(document.querySelectorAll('.content-style')[1]);
+      expect(onColumnMove).not.toHaveBeenCalled();
+    });
+
+    it('dragend clears the dragged field', () => {
+      const onColumnMove = vi.fn();
+      render(<RsDataGridHeader {...baseProps} dragDropColumns={true} onColumnMove={onColumnMove} />);
+      const handles = document.querySelectorAll('.drag-handle');
+      fireEvent.dragStart(handles[0], { dataTransfer: { effectAllowed: null } });
+      fireEvent.dragEnd(handles[0]);
+      fireEvent.drop(document.querySelectorAll('.content-style')[1]);
+      expect(onColumnMove).not.toHaveBeenCalled();
+    });
+  });
+
   it('applies border classes based on tableBorder/borderRadiusTop props', () => {
     const { container } = render(<RsDataGridHeader {...baseProps} tableBorder={true} borderRadiusTop={true} />);
     const headerRow = container.querySelector('.full-row.row-layout-space-between-center')!;

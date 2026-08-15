@@ -84,6 +84,10 @@ export class GridSettingsDialogComponent {
     }
     const fromIndex = this.selected.indexOf(fromField);
     const toIndexOriginal = this.selected.indexOf(toField);
+    // draggedField/toField always come from a rendered chip, which is
+    // always itself a member of `selected` -- so both lookups always
+    // succeed. Kept as a defensive guard only.
+    /* istanbul ignore if */
     if (fromIndex === -1 || toIndexOriginal === -1) {
       return;
     }
