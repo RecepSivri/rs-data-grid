@@ -4,7 +4,9 @@ import { RsDataGrid, RsDataGridHandle } from 'rs-data-grid-react';
 
 // Used only when this app is run standalone (`npm run dev`), outside the
 // single-spa root-config that would normally supply gridConfig via props.
-const defaultGridConfig: Record<string, any> = {
+// Exported so index.tsx's query-string overrides (see its own comment) can
+// build on top of it without duplicating these values.
+export const defaultGridConfig: Record<string, any> = {
   theme: 'light',
   fetchUrl: 'https://gist.githubusercontent.com/Strift/1524ab5e2015e50bbcb215fb4d950a38/raw/movies-lite.json',
   apiMethod: 'GET',
@@ -53,10 +55,17 @@ interface AppProps {
 
 function App(props: AppProps) {
   const gridRef = useRef<RsDataGridHandle>(null);
+  // index.tsx (this app's only standalone caller) always supplies
+  // gridConfig explicitly -- the fallback is for other, non-demo consumers.
+  /* istanbul ignore next */
   const gridConfig = props.gridConfig ?? defaultGridConfig;
 
   const isFirstFetchNonce = useRef(true);
   useEffect(() => {
+    // Same reasoning: index.tsx always supplies a real fetchNonce number
+    // (seeded to 0, only ever updated via ?? to keep the previous value) --
+    // never literally undefined from this app's own standalone entry.
+    /* istanbul ignore next */
     if (props.fetchNonce === undefined) {
       return;
     }

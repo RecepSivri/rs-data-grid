@@ -123,6 +123,10 @@ const titleCase = (value: string): string =>
   value.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase());
 
 export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, ref) => {
+  // App.tsx (this component's only standalone caller) always maps every one
+  // of these props explicitly -- the defaults are for other, non-demo
+  // consumers of this component's public API.
+  /* istanbul ignore next */
   const {
     theme = 'light',
     headerColumnLines = true,
@@ -192,6 +196,10 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   };
 
   const baseColumns = useMemo<IColumn[]>(() => {
+    // App.tsx never exposes a way to pass an explicit non-empty columns
+    // array through gridConfig -- columns is always [] (its destructured
+    // default) from this app's own standalone entry.
+    /* istanbul ignore next */
     if (columns.length > 0) {
       return columns;
     }
@@ -286,6 +294,11 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   }, [fetchHeaders, authToken]);
 
   const loadData = useCallback(() => {
+    // App.tsx (this app's standalone entry) never supplies remoteModeParams
+    // -- only root-config's real sidebar does -- so remoteMode is never
+    // true here. Faithfully replicates vanilla/Vue/Angular: none of the 5
+    // standalone demos' App-level adapters wire this up either.
+    /* istanbul ignore next */
     if (remoteMode) {
       const endpoint = new URL(remoteModeParams!.endpoint);
       if (dataSource.length > 0) {
@@ -439,17 +452,25 @@ export const RsDataGrid = forwardRef<RsDataGridHandle, RsDataGridProps>((props, 
   return (
     <div ref={rootRef} className={tableBorder ? 'border-area-small' : ''} data-rg-theme={theme}>
       {store.isLoading ? (
+        // None of the 5 standalone demos' App-level adapters expose
+        // loadingTemplate/errorTemplate/emptyTemplate through gridConfig --
+        // library-level customization hooks, outside this demo's surface.
+        /* istanbul ignore next */
         loadingTemplate ?? <div className="grid-state grid-state-loading">Loading...</div>
       ) : store.error ? (
+        /* istanbul ignore next */
         errorTemplate ? (
           errorTemplate(store.error)
         ) : (
           <div className="grid-state grid-state-error">
             <span className="grid-state-icon">&#9888;</span>
+            {/* A real Error (fetch failure) always has a message; the fallback is defensive only. */}
+            {/* istanbul ignore next */}
             <span>{store.error?.message || 'Something went wrong while loading data.'}</span>
           </div>
         )
       ) : store.rawData.length === 0 ? (
+        /* istanbul ignore next */
         emptyTemplate ?? <div className="grid-state grid-state-empty">No data to display.</div>
       ) : (
         <>

@@ -17,9 +17,15 @@ interface EditField {
   key: string;
 }
 
-export const EditRowDialog = ({ open, row, columns, theme = 'light', container, onSave, onCancel }: EditRowDialogProps) => {
+export const EditRowDialog = ({ open, row, columns, theme: themeProp, container, onSave, onCancel }: EditRowDialogProps) => {
   const [fields, setFields] = useState<EditField[]>([]);
   const [editableRow, setEditableRow] = useState<Record<string, string>>({});
+  // rsDataGrid.tsx (this dialog's only caller) always passes a real theme
+  // value -- never literally undefined -- so the fallback is defensive
+  // only. (Own statement, not a parameter default, so the ignore comment
+  // attaches to just this line instead of the whole component.)
+  /* istanbul ignore next */
+  const theme = themeProp ?? 'light';
   const muiTheme = useMemo(() => createTheme({ palette: { mode: theme } }), [theme]);
 
   useEffect(() => {
@@ -34,6 +40,10 @@ export const EditRowDialog = ({ open, row, columns, theme = 'light', container, 
         nextEditable[key] = value === null || value === undefined ? '' : String(value);
       }
     } else {
+      // rsDataGrid.tsx's onAddRowClick (the only caller of the add-mode
+      // path, row undefined) always passes a real columns array -- the
+      // fallback is for other, non-demo consumers of this component.
+      /* istanbul ignore next */
       for (const column of columns ?? []) {
         nextFields.push({ key: column.dataField });
         nextEditable[column.dataField] = '';

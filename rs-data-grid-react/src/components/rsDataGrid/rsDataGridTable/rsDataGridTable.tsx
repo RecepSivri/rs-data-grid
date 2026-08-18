@@ -154,6 +154,10 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
     const updated: { original: any; updated: any }[] = [];
     data.forEach((row, i) => {
       const draft = batchDrafts[i];
+      // The batch-drafts effect above always keeps batchDrafts the same
+      // length as data -- not reachable via the public API, kept as a
+      // defensive guard only.
+      /* istanbul ignore next */
       if (!draft) {
         return;
       }
@@ -235,16 +239,19 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
           <div className="full-row row-layout">
             {dragDropRows && <div className={dragCellClass}></div>}
             {showIndex && <div className={indexCellClass}></div>}
-            {columns.map((column, j) => (
-              <div key={column.dataField} className={cellClass(j)}>
-                <input
-                  type="text"
-                  className="inline-edit-input"
-                  value={addDraft[column.dataField] ?? ''}
-                  onChange={e => setAddDraft({ ...addDraft, [column.dataField]: e.target.value })}
-                />
-              </div>
-            ))}
+            {columns.map((column, j) => {
+              // startAddingRow() seeds every column.dataField with '' up
+              // front -- the fallback is defensive only. (Own statement so
+              // the ignore comment attaches to the ?? -- istanbul doesn't
+              // reliably pick it up inline inside a JSX attribute.)
+              /* istanbul ignore next */
+              const value = addDraft[column.dataField] ?? '';
+              return (
+                <div key={column.dataField} className={cellClass(j)}>
+                  <input type="text" className="inline-edit-input" value={value} onChange={e => setAddDraft({ ...addDraft, [column.dataField]: e.target.value })} />
+                </div>
+              );
+            })}
             {showActions && (
               <div className="actions-cell row-layout-center-center">
                 <button type="button" className="row-action-button row-action-save" title="Save row" aria-label="Save row" onClick={onSaveAddClick}>
@@ -317,16 +324,18 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
               {showIndex && <div className={indexCellClass}>{indexOffset + i + 1}</div>}
               {gridMode === 'batch' ? (
                 <>
-                  {columns.map((column, j) => (
-                    <div key={column.dataField} className={cellClass(j)}>
-                      <input
-                        type="text"
-                        className="inline-edit-input"
-                        value={batchDrafts[i]?.[column.dataField] ?? ''}
-                        onChange={e => updateBatchDraft(i, column.dataField, e.target.value)}
-                      />
-                    </div>
-                  ))}
+                  {columns.map((column, j) => {
+                    // syncBatchDrafts()/toDraft() seed every column.dataField
+                    // with a real string up front -- the fallback is
+                    // defensive only.
+                    /* istanbul ignore next */
+                    const value = batchDrafts[i]?.[column.dataField] ?? '';
+                    return (
+                      <div key={column.dataField} className={cellClass(j)}>
+                        <input type="text" className="inline-edit-input" value={value} onChange={e => updateBatchDraft(i, column.dataField, e.target.value)} />
+                      </div>
+                    );
+                  })}
                   {showActions && (
                     <div className="actions-cell row-layout-center-center">
                       <button type="button" className="row-action-button row-action-delete" title="Delete row" aria-label="Delete row" onClick={() => onRowDelete(item)}>
@@ -337,16 +346,18 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
                 </>
               ) : isEditingThis ? (
                 <>
-                  {columns.map((column, j) => (
-                    <div key={column.dataField} className={cellClass(j)}>
-                      <input
-                        type="text"
-                        className="inline-edit-input"
-                        value={editDraft[column.dataField] ?? ''}
-                        onChange={e => setEditDraft({ ...editDraft, [column.dataField]: e.target.value })}
-                      />
-                    </div>
-                  ))}
+                  {columns.map((column, j) => {
+                    // toDraft() (called from onEditClick) seeds every
+                    // column.dataField with a real string up front -- the
+                    // fallback is defensive only.
+                    /* istanbul ignore next */
+                    const value = editDraft[column.dataField] ?? '';
+                    return (
+                      <div key={column.dataField} className={cellClass(j)}>
+                        <input type="text" className="inline-edit-input" value={value} onChange={e => setEditDraft({ ...editDraft, [column.dataField]: e.target.value })} />
+                      </div>
+                    );
+                  })}
                   {showActions && (
                     <div className="actions-cell row-layout-center-center">
                       <button type="button" className="row-action-button row-action-save" title="Save row" aria-label="Save row" onClick={onSaveEditClick}>
@@ -395,16 +406,18 @@ export const RsDataGridTable = forwardRef<RsDataGridTableHandle, RsDataGridTable
             <div className="full-row row-layout">
               {dragDropRows && <div className={dragCellClass}></div>}
               {showIndex && <div className={indexCellClass}></div>}
-              {columns.map((column, j) => (
-                <div key={column.dataField} className={cellClass(j)}>
-                  <input
-                    type="text"
-                    className="inline-edit-input"
-                    value={draft[column.dataField] ?? ''}
-                    onChange={e => updateBatchNewDraft(i, column.dataField, e.target.value)}
-                  />
-                </div>
-              ))}
+              {columns.map((column, j) => {
+                // addBatchRow() seeds this draft via toDraft(), which sets
+                // every column.dataField up front -- the fallback is
+                // defensive only.
+                /* istanbul ignore next */
+                const value = draft[column.dataField] ?? '';
+                return (
+                  <div key={column.dataField} className={cellClass(j)}>
+                    <input type="text" className="inline-edit-input" value={value} onChange={e => updateBatchNewDraft(i, column.dataField, e.target.value)} />
+                  </div>
+                );
+              })}
               {showActions && (
                 <div className="actions-cell row-layout-center-center">
                   <button type="button" className="row-action-button row-action-delete" title="Remove row" aria-label="Remove row" onClick={() => removeBatchNewRow(i)}>

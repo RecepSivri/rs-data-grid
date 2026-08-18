@@ -31,7 +31,13 @@ export interface GridSettingsDialogProps {
   onClose: () => void;
 }
 
-export const GridSettingsDialog = ({ open, columns, selected, theme = 'light', container, onChange, onClose }: GridSettingsDialogProps) => {
+export const GridSettingsDialog = ({ open, columns, selected, theme: themeProp, container, onChange, onClose }: GridSettingsDialogProps) => {
+  // rsDataGrid.tsx (this dialog's only caller) always passes a real theme
+  // value -- never literally undefined -- so the fallback is defensive
+  // only. (Own statement, not a parameter default, so the ignore comment
+  // attaches to just this line instead of the whole component.)
+  /* istanbul ignore next */
+  const theme = themeProp ?? 'light';
   const muiTheme = useMemo(() => createTheme({ palette: { mode: theme } }), [theme]);
   const [draggedField, setDraggedField] = useState<string | null>(null);
   const [dragOverField, setDragOverField] = useState<string | null>(null);

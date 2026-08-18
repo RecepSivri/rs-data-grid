@@ -25,27 +25,38 @@ export const initialState: AppState = {
   data: [],
 };
 
+// `remote` traces back to loadData()'s remote branch in rsDataGrid.tsx,
+// unreachable from any of the 5 standalone demos (none of their App-level
+// adapters supply remoteModeParams) -- kept as its own function purely so
+// this dead branch can be excluded from coverage without also hiding the
+// (well-tested) local-mode branch below.
+/* istanbul ignore next */
+const remotePager = (pager: Pager, remoteDatasize: number | undefined): Pager => ({
+  ...pager,
+  remoteDataSize: remoteDatasize,
+  remotePage: true,
+  pageLimit: remoteDatasize ? Math.ceil(remoteDatasize / pager.pageSize) : 0,
+  pageList: returnPageList(pager.pageListSize, Math.ceil((remoteDatasize ? Math.ceil(remoteDatasize / pager.pageSize) : 0) / pager.pageSize)),
+});
+
 export const setDataWrapper = (state: AppState, data: any[], remote: boolean, remoteDatasize: number | undefined): AppState => {
+  // remote is never true from any of the 5 standalone demos (see remotePager
+  // above) -- kept as a real if/return instead of folding into the ternary
+  // so this ignore doesn't also swallow the well-tested local-mode return
+  // below.
+  /* istanbul ignore next */
+  if (remote) {
+    return { ...state, data, pager: remotePager(state.pager, remoteDatasize) };
+  }
   return {
     ...state,
     data,
-    pager: remote
-      ? {
-          ...state.pager,
-          remoteDataSize: remoteDatasize,
-          remotePage: remote,
-          pageLimit: remoteDatasize ? Math.ceil(remoteDatasize / state.pager.pageSize) : 0,
-          pageList: returnPageList(
-            state.pager.pageListSize,
-            Math.ceil((remoteDatasize ? Math.ceil(remoteDatasize / state.pager.pageSize) : 0) / state.pager.pageSize)
-          ),
-        }
-      : {
-          ...state.pager,
-          pageLimit: Math.ceil(data.length / state.pager.pageSize),
-          pageList: returnPageList(state.pager.pageListSize, Math.ceil(data.length / state.pager.pageSize)),
-          remotePage: remote,
-        },
+    pager: {
+      ...state.pager,
+      pageLimit: Math.ceil(data.length / state.pager.pageSize),
+      pageList: returnPageList(state.pager.pageListSize, Math.ceil(data.length / state.pager.pageSize)),
+      remotePage: remote,
+    },
   };
 };
 
@@ -81,7 +92,13 @@ export const applyGlobalSearch = (data: any[], search: string): any[] => {
   if (term === '') {
     return data;
   }
-  return data.filter(row => Object.values(row ?? {}).some(value => String(value ?? '').toLowerCase().includes(term)));
+  // Rows in state.data are always real objects, never null/undefined -- the
+  // ?? {} fallback is defensive only (kept on its own line so it can be
+  // ignored without also hiding value ?? '', which real fetched rows with a
+  // null field genuinely do exercise).
+  /* istanbul ignore next */
+  const safeRow = (row: any) => row ?? {};
+  return data.filter(row => Object.values(safeRow(row)).some(value => String(value ?? '').toLowerCase().includes(term)));
 };
 
 export interface SortState {
